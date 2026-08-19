@@ -46,7 +46,10 @@ export default defineConfig({
       { find: /^expo-av$/, replacement: at('src/compat/expo-av.ts') },
       { find: /^expo-speech$/, replacement: at('src/compat/expo-speech.ts') },
       { find: /^expo-speech-recognition$/, replacement: at('src/compat/expo-speech-recognition.ts') },
-      { find: /^expo-file-system$/, replacement: at('src/compat/expo-file-system.ts') },
+      // Matches the `/legacy` subpath too: AdminLessonHtmlImportScreen imports
+      // `expo-file-system/legacy`, which an exact-match alias would miss and
+      // Rollup would then fail to resolve.
+      { find: /^expo-file-system(\/.*)?$/, replacement: at('src/compat/expo-file-system.ts') },
       { find: /^expo-document-picker$/, replacement: at('src/compat/expo-document-picker.ts') },
 
       { find: /^react-native-gesture-handler$/, replacement: at('src/compat/react-native-gesture-handler.tsx') },

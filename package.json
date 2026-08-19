@@ -30,6 +30,9 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-router-dom": "^7.1.1",
-    "react-native-web": "^0.21.2"
+    "react-native-web": "^0.21.2",
+    "@expo/vector-icons": "^15.1.1",
+    "@react-native-async-storage/async-storage": "^2.2.0",
+    "@japanese-learning/srs": "file:packages/srs"
   }
 }

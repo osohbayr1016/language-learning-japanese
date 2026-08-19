@@ -1,0 +1,52 @@
+name: Deploy website
+
+# Pushing to main deploys the site. Nothing was watching this repo before, so a
+# push only ever produced a commit.
+on:
+  push:
+    branches: [main]
+    # Changes that cannot affect the built site should not spend a deploy.
+    paths-ignore:
+      - '**/*.md'
+      - '.gitignore'
+  workflow_dispatch:
+
+# A second push while one is deploying supersedes it, rather than racing to
+# decide which build ends up live.
+concurrency:
+  group: deploy-website
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      # `npm ci` installs exactly what package-lock.json pins, and fails loudly
+      # if the lockfile has drifted from package.json.
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # A build that produced nothing would otherwise deploy an empty site.
+      - name: Check the build produced something
+        run: |
+          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
+          echo "dist: $(find dist -type f | wc -l) files, $(du -sh dist | cut -f1)"
+
+      - name: Deploy to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          command: deploy --env production
