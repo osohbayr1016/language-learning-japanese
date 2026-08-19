@@ -24,11 +24,11 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
 
       # `npm ci` installs exactly what package-lock.json pins, and fails loudly
@@ -49,4 +49,7 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Use the wrangler pinned in package.json rather than letting the
+          # action fetch its own, so CI and `npm run deploy` are the same tool.
+          wranglerVersion: '4.87.0'
           command: deploy --env production
