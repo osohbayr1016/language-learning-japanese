@@ -75,6 +75,10 @@ export default defineConfig({
     // react-native-web and several Expo modules branch on these.
     __DEV__: JSON.stringify(process.env.NODE_ENV !== 'production'),
     global: 'globalThis',
+    // lib/api/publicUrl.ts reads this directly, and `process` does not exist in
+    // a browser bundle. Empty string means "unset", which is what that resolver
+    // treats as "fall through to the default".
+    'process.env.EXPO_PUBLIC_API_URL': JSON.stringify(process.env.EXPO_PUBLIC_API_URL ?? ''),
   },
 
   optimizeDeps: {

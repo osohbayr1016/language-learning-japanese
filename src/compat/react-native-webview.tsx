@@ -1,8 +1,9 @@
 import React from 'react';
+import { toCssStyle } from './style';
 
 type Props = {
   source: { html?: string; uri?: string };
-  style?: React.CSSProperties;
+  style?: unknown;
   onMessage?: (event: { nativeEvent: { data: string } }) => void;
   originWhitelist?: string[];
   javaScriptEnabled?: boolean;
@@ -34,7 +35,7 @@ export const WebView = React.forwardRef<HTMLIFrameElement, Props>(function WebVi
       srcDoc={source.html}
       src={source.uri}
       sandbox="allow-scripts allow-same-origin"
-      style={{ border: 0, width: '100%', height: '100%', ...style }}
+      style={{ border: 0, width: '100%', height: '100%', ...toCssStyle(style) }}
     />
   );
 });

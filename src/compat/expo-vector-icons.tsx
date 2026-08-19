@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native-web';
 import glyphMap from '@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/Ionicons.json';
 import fontUrl from '@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf?url';
 
@@ -38,7 +39,8 @@ export type IconProps = {
   name: IoniconName;
   size?: number;
   color?: string;
-  style?: React.CSSProperties;
+  /** A React Native style prop — may be an object, an array, or nested arrays. */
+  style?: unknown;
   accessibilityLabel?: string;
   testID?: string;
 };
@@ -60,33 +62,28 @@ export function Ionicons({
     return null;
   }
 
+  // react-native-web's Text is used rather than a raw <span> so that callers
+  // can keep passing RN style arrays; flattening them is its job, not ours.
   return (
-    <span
-      data-testid={testID}
+    <Text
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
       aria-hidden={accessibilityLabel ? undefined : true}
-      aria-label={accessibilityLabel}
-      role={accessibilityLabel ? 'img' : undefined}
-      style={{
-        fontFamily: `"${FONT_FAMILY}"`,
-        fontSize: size,
-        lineHeight: 1,
-        width: size,
-        height: size,
-        color,
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontStyle: 'normal',
-        fontWeight: 'normal',
-        fontVariant: 'normal',
-        textTransform: 'none',
-        WebkitFontSmoothing: 'antialiased',
-        flexShrink: 0,
-        ...style,
-      }}
+      style={[
+        {
+          fontFamily: `"${FONT_FAMILY}"`,
+          fontSize: size,
+          lineHeight: size,
+          color,
+          textAlign: 'center',
+          userSelect: 'none',
+          flexShrink: 0,
+        },
+        style,
+      ]}
     >
       {String.fromCodePoint(codepoint)}
-    </span>
+    </Text>
   );
 }
 

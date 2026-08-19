@@ -1,4 +1,5 @@
 import React from 'react';
+import { View } from 'react-native-web';
 
 /**
  * Notch insets, from the CSS environment variables the browser exposes.
@@ -44,6 +45,6 @@ export function SafeAreaProvider({ children }: { children?: React.ReactNode }) {
   return <>{children}</>;
 }
 export function SafeAreaView({ children, style }: { children?: React.ReactNode; style?: unknown }) {
-  return <div style={style as React.CSSProperties}>{children}</div>;
+  return <View style={style as never}>{children}</View>;
 }
 export const initialWindowMetrics = null;

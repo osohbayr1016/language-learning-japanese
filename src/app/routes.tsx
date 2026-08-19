@@ -1,12 +1,21 @@
 import React from 'react';
 import type { RouteObject } from 'react-router-dom';
 
+import AuthLayout from './layouts/AuthLayout';
+import OnboardingLayout from './layouts/OnboardingLayout';
+import AdminLayout from './layouts/AdminLayout';
+
 /**
  * Every URL the site serves.
  *
  * These were expo-router file routes. The parenthesised layout groups are gone
- * — `(tabs)/home` is just `/home` — because a group was never part of the URL,
- * only of how the native navigator was assembled.
+ * from the URLs — `(tabs)/home` is just `/home` — because a group was never part
+ * of the URL, only of how the native navigator was assembled.
+ *
+ * The group LAYOUTS still matter though: `(auth)/_layout.tsx` and
+ * `(onboarding)/_layout.tsx` each supplied a context provider that their screens
+ * call, so those become pathless parent routes here. Dropping them is what made
+ * the site throw `useOnboardingLocale requires OnboardingLocaleProvider`.
  *
  * Each screen is lazy so a visitor downloads the page they asked for and not
  * the other 57. The old export shipped all of them in one 3.1 MB file.
@@ -20,9 +29,19 @@ export const routes: RouteObject[] = [
   { index: true, Component: lazy(() => import('./IndexRedirect')) },
 
   // ── Auth ─────────────────────────────────────────────────────────────────
-  { path: 'login', Component: lazy(() => import('@src/features/auth/LoginScreen')) },
-  { path: 'register', Component: lazy(() => import('@src/features/auth/RegisterScreen')) },
-  { path: 'onboarding', Component: lazy(() => import('@src/features/onboarding/OnboardingScreen')) },
+  {
+    Component: AuthLayout,
+    children: [
+      { path: 'login', Component: lazy(() => import('@src/features/auth/LoginScreen')) },
+      { path: 'register', Component: lazy(() => import('@src/features/auth/RegisterScreen')) },
+    ],
+  },
+  {
+    Component: OnboardingLayout,
+    children: [
+      { path: 'onboarding', Component: lazy(() => import('@src/features/onboarding/OnboardingScreen')) },
+    ],
+  },
   { path: 'setup', Component: lazy(() => import('@src/features/setup/SetupScreen')) },
 
   // ── Main sections (the tab bar) ──────────────────────────────────────────
@@ -68,20 +87,25 @@ export const routes: RouteObject[] = [
 
   // ── Admin ────────────────────────────────────────────────────────────────
   // Guarded in RootLayout: signed in AND is_admin, else bounced.
-  { path: 'admin', Component: lazy(() => import('@screens/admin/index')) },
-  { path: 'admin/dashboard', Component: lazy(() => import('@screens/admin/dashboard')) },
-  { path: 'admin/cartoons', Component: lazy(() => import('@screens/admin/cartoons')) },
-  { path: 'admin/exam-import', Component: lazy(() => import('@screens/admin/exam-import')) },
-  { path: 'admin/hsk1-lessons', Component: lazy(() => import('@screens/admin/hsk1-lessons')) },
-  { path: 'admin/learning-path', Component: lazy(() => import('@screens/admin/learning-path')) },
-  { path: 'admin/lesson-html-import', Component: lazy(() => import('@screens/admin/lesson-html-import')) },
-  { path: 'admin/lesson/:id', Component: lazy(() => import('@screens/admin/lesson/[id]')) },
-  { path: 'admin/lesson-preview/:id', Component: lazy(() => import('@screens/admin/lesson-preview/[id]')) },
-  { path: 'admin/users', Component: lazy(() => import('@screens/admin/users')) },
-  { path: 'admin/vocabulary', Component: lazy(() => import('@screens/admin/vocabulary')) },
-  { path: 'admin/word/:id', Component: lazy(() => import('@screens/admin/word/[id]')) },
-  { path: 'admin/words', Component: lazy(() => import('@screens/admin/words')) },
-  { path: 'admin/words/new', Component: lazy(() => import('@screens/admin/words/new')) },
+  {
+    Component: AdminLayout,
+    children: [
+      { path: 'admin', Component: lazy(() => import('@screens/admin/index')) },
+      { path: 'admin/dashboard', Component: lazy(() => import('@screens/admin/dashboard')) },
+      { path: 'admin/cartoons', Component: lazy(() => import('@screens/admin/cartoons')) },
+      { path: 'admin/exam-import', Component: lazy(() => import('@screens/admin/exam-import')) },
+      { path: 'admin/hsk1-lessons', Component: lazy(() => import('@screens/admin/hsk1-lessons')) },
+      { path: 'admin/learning-path', Component: lazy(() => import('@screens/admin/learning-path')) },
+      { path: 'admin/lesson-html-import', Component: lazy(() => import('@screens/admin/lesson-html-import')) },
+      { path: 'admin/lesson/:id', Component: lazy(() => import('@screens/admin/lesson/[id]')) },
+      { path: 'admin/lesson-preview/:id', Component: lazy(() => import('@screens/admin/lesson-preview/[id]')) },
+      { path: 'admin/users', Component: lazy(() => import('@screens/admin/users')) },
+      { path: 'admin/vocabulary', Component: lazy(() => import('@screens/admin/vocabulary')) },
+      { path: 'admin/word/:id', Component: lazy(() => import('@screens/admin/word/[id]')) },
+      { path: 'admin/words', Component: lazy(() => import('@screens/admin/words')) },
+      { path: 'admin/words/new', Component: lazy(() => import('@screens/admin/words/new')) },
+    ],
+  },
 
   { path: '*', Component: lazy(() => import('./NotFound')) },
 ];

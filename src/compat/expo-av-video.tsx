@@ -1,9 +1,10 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import type { AVPlaybackStatus } from './expo-av';
+import { toCssStyle } from './style';
 
 type Props = {
   source: { uri: string };
-  style?: React.CSSProperties;
+  style?: unknown;
   useNativeControls?: boolean;
   resizeMode?: 'contain' | 'cover' | 'stretch';
   shouldPlay?: boolean;
@@ -78,7 +79,7 @@ export const Video = forwardRef<VideoHandle, Props>(function Video(
       playsInline
       onTimeUpdate={() => report(false)}
       onEnded={() => report(true)}
-      style={{ width: '100%', height: '100%', objectFit: resizeMode, ...style }}
+      style={{ width: '100%', height: '100%', objectFit: resizeMode, ...toCssStyle(style) }}
     />
   );
 });

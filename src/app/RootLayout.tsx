@@ -1,15 +1,15 @@
 import React, { Suspense } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { ActivityIndicator, View } from 'react-native-web';
+import { Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router-dom';
 
 import { AuthProvider, useAuth } from '@src/context/AuthContext';
 import { AudioProvider } from '@src/context/AudioContext';
 import { GamificationProvider } from '@src/context/GamificationContext';
 import { DisplayPrefsProvider } from '@src/context/DisplayPrefsContext';
 import { AppShell } from '@src/primitives/AppShell';
-import { colors } from '@src/theme';
 
 import { RouterBridge } from '../compat/expo-router';
+import { ErrorBoundary } from './ErrorBoundary';
+import { RouteChrome } from './RouteChrome';
 import { TabBar, TAB_PATHS } from './TabBar';
 
 /** Routes reachable without an account. */
@@ -52,11 +52,21 @@ function useRouteGuard() {
   }, [isAuthenticated, isLoading, hasSeenOnboarding, isAdmin, pathname, navigate]);
 }
 
-function PageSpinner() {
+/**
+ * Shown while a route's JS chunk downloads.
+ *
+ * A bare centred spinner on an otherwise empty card gave no sense of what was
+ * coming; this holds the shape of a typical screen (title, then cards) so the
+ * hand-off to real content does not jump the layout.
+ */
+function PageSkeleton() {
   return (
-    <View style={{ flex: 1, minHeight: 240, alignItems: 'center', justifyContent: 'center' }}>
-      <ActivityIndicator color={colors.brand.primary} />
-    </View>
+    <div className="skeleton" role="status" aria-label="Ачаалж байна">
+      <div className="skeleton__line skeleton__line--title" />
+      <div className="skeleton__line skeleton__line--sub" />
+      <div className="skeleton__card" />
+      <div className="skeleton__card skeleton__card--short" />
+    </div>
   );
 }
 
@@ -67,9 +77,16 @@ function Shell() {
 
   return (
     <AppShell>
-      <Suspense fallback={<PageSpinner />}>
-        <Outlet />
-      </Suspense>
+      {/* Sends every new page to the top and restores position on back/forward.
+          Without it a tap on a tab landed the visitor part-way down the next
+          page, at whatever offset the previous one happened to be scrolled. */}
+      <ScrollRestoration />
+      <RouteChrome />
+      <ErrorBoundary key={pathname}>
+        <Suspense fallback={<PageSkeleton />}>
+          <Outlet />
+        </Suspense>
+      </ErrorBoundary>
       {showTabs ? <TabBar /> : null}
     </AppShell>
   );

@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.web.json",
     "api:dev": "npm --prefix apps/api run dev",
     "api:deploy": "npm --prefix apps/api run deploy",
-    "legacy:mobile": "npm --prefix apps/mobile run start"
+    "legacy:mobile": "npm --prefix apps/mobile run start",
+    "deploy": "npm run build && wrangler deploy --env production",
+    "deploy:preview": "npm run build && wrangler versions upload --env production"
   },
   "devDependencies": {
     "turbo": "^2.5.3",
