@@ -140,5 +140,5 @@ const styles = StyleSheet.create({
   srsNext: { ...typography.body.sm, color: colors.text.muted },
   writer: { marginTop: spacing.lg, width: '100%', alignItems: 'center', gap: spacing.sm },
   sec: { ...typography.heading.sm, color: colors.text.primary },
-  err: { ...typography.body.md, color: colors.accent.pink, padding: spacing.md },
+  err: { ...typography.body.md, color: colors.error, padding: spacing.md },
 });

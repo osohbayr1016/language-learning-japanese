@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors, radius, spacing, typography } from '../../theme';
+import { SectionHeading, Touchable } from '../../primitives';
+import { colors, radius, shadows, spacing, tint, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 
 type Item = {
@@ -17,7 +18,7 @@ type Item = {
 const ITEMS: Item[] = [
   { key: 'study', title: mn.tabs.study, icon: 'book', color: colors.accent.blue, href: '/(tabs)/study' },
   { key: 'games', title: mn.tabs.games, icon: 'game-controller', color: colors.accent.purple, href: '/(tabs)/games' },
-  { key: 'cartoons', title: mn.tabs.cartoons, icon: 'play-circle', color: colors.accent.pink, href: '/(tabs)/cartoons' },
+  { key: 'kanji', title: mn.tabs.kanji, icon: 'language', color: colors.accent.pink, href: '/(tabs)/kanji' },
 ];
 
 export function ExploreRow() {
@@ -25,21 +26,28 @@ export function ExploreRow() {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>{mn.home.moreShortcuts}</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroller}>
+      <SectionHeading title={mn.home.moreShortcuts} />
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.scroller}
+      >
         {ITEMS.map((it) => (
-          <Pressable
+          <Touchable
             key={it.key}
-            accessibilityRole="button"
             accessibilityLabel={it.title}
-            style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
             onPress={() => router.push(it.href as never)}
+            hoverLift={3}
+            style={styles.tile}
+            hoveredStyle={{ borderColor: it.color, backgroundColor: tint(it.color, 0.05) }}
           >
-            <View style={[styles.iconBox, { backgroundColor: `${it.color}22` }]}>
+            <View style={[styles.iconBox, { backgroundColor: tint(it.color, 0.12) }]}>
               <Ionicons name={it.icon} size={24} color={it.color} />
             </View>
-            <Text style={styles.label} numberOfLines={1}>{it.title}</Text>
-          </Pressable>
+            <Text style={styles.label} numberOfLines={1}>
+              {it.title}
+            </Text>
+          </Touchable>
         ))}
       </ScrollView>
     </View>
@@ -48,19 +56,18 @@ export function ExploreRow() {
 
 const styles = StyleSheet.create({
   section: { marginBottom: spacing.lg },
-  title: { ...typography.heading.md, color: colors.text.primary, marginBottom: spacing.md },
-  scroller: { gap: spacing.sm, paddingRight: spacing.md },
+  scroller: { gap: spacing.sm, paddingRight: spacing.md, paddingBottom: spacing.xs },
   tile: {
     width: 110,
     backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.md,
     alignItems: 'center',
     gap: spacing.sm,
+    ...shadows.sm,
   },
-  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
   iconBox: {
     width: 44,
     height: 44,
@@ -68,5 +75,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  label: { ...typography.body.sm, color: colors.text.primary, textAlign: 'center' },
+  label: { ...typography.body.sm, fontWeight: '700', color: colors.text.primary, textAlign: 'center' },
 });

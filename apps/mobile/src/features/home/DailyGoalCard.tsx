@@ -12,6 +12,8 @@ type Props = {
 
 export function DailyGoalCard({ totalXp, goal }: Props) {
   const todayProgress = totalXp % goal;
+  const level = Math.floor(totalXp / Math.max(1, goal)) + 1;
+  const levelGoal = level * goal;
 
   return (
     <Card padding="lg" variant="elevated" style={styles.card}>
@@ -21,7 +23,7 @@ export function DailyGoalCard({ totalXp, goal }: Props) {
           <Text style={styles.label}>{mn.home.dailyGoal}</Text>
           <Text style={styles.subtitle}>Өнөөдөр {todayProgress} XP цуглуулсан</Text>
           <View style={styles.bar}>
-            <XpBar xp={totalXp} goal={goal * Math.ceil(totalXp / Math.max(1, goal) + 1)} label="Нийт XP" />
+            <XpBar xp={totalXp} goal={levelGoal} label={`Түвшин ${level}`} />
           </View>
         </View>
       </View>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { MandarinSpeechCard } from '../../../components/practice/MandarinSpeechCard';
+import { JapaneseSpeechCard } from '../../../components/practice/JapaneseSpeechCard';
 import type { Exercise } from '../types';
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 
 export function SaySentence({ exercise, disabled, onAnswer }: Props) {
   return (
-    <MandarinSpeechCard
+    <JapaneseSpeechCard
       word={exercise.word}
       disabled={disabled}
       speechPrompt="example"

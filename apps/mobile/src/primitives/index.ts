@@ -6,3 +6,6 @@ export { ProgressBar } from './ProgressBar';
 export { Sheet } from './Sheet';
 export { Input } from './Input';
 export { Dialog } from './Dialog';
+export { Touchable, fireHaptic, type HapticStrength } from './Touchable';
+export { SectionHeading } from './SectionHeading';
+export { HeroCard } from './HeroCard';

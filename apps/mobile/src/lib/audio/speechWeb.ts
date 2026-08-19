@@ -14,12 +14,14 @@ type RecInstance = {
   abort: () => void;
 };
 
+type WebAlternative = { transcript: string; confidence?: number };
+
+/** Each result is array-like over its alternatives, ranked best-first. */
+type WebSpeechResult = ArrayLike<WebAlternative> & { isFinal: boolean };
+
 type WebSpeechResultEvent = {
   resultIndex: number;
-  results: ArrayLike<{
-    0: { transcript: string; confidence?: number };
-    isFinal: boolean;
-  }>;
+  results: ArrayLike<WebSpeechResult>;
 };
 
 type RecCtor = new () => RecInstance;
@@ -63,20 +65,23 @@ export type WebRecHandle = { stop: () => void; abort: () => void };
 export function startWebContinuousSession(
   onStart: () => void,
   onInterim: (preview: string) => void,
-  onFinal: (text: string, confidence: number) => void,
+  onFinal: (text: string, confidence: number, alternatives: string[]) => void,
   onError: (msg: string) => void,
   onSessionEnd: () => void
 ): WebRecHandle | null {
   const Ctor = getWebSpeechCtor();
   if (!Ctor) return null;
   const rec = new Ctor();
-  rec.lang = 'zh-CN';
+  rec.lang = 'ja-JP';
   rec.interimResults = true;
   rec.maxAlternatives = 3;
   rec.continuous = true;
 
   let finalBuf = '';
   let lastPreview = '';
+  /** Text committed before the newest final segment, and that segment's hypotheses. */
+  let beforeLastFinal = '';
+  let lastFinalAlts: string[] = [];
 
   rec.onstart = () => onStart();
   rec.onerror = (e: { error: string }) => {
@@ -99,7 +104,10 @@ export function startWebContinuousSession(
   };
   rec.onend = () => {
     const text = (lastPreview || finalBuf).trim();
-    if (text) onFinal(text, 0);
+    const alternatives = lastFinalAlts
+      .map((alt) => (beforeLastFinal + alt).trim())
+      .filter((alt) => alt && alt !== text);
+    if (text) onFinal(text, 0, alternatives);
     onSessionEnd();
   };
   rec.onresult = (ev: WebSpeechResultEvent) => {
@@ -108,8 +116,11 @@ export function startWebContinuousSession(
     for (let i = ev.resultIndex; i < n; i++) {
       const seg = ev.results[i];
       const piece = seg[0].transcript;
-      if (seg.isFinal) finalBuf += piece;
-      else interim += piece;
+      if (seg.isFinal) {
+        beforeLastFinal = finalBuf;
+        lastFinalAlts = Array.from({ length: seg.length }, (_, k) => seg[k].transcript);
+        finalBuf += piece;
+      } else interim += piece;
     }
     lastPreview = (finalBuf + interim).trim();
     onInterim(lastPreview);

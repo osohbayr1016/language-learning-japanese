@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors, radius, spacing, typography } from '../../theme';
+import { SectionHeading, Touchable } from '../../primitives';
+import { colors, radius, shadows, spacing, tint, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 
 type Action = {
@@ -25,21 +26,24 @@ export function QuickActions() {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>{mn.home.quickActions}</Text>
+      <SectionHeading title={mn.home.quickActions} />
       <View style={styles.grid}>
         {ACTIONS.map((a) => (
-          <Pressable
+          <Touchable
             key={a.key}
-            accessibilityRole="button"
             accessibilityLabel={a.label}
-            style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
             onPress={() => router.push(a.href as never)}
+            hoverLift={3}
+            style={styles.tile}
+            hoveredStyle={{ borderColor: a.color, backgroundColor: tint(a.color, 0.05) }}
           >
-            <View style={[styles.iconBox, { backgroundColor: `${a.color}22` }]}>
-              <Ionicons name={a.icon} size={26} color={a.color} />
+            <View style={[styles.iconBox, { backgroundColor: tint(a.color, 0.12) }]}>
+              <Ionicons name={a.icon} size={24} color={a.color} />
             </View>
-            <Text style={styles.label}>{a.label}</Text>
-          </Pressable>
+            <Text style={styles.label} numberOfLines={2}>
+              {a.label}
+            </Text>
+          </Touchable>
         ))}
       </View>
     </View>
@@ -48,21 +52,20 @@ export function QuickActions() {
 
 const styles = StyleSheet.create({
   section: { marginBottom: spacing.lg },
-  title: { ...typography.heading.md, color: colors.text.primary, marginBottom: spacing.md },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   tile: {
     flexBasis: '47%',
     flexGrow: 1,
     backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
     padding: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
+    ...shadows.sm,
   },
-  pressed: { opacity: 0.85, transform: [{ scale: 0.99 }] },
   iconBox: {
     width: 44,
     height: 44,

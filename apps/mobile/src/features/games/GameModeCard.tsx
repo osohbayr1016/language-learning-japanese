@@ -1,7 +1,8 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, shadows, spacing, typography } from '../../theme';
+import { Touchable } from '../../primitives';
+import { colors, radius, shadows, spacing, tint, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 
 type Props = {
@@ -14,23 +15,33 @@ type Props = {
 };
 
 export function GameModeCard({ title, subtitle, icon, color, best, onPress }: Props) {
+  const hasBest = best > 0;
+
   return (
-    <Pressable
+    <Touchable
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.card,
-        { borderTopColor: color },
-        pressed && styles.pressed,
-      ]}
+      accessibilityLabel={title}
+      accessibilityHint={
+        hasBest ? `${subtitle}. ${mn.games.bestScore}: ${best}` : subtitle
+      }
+      hoverLift={4}
+      style={[styles.card, { borderTopColor: color }]}
+      hoveredStyle={{ backgroundColor: tint(color, 0.05) }}
     >
+      {/* Every accent is >= 4.5:1 on white, so a white glyph on the solid fill
+          reads properly — the old light-peach fill made this icon invisible. */}
       <View style={[styles.iconBox, { backgroundColor: color }]}>
-        <Ionicons name={icon} size={28} color="#FFFFFF" />
+        <Ionicons name={icon} size={26} color="#FFFFFF" />
       </View>
-      <Text style={styles.title} numberOfLines={1}>{title}</Text>
-      <Text style={styles.subtitle} numberOfLines={2}>{subtitle}</Text>
+      <Text style={styles.title} numberOfLines={1}>
+        {title}
+      </Text>
+      <Text style={styles.subtitle} numberOfLines={2}>
+        {subtitle}
+      </Text>
       <View style={styles.footer}>
-        {best > 0 ? (
-          <View style={[styles.badge, { backgroundColor: `${color}1A` }]}>
+        {hasBest ? (
+          <View style={[styles.badge, { backgroundColor: tint(color, 0.12) }]}>
             <Ionicons name="trophy" size={12} color={color} />
             <Text style={[styles.badgeLabel, { color }]}>{best}</Text>
           </View>
@@ -40,7 +51,7 @@ export function GameModeCard({ title, subtitle, icon, color, best, onPress }: Pr
           </View>
         )}
       </View>
-    </Pressable>
+    </Touchable>
   );
 }
 
@@ -50,14 +61,13 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
-    borderTopWidth: 6,
+    borderTopWidth: 5,
     padding: spacing.md,
     minHeight: 180,
     ...shadows.sm,
   },
-  pressed: { opacity: 0.92, transform: [{ scale: 0.98 }] },
   iconBox: {
     width: 52,
     height: 52,
@@ -78,11 +88,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.full,
   },
   badgeLabel: { fontSize: 12, fontWeight: '800' },
-  badgeNew: { backgroundColor: colors.bg.secondary },
+  badgeNew: { backgroundColor: colors.soft.brand },
   badgeNewLabel: {
-    fontSize: 10,
+    ...typography.body.xs,
     fontWeight: '800',
     letterSpacing: 0.6,
-    color: colors.text.muted,
+    color: colors.brand.primary,
   },
 });

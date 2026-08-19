@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, radius, spacing, tint, typography } from '../../theme';
 
 type Props = {
   days: number | undefined | null;
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    backgroundColor: tint(colors.warning, 0.12),
     borderRadius: radius.full,
     gap: 4,
   },

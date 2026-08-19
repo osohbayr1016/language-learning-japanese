@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../primitives';
-import { colors, radius, spacing, typography, shadows } from '../../theme';
+import { colors, radius, shadows, spacing, tint, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 import { api } from '../../lib/api';
 import type { Word, WordWithProgress } from '../../lib/types';
@@ -242,8 +242,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand.primary + '08',
   },
   cardMastered: {
-    borderColor: '#FFC800',
-    backgroundColor: '#FFC80012',
+    borderColor: colors.accent.amber,
+    backgroundColor: tint(colors.accent.amber, 0.07),
   },
   cardPressed: {
     opacity: 0.7,
@@ -263,7 +263,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.brand.primary,
   },
   badgeMastered: {
-    backgroundColor: '#FFC800',
+    // Was #FFC800: a white star on it sat at 1.55:1 and read as an empty dot.
+    backgroundColor: colors.accent.amber,
   },
   hanzi: {
     fontSize: 30,

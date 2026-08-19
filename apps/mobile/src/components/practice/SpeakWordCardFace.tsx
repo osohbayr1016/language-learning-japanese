@@ -7,9 +7,10 @@ import { colors, radius, spacing, typography } from '../../theme';
 
 type Props = {
   word: Word;
-  hanzi: string;
-  pinyin: string;
-  tones: string | null;
+  /** Written form the learner is asked to say. */
+  japanese: string;
+  /** Romaji reading shown under it. */
+  reading: string;
   exampleAside: string | null;
   pronounceStyle?: ViewStyle;
   /** When false, hide Mongolian gloss and the MN audio shortcut on pronounce controls. */
@@ -18,17 +19,16 @@ type Props = {
 
 export function SpeakWordCardFace({
   word,
-  hanzi,
-  pinyin,
-  tones,
+  japanese,
+  reading,
   exampleAside,
   pronounceStyle,
   showMongolianMeaning = true,
 }: Props) {
   return (
     <View style={styles.card}>
-      <ToneColoredText hanzi={hanzi} tones={tones ?? undefined} size="md" />
-      <PinyinRow pinyin={pinyin} size="md" />
+      <ToneColoredText hanzi={japanese} size="md" />
+      <PinyinRow pinyin={reading} size="md" />
       {exampleAside ? <Text style={styles.exampleHint}>{exampleAside}</Text> : null}
       {showMongolianMeaning ? (
         <Text style={styles.translation}>{word.example_mn ?? word.meaning_mn}</Text>
@@ -37,7 +37,7 @@ export function SpeakWordCardFace({
         wordId={word.id}
         meaningMn={showMongolianMeaning ? word.meaning_mn : undefined}
         wordHanzi={word.kanji}
-        displayText={hanzi}
+        displayText={japanese}
         size="md"
         style={pronounceStyle ?? styles.pronounce}
       />

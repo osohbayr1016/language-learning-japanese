@@ -1,122 +1,131 @@
-import { stripToneMarks } from '../tones';
 import {
   alignTargetCharScores,
   levenshteinChars,
-  syllableRanges,
-  weightedPinyinRatio,
+  moraRanges,
 } from './speechScoringAlign';
-import { extractHanChars, stripHanForRomanization, zhNorm } from './speechScoringNormalize';
+import {
+  extractJapaneseChars,
+  foldReading,
+  jaNorm,
+  kanaMora,
+  romajiChars,
+  romajiTokens,
+  toHiragana,
+} from './speechScoringNormalize';
 
-function syllables(py: string): string[] {
-  const s = stripToneMarks(py);
-  return s.match(/[a-zü]+/gi)?.map((t) => t.toLowerCase()) ?? [];
-}
-
-function lcsLen(a: string[], b: string[]): number {
-  const m = a.length;
-  const n = b.length;
-  const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (a[i - 1] === b[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;
-      else dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-    }
-  }
-  return dp[m][n];
-}
-
-function syllableDice(spoken: string[], target: string[]): number {
-  if (target.length === 0) return spoken.length === 0 ? 1 : 0;
-  if (spoken.length === 0) return 0;
-  const l = lcsLen(spoken, target);
-  return (2 * l) / (spoken.length + target.length);
-}
+export type SpeechTarget = {
+  /** Written form on the card — kanji and kana as the learner sees it. */
+  jp: string;
+  /** Kana reading of that written form, when the word has one. */
+  kana: string;
+  /** Romaji reading, used when the recognizer hands back latin text. */
+  romaji: string;
+};
 
 export type CharSpeakGrade = {
   char: string;
   scorePercent: number;
-  pinyinPart: string;
+  /** Mora of the reading that belong to this character. */
+  readingPart: string;
 };
 
 export type UtteranceScore = {
   ratio: number;
   points: number;
   pass: boolean;
-  hanziRatio: number;
-  pinyinRatio: number;
+  /** Match against the written form (kanji + kana). */
+  surfaceRatio: number;
+  /** Match against the pronunciation (kana reading, or romaji). */
+  readingRatio: number;
   charGrades: CharSpeakGrade[];
   finalPercent: number;
+  /** Recognizer hypothesis this score was computed from. */
+  matchedTranscript: string;
 };
 
-export function scoreMandarinUtterance(
-  spokenRaw: string,
-  targetZh: string,
-  targetPinyinRaw: string
-): UtteranceScore {
-  const spoken = spokenRaw.normalize('NFC').trim();
-  const targetChars = Array.from(zhNorm(targetZh));
-  const spokenHanChars = extractHanChars(spoken);
-  const spokenCjk = spokenHanChars.join('');
+const PASS_RATIO = 0.62;
 
-  const targetTok = syllables(targetPinyinRaw);
-  const spokenTok = syllables(stripHanForRomanization(spokenRaw));
+/** Blend of per-character alignment and whole-string edit distance, 0…1. */
+function similarity(spoken: string[], target: string[]): number {
+  if (target.length === 0 || spoken.length === 0) return 0;
+  const seq = 1 - levenshteinChars(spoken, target) / Math.max(spoken.length, target.length);
+  const scores = alignTargetCharScores(spoken, target);
+  const mean = scores.reduce((a, b) => a + b, 0) / target.length;
+  return Math.max(0, Math.min(1, 0.5 * mean + 0.5 * seq));
+}
 
-  const maxLen = Math.max(spokenHanChars.length, targetChars.length, 1);
-  const hanziRatio =
-    !targetChars.length || !spokenCjk
-      ? 0
-      : 1 - levenshteinChars(spokenHanChars, targetChars) / maxLen;
+/**
+ * Score one Japanese utterance against a target word or sentence.
+ *
+ * A `ja-JP` recognizer chooses its own orthography, so the same correct answer
+ * can arrive as 食べる or たべる. Surface, reading and romaji are scored
+ * separately and the best of the three wins — a learner is never penalised for
+ * a transcription choice they had no control over.
+ */
+export function scoreJapaneseUtterance(spokenRaw: string, target: SpeechTarget): UtteranceScore {
+  const targetChars = Array.from(jaNorm(target.jp));
+  const spokenChars = extractJapaneseChars(spokenRaw);
 
-  const charScores = targetChars.length ? alignTargetCharScores(spokenHanChars, targetChars) : [];
-  const ranges = syllableRanges(targetTok.length, targetChars.length);
-  const nC = targetChars.length;
+  const targetSurface = Array.from(toHiragana(targetChars.join('')));
+  const spokenSurface = Array.from(toHiragana(spokenChars.join('')));
+  const surfaceRatio = similarity(spokenSurface, targetSurface);
 
-  const meanChar = nC === 0 ? 0 : charScores.reduce((a, b) => a + b, 0) / nC;
+  const targetReading = Array.from(foldReading(target.kana));
+  const kanaRatio = targetReading.length
+    ? similarity(Array.from(foldReading(spokenChars.join(''))), targetReading)
+    : 0;
 
-  let pinyinRatio = 0;
-  if (targetTok.length === 0) pinyinRatio = meanChar;
-  else if (spokenTok.length > 0) pinyinRatio = syllableDice(spokenTok, targetTok);
-  else pinyinRatio = weightedPinyinRatio(charScores, ranges, targetTok.length);
+  const targetRomaji = romajiChars(target.romaji);
+  const spokenRomaji = romajiChars(spokenRaw);
+  const romajiRatio = similarity(spokenRomaji, targetRomaji);
 
-  const seqSim =
-    !targetChars.length || !spokenCjk
-      ? 0
-      : 1 - levenshteinChars(spokenHanChars, targetChars) / maxLen;
-
-  const hasCjk = spokenCjk.length > 0;
-  let ratio: number;
-  if (hasCjk && nC > 0) {
-    const charSeq = 0.5 * meanChar + 0.5 * seqSim;
-    ratio =
-      spokenTok.length > 0 && targetTok.length > 0
-        ? Math.max(charSeq, pinyinRatio * 0.84)
-        : charSeq;
-  } else if (spokenTok.length > 0 && targetTok.length > 0) {
-    ratio = Math.max(pinyinRatio, hanziRatio * 0.48);
-  } else {
-    ratio = 0;
-  }
-
+  const readingRatio = Math.max(kanaRatio, romajiRatio);
+  const ratio = Math.max(surfaceRatio, readingRatio);
   const points = Math.max(0, Math.min(100, Math.round(ratio * 100)));
-  const pass = ratio >= 0.62;
 
+  const mora = target.kana ? kanaMora(target.kana) : romajiTokens(target.romaji);
+  const ranges = moraRanges(mora.length, targetChars.length);
+  const charScores = targetChars.length ? alignTargetCharScores(spokenSurface, targetSurface) : [];
   const charGrades: CharSpeakGrade[] = targetChars.map((ch, j) => {
     const [a, b] = ranges[j] ?? [0, 0];
-    const slice = targetTok.slice(a, b);
     return {
       char: ch,
       scorePercent: Math.round((charScores[j] ?? 0) * 100),
-      pinyinPart: slice.join(' '),
+      readingPart: mora.slice(a, b).join(''),
     };
   });
 
   return {
     ratio,
     points,
-    pass,
-    hanziRatio,
-    pinyinRatio,
+    pass: ratio >= PASS_RATIO,
+    surfaceRatio,
+    readingRatio,
     charGrades,
     finalPercent: points,
+    matchedTranscript: spokenRaw.trim(),
   };
+}
+
+/**
+ * Score every hypothesis the recognizer offered and keep the best one.
+ *
+ * Japanese is dense with homophones (人生 / 人性, 一生 / 一升), so the top
+ * hypothesis is often the right sounds written as the wrong word. The lower
+ * alternatives usually carry the intended spelling.
+ */
+export function scoreBestJapaneseUtterance(
+  candidates: readonly string[],
+  target: SpeechTarget
+): UtteranceScore {
+  const seen = new Set<string>();
+  let best: UtteranceScore | null = null;
+  for (const candidate of candidates) {
+    const text = candidate.trim();
+    if (!text || seen.has(text)) continue;
+    seen.add(text);
+    const score = scoreJapaneseUtterance(text, target);
+    if (!best || score.ratio > best.ratio) best = score;
+  }
+  return best ?? scoreJapaneseUtterance('', target);
 }

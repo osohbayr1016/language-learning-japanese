@@ -1,7 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ToneColoredText } from '../../../components/hanzi';
-import { colors, radius, spacing, typography } from '../../../theme';
+import { Touchable } from '../../../primitives';
+import { colors, motion, radius, spacing, tint, typography } from '../../../theme';
 import type { WordWithProgress } from '../../../lib/types';
 
 type State = 'idle' | 'correct' | 'wrong' | 'reveal';
@@ -22,23 +24,41 @@ export function AnswerOption({ word, show, state, onPress }: Props) {
   };
 
   const label = show === 'jp' ? word.kanji : word.meaning_mn;
+  const locked = state !== 'idle';
 
   return (
-    <Pressable
-      accessibilityRole="button"
+    <Touchable
       accessibilityLabel={label}
+      accessibilityState={{ disabled: locked }}
       onPress={onPress}
-      disabled={state !== 'idle'}
+      disabled={locked}
+      // This is the single most-tapped control in the app and previously had no
+      // press state at all — taps registered with zero visible acknowledgement.
+      haptic={state === 'idle' ? 'light' : 'none'}
+      scaleTo={motion.scale.press}
+      hoverLift={locked ? 0 : 2}
+      hoverShadow={!locked}
       style={[styles.btn, stateStyles[state]]}
+      hoveredStyle={!locked ? styles.hovered : undefined}
+      pressedStyle={!locked ? styles.pressed : undefined}
     >
-      {show === 'jp' ? (
-        <View style={styles.row}>
-          <ToneColoredText hanzi={word.kanji} size="sm" align="left" />
+      <View style={styles.row}>
+        <View style={styles.body}>
+          {show === 'jp' ? (
+            <ToneColoredText hanzi={word.kanji} size="sm" align="left" />
+          ) : (
+            <Text style={styles.text}>{word.meaning_mn}</Text>
+          )}
         </View>
-      ) : (
-        <Text style={styles.text}>{word.meaning_mn}</Text>
-      )}
-    </Pressable>
+        {/* A shape as well as a colour, so right/wrong doesn't rely on hue alone. */}
+        {state === 'correct' || state === 'reveal' ? (
+          <Ionicons name="checkmark-circle" size={22} color={colors.success} />
+        ) : null}
+        {state === 'wrong' ? (
+          <Ionicons name="close-circle" size={22} color={colors.error} />
+        ) : null}
+      </View>
+    </Touchable>
   );
 }
 
@@ -48,12 +68,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radius.md,
     borderWidth: 2,
+    borderBottomWidth: 4,
     marginBottom: spacing.sm,
   },
-  row: { flexDirection: 'row', alignItems: 'center' },
-  idle: { backgroundColor: colors.bg.card, borderColor: colors.border },
-  correct: { backgroundColor: 'rgba(16, 185, 129, 0.16)', borderColor: colors.success },
-  wrong: { backgroundColor: 'rgba(239, 68, 68, 0.16)', borderColor: colors.error },
-  reveal: { backgroundColor: 'rgba(16, 185, 129, 0.08)', borderColor: colors.success },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  body: { flex: 1 },
+  hovered: { borderColor: colors.brand.primary, backgroundColor: colors.soft.brand },
+  pressed: { borderBottomWidth: 2, marginBottom: spacing.sm + 2 },
+  idle: { backgroundColor: colors.bg.card, borderColor: colors.borderStrong },
+  correct: { backgroundColor: tint(colors.success, 0.14), borderColor: colors.success },
+  wrong: { backgroundColor: tint(colors.error, 0.12), borderColor: colors.error },
+  reveal: { backgroundColor: tint(colors.success, 0.08), borderColor: colors.success },
   text: { ...typography.heading.sm, color: colors.text.primary },
 });

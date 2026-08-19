@@ -89,7 +89,13 @@ export default function RootLayout() {
 
   return (
     <GestureHandlerRootView
-      style={{ flex: 1, backgroundColor: colors.bg.primary }}
+      // Transparent on web so the page backdrop behind the app column shows.
+      // Painting it white here covered the whole viewport and made the desktop
+      // frame invisible.
+      style={{
+        flex: 1,
+        backgroundColor: Platform.OS === "web" ? "transparent" : colors.bg.primary,
+      }}
     >
       <ThemeProvider value={navTheme}>
         <AuthProvider>

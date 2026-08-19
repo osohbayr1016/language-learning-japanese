@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
-import { colors, radius } from '../theme';
+import { Animated, Easing, StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
+import { colors, motion, radius } from '../theme';
 
 type Props = {
   value: number;
@@ -16,7 +16,7 @@ export function ProgressBar({
   value,
   max = 100,
   height = 8,
-  color = colors.accent.purple,
+  color = colors.brand.primary,
   trackColor = colors.bg.elevated,
   rounded = true,
   style,
@@ -27,7 +27,8 @@ export function ProgressBar({
   useEffect(() => {
     Animated.timing(progress, {
       toValue: pct,
-      duration: 600,
+      duration: motion.duration.lazy,
+      easing: Easing.out(Easing.cubic),
       useNativeDriver: false,
     }).start();
   }, [pct, progress]);

@@ -1,15 +1,19 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { useNativeSpeechEvent } from './speechNative';
-import type { SpeechResult, SpeechState } from './speechTypes';
+import { EMPTY_SPEECH_BUFFER } from './speechTypes';
+import type { SpeechBuffer, SpeechResult, SpeechState } from './speechTypes';
+
+type Setters = {
+  setLiveTranscript: (s: string) => void;
+  setResult: Dispatch<SetStateAction<SpeechResult | null>>;
+  setErrorMessage: (s: string | null) => void;
+  setState: Dispatch<SetStateAction<SpeechState>>;
+};
 
 export function useNativeContinuousBindings(
   clearAutoStop: () => void,
-  nativeCommittedRef: MutableRefObject<string>,
-  nativeLastPreviewRef: MutableRefObject<string>,
-  setLiveTranscript: (s: string) => void,
-  setResult: Dispatch<SetStateAction<SpeechResult | null>>,
-  setErrorMessage: (s: string | null) => void,
-  setState: Dispatch<SetStateAction<SpeechState>>
+  buffer: MutableRefObject<SpeechBuffer>,
+  { setLiveTranscript, setResult, setErrorMessage, setState }: Setters
 ): void {
   useNativeSpeechEvent('start', () => {
     setState('listening');
@@ -17,12 +21,12 @@ export function useNativeContinuousBindings(
   });
   useNativeSpeechEvent('end', () => {
     clearAutoStop();
-    const t =
-      nativeCommittedRef.current.trim() || nativeLastPreviewRef.current.trim();
-    nativeCommittedRef.current = '';
-    nativeLastPreviewRef.current = '';
-    if (t) {
-      setResult({ transcript: t, confidence: 0 });
+    const buf = buffer.current;
+    const transcript = buf.committed.trim() || buf.preview.trim();
+    const alternatives = buf.alternatives.filter((a) => a && a !== transcript);
+    buffer.current = { ...EMPTY_SPEECH_BUFFER };
+    if (transcript) {
+      setResult({ transcript, confidence: 0, alternatives });
       setLiveTranscript('');
       setState('idle');
     } else {
@@ -31,15 +35,24 @@ export function useNativeContinuousBindings(
   });
   useNativeSpeechEvent('result', (event) => {
     const e = event as { isFinal: boolean; results?: SpeechResult[] };
-    const top = e.results?.[0];
+    const hypotheses = e.results ?? [];
+    const top = hypotheses[0];
     if (!top?.transcript) return;
+    const buf = buffer.current;
     if (e.isFinal) {
-      nativeCommittedRef.current = `${nativeCommittedRef.current} ${top.transcript}`.trim();
-      nativeLastPreviewRef.current = nativeCommittedRef.current;
-      setLiveTranscript(nativeCommittedRef.current);
+      const committed = `${buf.committed} ${top.transcript}`.trim();
+      buffer.current = {
+        committed,
+        preview: committed,
+        // Keep the whole utterance for each hypothesis of this final segment.
+        alternatives: hypotheses
+          .map((h) => `${buf.committed} ${h.transcript ?? ''}`.trim())
+          .filter(Boolean),
+      };
+      setLiveTranscript(committed);
     } else {
-      const preview = `${nativeCommittedRef.current} ${top.transcript}`.trim();
-      nativeLastPreviewRef.current = preview;
+      const preview = `${buf.committed} ${top.transcript}`.trim();
+      buffer.current = { ...buf, preview };
       setLiveTranscript(preview);
     }
   });

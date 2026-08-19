@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Screen } from '../../primitives';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
-import { colors } from '../../theme';
+import { colors, radius, spacing, tint, typography } from '../../theme';
 import { AuthHeader } from './AuthHeader';
 import { AuthForm } from './AuthForm';
 import { AuthFooter } from './AuthFooter';
@@ -50,12 +50,17 @@ export default function LoginScreen() {
 
 const styles = StyleSheet.create({
   banner: {
-    backgroundColor: 'rgba(27, 176, 246, 0.14)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: tint(colors.info, 0.1),
     borderWidth: 1,
-    borderColor: 'rgba(27, 176, 246, 0.4)',
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 8,
+    borderColor: tint(colors.info, 0.35),
+    borderLeftWidth: 4,
+    borderLeftColor: colors.info,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
-  bannerText: { fontSize: 15, color: colors.text.primary, fontWeight: '600' },
+  bannerText: { ...typography.body.md, color: colors.text.primary, fontWeight: '600', flex: 1 },
 });

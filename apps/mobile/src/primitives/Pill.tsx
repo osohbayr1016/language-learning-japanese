@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { colors, radius, spacing, typography } from '../theme';
+import { StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { colors, motion, radius, spacing, tint, typography } from '../theme';
+import { Touchable } from './Touchable';
 
 type Props = {
   label: string;
@@ -8,7 +9,10 @@ type Props = {
   filled?: boolean;
   size?: 'sm' | 'md';
   onPress?: () => void;
+  /** Renders the pressed/selected state — use for filter chips. */
+  selected?: boolean;
   leftIcon?: React.ReactNode;
+  accessibilityLabel?: string;
   style?: ViewStyle;
 };
 
@@ -18,9 +22,12 @@ export function Pill({
   filled = false,
   size = 'sm',
   onPress,
+  selected,
   leftIcon,
+  accessibilityLabel,
   style,
 }: Props) {
+  const isFilled = filled || selected === true;
   const padV = size === 'sm' ? 4 : 8;
   const padH = size === 'sm' ? spacing.sm : spacing.md;
 
@@ -28,9 +35,11 @@ export function Pill({
     paddingHorizontal: padH,
     paddingVertical: padV,
     borderRadius: radius.full,
-    backgroundColor: filled ? color : `${color}22`,
-    borderWidth: filled ? 0 : 1,
-    borderColor: color,
+    // Tint at 12% keeps the label readable; the old `${color}22` sat under
+    // dark text and produced muddy, near-illegible chips.
+    backgroundColor: isFilled ? color : tint(color, 0.12),
+    borderWidth: 1,
+    borderColor: isFilled ? color : tint(color, 0.45),
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
@@ -38,22 +47,33 @@ export function Pill({
 
   const labelStyle = {
     ...typography.body.sm,
-    color: filled ? colors.text.primary : color,
-    fontWeight: '600' as const,
+    // Filled pills use every accent at >= 4.5:1, so white always reads.
+    color: isFilled ? colors.text.inverse : color,
+    fontWeight: '700' as const,
   };
 
   const Inner = (
     <View style={composed}>
-      {leftIcon ? <View style={{ marginRight: 4 }}>{leftIcon}</View> : null}
-      <Text style={labelStyle}>{label}</Text>
+      {leftIcon ? <View style={styles.icon}>{leftIcon}</View> : null}
+      <Text style={labelStyle} numberOfLines={1}>
+        {label}
+      </Text>
     </View>
   );
 
   if (onPress) {
     return (
-      <Pressable onPress={onPress} style={({ pressed }) => [pressed && styles.pressed, style]}>
+      <Touchable
+        onPress={onPress}
+        accessibilityLabel={accessibilityLabel ?? label}
+        accessibilityState={selected === undefined ? undefined : { selected }}
+        scaleTo={motion.scale.pressSm}
+        hoverLift={1}
+        hoverShadow={false}
+        style={style}
+      >
         {Inner}
-      </Pressable>
+      </Touchable>
     );
   }
 
@@ -61,5 +81,5 @@ export function Pill({
 }
 
 const styles = StyleSheet.create({
-  pressed: { opacity: 0.8 },
+  icon: { marginRight: 4 },
 });

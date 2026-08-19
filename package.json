@@ -3,25 +3,31 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "type-check": "turbo run type-check",
-    "preview:web": "pnpm --filter @japanese-learning/web preview",
-    "serve:web": "pnpm --filter @japanese-learning/web serve",
-    "release:web": "pnpm --filter @japanese-learning/web release",
-    "eas:build:ios": "pnpm --filter mobile run eas:build:ios",
-    "eas:build:android": "pnpm --filter mobile run eas:build:android",
-    "eas:build:preview": "pnpm --filter mobile run eas:build:preview",
-    "mobile:doctor": "pnpm --filter mobile run doctor"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.web.json",
+    "api:dev": "npm --prefix apps/api run dev",
+    "api:deploy": "npm --prefix apps/api run deploy",
+    "legacy:mobile": "npm --prefix apps/mobile run start"
   },
   "devDependencies": {
     "turbo": "^2.5.3",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "@vitejs/plugin-react": "^5.0.0",
+    "vite": "^7.0.0",
+    "@types/react": "~19.1.0",
+    "@types/react-dom": "~19.1.0"
   },
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=10.0.0"
   },
-  "packageManager": "pnpm@10.33.3"
+  "packageManager": "pnpm@10.33.3",
+  "dependencies": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-router-dom": "^7.1.1",
+    "react-native-web": "^0.21.2"
+  }
 }

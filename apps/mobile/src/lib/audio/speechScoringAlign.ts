@@ -71,32 +71,18 @@ export function alignTargetCharScores(spokenChars: string[], targetChars: string
   return scores;
 }
 
-/** [start, end) syllable indices for each target character. */
-export function syllableRanges(nSyl: number, nChar: number): [number, number][] {
+/** [start, end) mora indices of the reading that belong to each target character. */
+export function moraRanges(nMora: number, nChar: number): [number, number][] {
   if (nChar === 0) return [];
-  if (nSyl === 0) return Array.from({ length: nChar }, () => [0, 0] as [number, number]);
-  if (nSyl >= nChar) {
+  if (nMora === 0) return Array.from({ length: nChar }, () => [0, 0] as [number, number]);
+  if (nMora >= nChar) {
     return Array.from({ length: nChar }, (_, j) => {
-      const a = Math.floor((j * nSyl) / nChar);
-      const b = Math.floor(((j + 1) * nSyl) / nChar);
+      const a = Math.floor((j * nMora) / nChar);
+      const b = Math.floor(((j + 1) * nMora) / nChar);
       return [a, b] as [number, number];
     });
   }
   return Array.from({ length: nChar }, (_, j) =>
-    j < nSyl ? ([j, j + 1] as [number, number]) : ([nSyl, nSyl] as [number, number])
+    j < nMora ? ([j, j + 1] as [number, number]) : ([nMora, nMora] as [number, number])
   );
-}
-
-export function weightedPinyinRatio(
-  charScores: number[],
-  ranges: [number, number][],
-  nSyl: number
-): number {
-  if (nSyl === 0) return 0;
-  let credit = 0;
-  for (let j = 0; j < charScores.length; j++) {
-    const [a, b] = ranges[j] ?? [0, 0];
-    credit += charScores[j] * Math.max(0, b - a);
-  }
-  return credit / nSyl;
 }
