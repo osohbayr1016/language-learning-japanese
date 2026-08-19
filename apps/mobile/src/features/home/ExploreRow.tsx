@@ -16,7 +16,7 @@ type Item = {
 /** Нүүр дээр давхардахгүйгээр зөвхөн таб / төв хаб руу — тоглоом тус бүр Games табнаас. */
 const ITEMS: Item[] = [
   { key: 'study', title: mn.tabs.study, icon: 'book', color: colors.accent.blue, href: '/(tabs)/study' },
-  { key: 'games', title: mn.tabs.games, icon: 'game-controller', color: colors.accent.purple, href: '/(tabs)/games' },
+  { key: 'kana', title: mn.tabs.kana, icon: 'apps', color: colors.accent.purple, href: '/(tabs)/games' },
   { key: 'cartoons', title: mn.tabs.cartoons, icon: 'play-circle', color: colors.accent.pink, href: '/(tabs)/cartoons' },
 ];
 

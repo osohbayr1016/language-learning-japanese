@@ -24,6 +24,8 @@ import {
   saveKanjiActivities,
   type KanjiActivityKey,
 } from './kanjiActivityStorage';
+import { addLearnedKanji } from '../../lib/learnedKanjisStorage';
+import { HanziWriterView, type HanziWriterMode } from '../../components/writing/HanziWriterView';
 
 // ─── Activity Types ───────────────────────────────────────────────────────────
 
@@ -108,6 +110,79 @@ const sp = StyleSheet.create({
   exMn: { ...typography.body.lg, color: colors.brand.primaryDark, textAlign: 'center', fontWeight: '600' },
   noExample: { ...typography.body.md, color: colors.text.muted, textAlign: 'center', paddingVertical: spacing.md },
   btn: { width: '100%' },
+});
+
+// ─── Inline Writing sub-component ─────────────────────────────────────────────
+
+function InlineWriteActivity({ kanji, onComplete }: { kanji: string; onComplete: () => void }) {
+  const [mode, setMode] = useState<HanziWriterMode>('animate');
+  const [quizSuccess, setQuizSuccess] = useState(false);
+  const size = 240;
+
+  return (
+    <View style={wp.wrap}>
+      <View style={wp.modeRow}>
+        <Pressable style={[wp.modeBtn, mode === 'animate' && wp.modeBtnActive]} onPress={() => setMode('animate')}>
+          <Ionicons name="play-circle" size={18} color={mode === 'animate' ? colors.brand.primary : colors.text.secondary} />
+          <Text style={[wp.modeTxt, mode === 'animate' && wp.modeTxtActive]}>Харж сурах</Text>
+        </Pressable>
+        <Pressable style={[wp.modeBtn, mode === 'quiz' && wp.modeBtnActive]} onPress={() => setMode('quiz')}>
+          <Ionicons name="pencil" size={18} color={mode === 'quiz' ? colors.brand.primary : colors.text.secondary} />
+          <Text style={[wp.modeTxt, mode === 'quiz' && wp.modeTxtActive]}>Өөрөө бичих</Text>
+        </Pressable>
+      </View>
+
+      <View style={wp.canvasOuter}>
+        <HanziWriterView
+          key={mode} // re-mount to clear state
+          char={kanji}
+          mode={mode}
+          size={size}
+          strokeColor={colors.brand.primaryDark}
+          outlineColor={colors.border}
+          onEvent={(e) => {
+            if (e.type === 'quizComplete') {
+              setQuizSuccess(true);
+            }
+          }}
+        />
+      </View>
+
+      {mode === 'quiz' && quizSuccess ? (
+        <View style={wp.successBox}>
+          <Text style={wp.successText}>Сайн байна! Зөв бичлээ.</Text>
+          <Button label="Ойлголоо ✓" onPress={onComplete} style={{ width: '100%' }} />
+        </View>
+      ) : mode === 'quiz' ? (
+        <Text style={wp.hint}>Дээрх талбарт хуруугаараа зурж бичнэ үү</Text>
+      ) : null}
+      
+      {mode === 'animate' && (
+        <Button label="Ойлголоо ✓" onPress={onComplete} style={{ width: '100%' }} />
+      )}
+    </View>
+  );
+}
+
+const wp = StyleSheet.create({
+  wrap: { alignItems: 'center', gap: spacing.md },
+  modeRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.xs },
+  modeBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.xs,
+    paddingHorizontal: spacing.md, paddingVertical: spacing.sm,
+    borderRadius: radius.md, borderWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.bg.primary,
+  },
+  modeBtnActive: { borderColor: colors.brand.primary, backgroundColor: colors.brand.primary + '15' },
+  modeTxt: { ...typography.body.sm, color: colors.text.secondary, fontWeight: '600' },
+  modeTxtActive: { color: colors.brand.primary },
+  canvasOuter: {
+    backgroundColor: colors.bg.default, borderRadius: radius.md,
+    padding: spacing.sm, borderWidth: 1, borderColor: colors.border,
+  },
+  hint: { ...typography.body.sm, color: colors.text.muted, textAlign: 'center' },
+  successBox: { width: '100%', alignItems: 'center', gap: spacing.md },
+  successText: { ...typography.heading.sm, color: colors.accent.teal },
 });
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
@@ -199,6 +274,7 @@ export function KanjiDetailScreen() {
         session_type: 'learn',
       };
       await api.user.saveProgress(token, body);
+      await addLearnedKanji(word); // Save to local profile
       await clearKanjiActivities(wordId); // clear session progress after saving
       setDialogContent({ title: '🎉 Амжилттай!', message: `"${word.kanji}" суралцсанаар тэмдэглэгдлээ! +20 XP авлаа.` });
       setDialogVisible(true);
@@ -297,13 +373,6 @@ export function KanjiDetailScreen() {
                 ]}
                 onPress={() => {
                   if (done) return; // already done, tap does nothing
-                  if (act.key === 'write') {
-                    router.push({
-                      pathname: '/study/writer',
-                      params: { forcedId: String(word.id) },
-                    } as never);
-                    return;
-                  }
                   setActiveActivity(isActive ? null : act.key);
                 }}
               >
@@ -342,6 +411,12 @@ export function KanjiDetailScreen() {
                     <ListenSpeakActivity
                       word={word}
                       onComplete={() => void markActivity('listen')}
+                    />
+                  )}
+                  {act.key === 'write' && (
+                    <InlineWriteActivity
+                      kanji={word.kanji}
+                      onComplete={() => void markActivity('write')}
                     />
                   )}
                   {act.key === 'sentence' && (

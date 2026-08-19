@@ -20,8 +20,11 @@ import type { ConfidenceLevel } from "../../../lib/srs/adaptive";
 import { useFlashcardWebKeys } from "../../../hooks/useFlashcardWebKeys";
 import { PinyinToggleWeb } from "../PinyinToggleWeb";
 
-export default function FlashcardScreen() {
-  const { words, loading, error } = useDueWords(15);
+import type { Word } from "@japanese-learning/db";
+
+export default function FlashcardScreen({ onSessionDone, initialWords }: { onSessionDone?: (xp: number, correct: number, total: number, words: Word[]) => void, initialWords?: Word[] } = {}) {
+  const { words: dueWords, loading, error } = useDueWords(15);
+  const words = initialWords || dueWords;
   const session = useSrsRating("flashcard");
   const timer = useAdaptiveTimer();
 
@@ -55,9 +58,9 @@ export default function FlashcardScreen() {
     session.record(
       current.id,
       {
-        ease_factor: current.ease_factor,
-        interval: current.interval,
-        repetitions: current.repetitions,
+        ease_factor: current.ease_factor || 2.5,
+        interval: current.interval || 0,
+        repetitions: current.repetitions || 0,
       },
       { rating, responseMs, confidence: confidence ?? undefined },
     );
@@ -90,7 +93,7 @@ export default function FlashcardScreen() {
     await handleRateRef.current(rating);
   };
 
-  if (loading) {
+  if (loading && !initialWords) {
     return (
       <Screen>
         <View style={styles.center}>
@@ -106,10 +109,16 @@ export default function FlashcardScreen() {
     );
   }
 
-  if (done)
+  if (done) {
+    if (onSessionDone) {
+      // Small timeout to allow state to settle before navigating
+      setTimeout(() => onSessionDone(xp, correctCount, words.length, words), 0);
+      return null;
+    }
     return (
       <SessionDoneScreen xp={xp} total={words.length} correct={correctCount} />
     );
+  }
 
   return (
     <Screen scroll={false}>

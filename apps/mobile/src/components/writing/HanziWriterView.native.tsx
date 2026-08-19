@@ -8,7 +8,7 @@ import type { HanziWriterEvent, HanziWriterHandle, HanziWriterViewProps } from '
 export * from './hanziWriterTypes';
 
 export const HanziWriterView = forwardRef<HanziWriterHandle, HanziWriterViewProps>(function HanziWriterView(
-  { char, mode, size = 280, strokeColor = colors.text.primary, outlineColor = colors.border, onEvent },
+  { char, mode, size = 280, strokeColor = colors.text.primary, outlineColor = colors.border, strokeDataJp = false, onEvent },
   ref
 ) {
   const wvRef = useRef<WebView>(null);
@@ -18,8 +18,8 @@ export const HanziWriterView = forwardRef<HanziWriterHandle, HanziWriterViewProp
   }), []);
 
   const html = useMemo(
-    () => buildHanziWriterHtml(char, mode, colors.bg.card, strokeColor, outlineColor, size, 'rn'),
-    [char, mode, strokeColor, outlineColor, size]
+    () => buildHanziWriterHtml(char, mode, colors.bg.card, strokeColor, outlineColor, size, 'rn', strokeDataJp),
+    [char, mode, strokeColor, outlineColor, size, strokeDataJp]
   );
 
   const onMessage = (e: WebViewMessageEvent) => {

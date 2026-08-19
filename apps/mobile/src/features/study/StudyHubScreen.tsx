@@ -1,19 +1,17 @@
 import React from 'react';
 import { Screen } from '../../primitives';
 import { StudyHubHeader } from './StudyHubHeader';
-import { StudyHero } from './StudyHero';
-import { StudyModeGrid } from './StudyModeGrid';
-
-import { DueWordsSection } from './DueWordsSection';
+import { StudyPathProgressCards } from './StudyPathProgressCards';
+import { AiReadingBanner } from './AiReadingBanner';
+import { StudyCasualWords } from './StudyCasualWords';
 
 export default function StudyHubScreen() {
   return (
     <Screen scroll scrollBottomInset={70}>
       <StudyHubHeader />
-      <StudyHero />
-
-      <StudyModeGrid />
-      <DueWordsSection limit={5} />
+      <StudyPathProgressCards />
+      <AiReadingBanner />
+      <StudyCasualWords />
     </Screen>
   );
 }

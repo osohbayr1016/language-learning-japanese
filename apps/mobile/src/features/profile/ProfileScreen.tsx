@@ -89,6 +89,18 @@ export default function ProfileScreen() {
             onPress: () => router.push('/profile/insights'),
           },
           {
+            key: 'learnedWords',
+            label: 'Сурсан үгнүүд',
+            icon: 'star-outline' as const,
+            onPress: () => router.push('/profile/learned-words' as Href),
+          },
+          {
+            key: 'learnedKanjis',
+            label: 'Сурсан ханз',
+            icon: 'text-outline' as const,
+            onPress: () => router.push('/profile/learned-kanjis' as Href),
+          },
+          {
             key: 'seenWords',
             label: mn.profile.seenWords,
             icon: 'albums-outline',

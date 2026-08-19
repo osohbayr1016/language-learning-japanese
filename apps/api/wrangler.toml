@@ -14,6 +14,9 @@ database_id = "696b88cc-4d5a-4751-b25f-49cc2acfd475"
 binding = "STORAGE"
 bucket_name = "nihongo-mn-media"
 
+[ai]
+binding = "AI"
+
 [vars]
 ENVIRONMENT = "development"
 CORS_ORIGIN = "http://localhost:5173,http://localhost:8081,http://localhost:8085,exp://localhost:8081"
@@ -39,6 +42,9 @@ database_id = "696b88cc-4d5a-4751-b25f-49cc2acfd475"
 [[env.production.r2_buckets]]
 binding = "STORAGE"
 bucket_name = "nihongo-mn-media"
+
+[env.production.ai]
+binding = "AI"
 
 [env.production.vars]
 ENVIRONMENT = "production"

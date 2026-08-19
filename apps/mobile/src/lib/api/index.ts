@@ -11,6 +11,7 @@ import { adminApi } from './admin';
 import { cartoonsAdmin } from './cartoonsAdmin';
 import { grammar } from './grammar';
 import { exams } from './exams';
+import { reading } from './reading';
 
 export const api = {
   auth,
@@ -25,6 +26,7 @@ export const api = {
   grammar,
   exams,
   insights,
+  reading,
   admin: adminApi,
 };
 

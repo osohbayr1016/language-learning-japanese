@@ -10,7 +10,7 @@ const ROUTES: { name: string; label: string; icon: TabIconName; activeIcon: TabI
   { name: 'home', label: mn.tabs.home, icon: 'home-outline', activeIcon: 'home' },
   { name: 'study', label: mn.tabs.study, icon: 'book-outline', activeIcon: 'book' },
   { name: 'kanji', label: mn.tabs.kanji, icon: 'language-outline', activeIcon: 'language' },
-  { name: 'games', label: mn.tabs.games, icon: 'game-controller-outline', activeIcon: 'game-controller' },
+  { name: 'games', label: mn.tabs.kana, icon: 'apps-outline', activeIcon: 'apps' },
   { name: 'profile', label: mn.tabs.profile, icon: 'person-outline', activeIcon: 'person' },
 ];
 

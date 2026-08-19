@@ -4,6 +4,8 @@ export interface Env {
   JWT_SECRET: string;
   CORS_ORIGIN: string;
   ENVIRONMENT: string;
+  GEMINI_API_KEY?: string;
+  AI: any;
 }
 
 export interface JWTPayload {

@@ -12,6 +12,7 @@ export type HanziWriterViewProps = {
   size?: number;
   strokeColor?: string;
   outlineColor?: string;
+  strokeDataJp?: boolean;
   onEvent?: (e: HanziWriterEvent) => void;
 };
 

@@ -8,15 +8,15 @@ import type { HanziWriterEvent, HanziWriterHandle, HanziWriterViewProps } from '
 export * from './hanziWriterTypes';
 
 export const HanziWriterView = forwardRef<HanziWriterHandle, HanziWriterViewProps>(function HanziWriterView(
-  { char, mode, size = 280, strokeColor = colors.text.primary, outlineColor = colors.border, onEvent },
+  { char, mode, size = 280, strokeColor = colors.text.primary, outlineColor = colors.border, strokeDataJp = false, onEvent },
   ref
 ) {
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const htmlRef = useRef('');
 
   const html = useMemo(
-    () => buildHanziWriterHtml(char, mode, colors.bg.card, strokeColor, outlineColor, size, 'parent'),
-    [char, mode, strokeColor, outlineColor, size]
+    () => buildHanziWriterHtml(char, mode, colors.bg.card, strokeColor, outlineColor, size, 'parent', strokeDataJp),
+    [char, mode, strokeColor, outlineColor, size, strokeDataJp]
   );
   htmlRef.current = html;
 

@@ -3,6 +3,7 @@ import { lesson } from './strings/lesson';
 import { insights } from './strings/insights';
 import { study } from './strings/study';
 import { games } from './strings/games';
+import { kana } from './strings/kana';
 
 export const mn = {
   appName: 'Япон Хэл',
@@ -41,8 +42,9 @@ export const mn = {
   tabs: {
     home: 'Нүүр',
     study: 'Давтах',
-    games: 'Тоглоом',
+    kana: 'Кана',
     kanji: 'Канжи',
+    cartoons: 'Кино',
     profile: 'Профайл',
   },
   home: {
@@ -59,6 +61,7 @@ export const mn = {
   },
   study,
   games,
+  kana,
   writer: {
     title: 'Канжи бичих',
     watch: 'Зураас харах',

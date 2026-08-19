@@ -2,7 +2,9 @@ import type { HanziWriterMode } from './hanziWriterTypes';
 
 export type HanziBridge = 'rn' | 'parent';
 
-/** Embedded page for HanziWriter (WebView or iframe srcDoc). */
+/** Embedded page for HanziWriter. `strokeDataJp` loads hiragana/katakana JSON from jsDelivr. */
+const JP_CHAR_DATA_PKG = '@k1low/hanzi-writer-data-jp@0.7.0';
+
 export function buildHanziWriterHtml(
   char: string,
   mode: HanziWriterMode,
@@ -10,7 +12,8 @@ export function buildHanziWriterHtml(
   stroke: string,
   outline: string,
   canvasPx: number,
-  bridge: HanziBridge
+  bridge: HanziBridge,
+  strokeDataJp = false,
 ): string {
   const escaped = char.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
   const px = Math.max(120, Math.floor(canvasPx));
@@ -20,6 +23,10 @@ export function buildHanziWriterHtml(
     bridge === 'rn'
       ? `(m)=>{try{window.ReactNativeWebView&&window.ReactNativeWebView.postMessage(JSON.stringify(m));}catch(e){}}`
       : `(m)=>{try{window.parent.postMessage(JSON.stringify({__hanzi:1,payload:m}),'*');}catch(e){}}`;
+
+  const charDataOpt = strokeDataJp
+    ? `charDataLoader:function(ch,onLoad,onError){var u=encodeURIComponent(ch);fetch('https://cdn.jsdelivr.net/npm/${JP_CHAR_DATA_PKG}/'+u+'.json').then(function(r){if(!r.ok)throw new Error();return r.json();}).then(onLoad).catch(onError);},`
+    : '';
 
   return `<!doctype html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <style>html,body{margin:0;padding:0;background:${bg};width:100%;min-height:${px}px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
@@ -37,6 +44,7 @@ function start(){
   if(!el)return;
   const size=PX;
   writer=HanziWriter.create('t','${escaped}',{
+    ${charDataOpt}
     width:size,height:size,padding:8,
     showOutline:true,showCharacter:${mode === 'show'},
     strokeColor:'${strokeHex}',outlineColor:'${outlineHex}',radicalColor:'${strokeHex}',

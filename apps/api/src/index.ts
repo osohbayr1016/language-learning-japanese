@@ -14,6 +14,7 @@ import lessonRoutes from './routes/lessons';
 import grammarRoutes from './routes/grammar';
 import examRoutes from './routes/exams';
 import insightRoutes from './routes/insights';
+import { readingRouter } from './routes/reading';
 /** Explicit `./routes/admin/index` — do not use `./routes/admin`: a sibling `admin.ts` would shadow this folder and drop `/stats`, `/lesson-tree`, chapters, etc. */
 import adminRoutes from './routes/admin/index';
 import { examImportApp } from './routes/admin/examImportRoutes';
@@ -85,6 +86,7 @@ app.route('/api/lessons', lessonRoutes);
 app.route('/api/grammar', grammarRoutes);
 app.route('/api/exams', examRoutes);
 app.route('/api/insights', insightRoutes);
+app.route('/api/reading', readingRouter);
 app.route('/api/admin/exams', examImportApp);
 app.route('/api/admin', adminRoutes);
 

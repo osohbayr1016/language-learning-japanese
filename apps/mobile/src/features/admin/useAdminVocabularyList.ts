@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api } from '../../lib/api';
-import type { Word } from '../../lib/types';
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { api } from "../../lib/api";
+import type { Word } from "../../lib/types";
 
 const PAGE = 80;
 
 export function useAdminVocabularyList() {
-  const [q, setQ] = useState('');
-  const [debouncedQ, setDebouncedQ] = useState('');
+  const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q.trim()), 350);
     return () => clearTimeout(t);
@@ -27,7 +27,7 @@ export function useAdminVocabularyList() {
       single_char: singleOnly ? (1 as const) : undefined,
       limit: PAGE,
     }),
-    [debouncedQ, hsk, singleOnly]
+    [debouncedQ, hsk, singleOnly],
   );
 
   const loadFresh = useCallback(async () => {
