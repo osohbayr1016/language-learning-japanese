@@ -1,48 +1,84 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { Touchable } from '../../primitives/Touchable';
 import { colors, radius, shadows, spacing, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
-import { useAuth } from '../../context/AuthContext';
+import { useLearnedKanjis } from '../../hooks/useLearnedKanjis';
 
+type Tile = {
+  key: string;
+  glyph?: string;
+  icon?: React.ComponentProps<typeof Ionicons>['name'];
+  title: string;
+  sub: string;
+  color: string;
+  href: string;
+};
+
+/**
+ * The three places a learner goes from the study hub. These used to show
+ * made-up progress bars (45 %, 12 %) that never changed; now each tile shows a
+ * real count where one exists and otherwise just takes you there.
+ */
 export function StudyPathProgressCards() {
-  const { user } = useAuth();
-  // Using user's dashboard stats to calculate progress if available
-  // Fallback to placeholder visual progress
-  const lettersProgress = 0.45; // 45% Example
-  const kanjiProgress = 0.12; // 12% Example
+  const router = useRouter();
+  const { kanjis } = useLearnedKanjis();
+  const learnedKanji = kanjis.length;
+
+  const tiles: Tile[] = [
+    {
+      key: 'kana',
+      glyph: 'あ',
+      title: mn.tabs.kana,
+      sub: 'Хирагана · Катакана',
+      color: colors.accent.blue,
+      href: '/(tabs)/games',
+    },
+    {
+      key: 'kanji',
+      glyph: '漢',
+      title: mn.tabs.kanji,
+      sub: learnedKanji > 0 ? `${learnedKanji} ханз сурсан` : 'N5 ханзууд',
+      color: colors.accent.purple,
+      href: '/(tabs)/kanji',
+    },
+    {
+      key: 'games',
+      icon: 'game-controller',
+      title: mn.tabs.games,
+      sub: 'Тоглож давт',
+      color: colors.accent.pink,
+      href: '/games',
+    },
+  ];
 
   return (
     <View style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.accent.blue + '20' }]}>
-            <Text style={styles.iconChar}>あ</Text>
+      {tiles.map((t) => (
+        <Touchable
+          key={t.key}
+          onPress={() => router.push(t.href as never)}
+          accessibilityLabel={`${t.title}. ${t.sub}`}
+          style={styles.card}
+          hoveredStyle={{ borderColor: t.color }}
+        >
+          <View style={[styles.iconWrap, { backgroundColor: `${t.color}1F` }]}>
+            {t.glyph ? (
+              <Text style={[styles.iconChar, { color: t.color }]}>{t.glyph}</Text>
+            ) : (
+              <Ionicons name={t.icon} size={20} color={t.color} />
+            )}
           </View>
-          <View style={styles.textWrap}>
-            <Text style={styles.title}>Үсэг</Text>
-            <Text style={styles.sub}>Хирагана · Катакана</Text>
-          </View>
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${lettersProgress * 100}%`, backgroundColor: colors.accent.blue }]} />
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <View style={[styles.iconWrap, { backgroundColor: colors.accent.purple + '20' }]}>
-            <Text style={styles.iconChar}>漢</Text>
-          </View>
-          <View style={styles.textWrap}>
-            <Text style={styles.title}>Ханз</Text>
-            <Text style={styles.sub}>Ханзны мэдлэг</Text>
-          </View>
-        </View>
-        <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${kanjiProgress * 100}%`, backgroundColor: colors.accent.purple }]} />
-        </View>
-      </View>
+          <Text style={styles.title} numberOfLines={1}>
+            {t.title}
+          </Text>
+          <Text style={styles.sub} numberOfLines={2}>
+            {t.sub}
+          </Text>
+        </Touchable>
+      ))}
     </View>
   );
 }
@@ -50,56 +86,28 @@ export function StudyPathProgressCards() {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: spacing.md,
+    gap: spacing.sm,
     marginBottom: spacing.lg,
-    paddingHorizontal: spacing.sm,
   },
   card: {
     flex: 1,
     backgroundColor: colors.bg.card,
-    borderRadius: radius.xl,
+    borderRadius: radius.lg,
     padding: spacing.md,
     borderWidth: 1,
     borderColor: colors.border,
+    gap: spacing.xs,
     ...shadows.sm,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-  },
   iconWrap: {
-    width: 36,
-    height: 36,
+    width: 40,
+    height: 40,
     borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: spacing.sm,
+    marginBottom: spacing.xs,
   },
-  iconChar: {
-    ...typography.heading.sm,
-    color: colors.text.primary,
-  },
-  textWrap: {
-    flex: 1,
-  },
-  title: {
-    ...typography.body.md,
-    fontWeight: '800',
-    color: colors.text.primary,
-  },
-  sub: {
-    ...typography.body.xs,
-    color: colors.text.secondary,
-  },
-  progressTrack: {
-    height: 6,
-    backgroundColor: colors.bg.elevated,
-    borderRadius: radius.full,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: radius.full,
-  },
+  iconChar: { ...typography.heading.md },
+  title: { ...typography.heading.sm, color: colors.text.primary },
+  sub: { ...typography.body.xs, color: colors.text.muted },
 });

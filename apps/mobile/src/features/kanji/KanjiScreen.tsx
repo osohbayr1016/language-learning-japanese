@@ -1,12 +1,13 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   ActivityIndicator,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
-import { Screen } from "../../primitives";
+import { Input, Screen } from "../../primitives";
 import { colors, radius, shadows, spacing, tint, typography } from "../../theme";
 import { mn } from "../../i18n/mn";
 import { api } from "../../lib/api";
@@ -44,6 +45,8 @@ export default function KanjiScreen() {
   );
   const [loading, setLoading] = useState(true);
   const [strokeWord, setStrokeWord] = useState<Word | null>(null);
+  const [query, setQuery] = useState("");
+  const [levelFilter, setLevelFilter] = useState<number | null>(null);
   const router = useRouter();
   const { token } = useAuth();
 
@@ -74,7 +77,24 @@ export default function KanjiScreen() {
     void loadData();
   }, [loadData]);
 
-  const grouped = kanjis.reduce(
+  const allLevels = useMemo(
+    () =>
+      [...new Set(kanjis.map((w) => w.jlpt_level || 1))].sort((a, b) => a - b),
+    [kanjis],
+  );
+
+  // Search matches the glyph, its reading, or either meaning, so "水", "mizu"
+  // and "ус" all land on the same tile.
+  const q = query.trim().toLowerCase();
+  const visible = kanjis.filter((w) => {
+    if (levelFilter !== null && (w.jlpt_level || 1) !== levelFilter) return false;
+    if (!q) return true;
+    return [w.kanji, w.kana, w.romaji, w.meaning_mn, w.meaning_en]
+      .filter(Boolean)
+      .some((f) => String(f).toLowerCase().includes(q));
+  });
+
+  const grouped = visible.reduce(
     (acc, word) => {
       const lvl = word.jlpt_level || 1;
       if (!acc[lvl]) acc[lvl] = [];
@@ -107,6 +127,68 @@ export default function KanjiScreen() {
         <Text style={styles.title}>{mn.kanji.title}</Text>
         <Text style={styles.subtitle}>{mn.kanji.subtitle}</Text>
       </View>
+
+      {!loading && kanjis.length > 0 ? (
+        <View style={styles.filters}>
+          <Input
+            value={query}
+            onChangeText={setQuery}
+            placeholder={mn.kanji.searchPlaceholder}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="search"
+            leftIcon={<Ionicons name="search" size={18} color={colors.text.muted} />}
+            rightIcon={
+              query ? (
+                <Pressable
+                  onPress={() => setQuery("")}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={mn.kanji.clearSearch}
+                >
+                  <Ionicons name="close-circle" size={18} color={colors.text.muted} />
+                </Pressable>
+              ) : undefined
+            }
+          />
+          {allLevels.length > 1 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.chips}
+            >
+              {[null, ...allLevels].map((lvl) => {
+                const active = levelFilter === lvl;
+                const c =
+                  lvl === null
+                    ? colors.brand.primary
+                    : (colors.jlpt[lvl as keyof typeof colors.jlpt] ?? colors.brand.primary);
+                return (
+                  <Pressable
+                    key={String(lvl)}
+                    onPress={() => setLevelFilter(lvl)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
+                    style={[
+                      styles.chip,
+                      active && { backgroundColor: c, borderColor: c },
+                    ]}
+                  >
+                    <Text style={[styles.chipText, active && styles.chipTextActive]}>
+                      {lvl === null ? mn.kanji.allLevels : jlptNLabel(lvl)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          ) : null}
+          {q ? (
+            <Text style={styles.resultCount}>
+              {mn.kanji.resultCount.replace("{n}", String(visible.length))}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
 
       {loading ? (
         <View style={styles.center}>
@@ -257,6 +339,19 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     alignItems: "center",
   },
+  filters: { marginBottom: spacing.md, gap: spacing.sm },
+  chips: { gap: spacing.sm, paddingVertical: 2 },
+  chip: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.bg.card,
+  },
+  chipText: { ...typography.body.sm, fontWeight: "700", color: colors.text.secondary },
+  chipTextActive: { color: colors.text.inverse },
+  resultCount: { ...typography.body.sm, color: colors.text.muted },
   empty: {
     ...typography.body.md,
     color: colors.text.muted,
@@ -359,12 +454,12 @@ const styles = StyleSheet.create({
     color: colors.brand.primaryDark,
   },
   pinyin: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.text.secondary,
     textAlign: "center",
   },
   meaning: {
-    fontSize: 10,
+    fontSize: 11,
     color: colors.text.muted,
     marginTop: 1,
     textAlign: "center",

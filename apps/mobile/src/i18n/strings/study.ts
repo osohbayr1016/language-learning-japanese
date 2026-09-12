@@ -12,6 +12,7 @@ export const study = {
   speakListeningHint:
     "Дахин дарж зогсооно; 5 секундын дараа автоматаар зогсоно. Дуу бичлэг хадгалагдахгүй.",
   speakLiveLabel: "Яг одоо:",
+  speakProcessing: "Шалгаж байна…",
   speakFinalGrade: "Эцсийн үнэлгээ: {n}/100",
   speakWordScore: "Үг {n}%",
   speakReadingScore: "Дуудлага {n}%",

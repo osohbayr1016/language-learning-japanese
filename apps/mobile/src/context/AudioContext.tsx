@@ -7,7 +7,7 @@ type PlayOpts = { speed?: 'normal' | 'slow'; repeat?: number };
 
 type AudioCtx = {
   playWord: (wordId: number, opts?: PlayOpts) => Promise<void>;
-  /** Бүтэн хятад өгүүлбэр (жишээ өгүүлбэр) — API TTS */
+  /** Бүтэн япон өгүүлбэр (жишээ өгүүлбэр) — API TTS */
   playPhrase: (text: string, opts?: PlayOpts) => Promise<void>;
   /** Монгол орчуулга — төхөөрөмжийн TTS (expo-speech) */
   playMeaningMn: (text: string) => Promise<void>;

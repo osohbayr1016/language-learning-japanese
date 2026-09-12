@@ -12,12 +12,15 @@ type Tab = { path: string; label: string; icon: IconName; activeIcon: IconName; 
 const TABS: Tab[] = [
   { path: '/home', label: mn.tabs.home, icon: 'home-outline', activeIcon: 'home', hint: 'Өнөөдрийн зорилго, давталт' },
   { path: '/study', label: mn.tabs.study, icon: 'book-outline', activeIcon: 'book', hint: 'Хичээл ба дасгалууд' },
+  { path: '/kana', label: mn.tabs.kana, icon: 'apps-outline', activeIcon: 'apps', hint: 'Хирагана ба катакана' },
   { path: '/kanji', label: mn.tabs.kanji, icon: 'language-outline', activeIcon: 'language', hint: 'Ханз тэмдэгт' },
-  { path: '/games', label: mn.tabs.games, icon: 'game-controller-outline', activeIcon: 'game-controller', hint: 'Тоглоом' },
   { path: '/profile', label: mn.tabs.profile, icon: 'person-outline', activeIcon: 'person', hint: 'Профайл ба тохиргоо' },
 ];
 
 export const TAB_PATHS = new Set(TABS.map((t) => t.path));
+
+/** Hub pages that keep the tab bar even though they are not a tab themselves. */
+export const TAB_BAR_PATHS = new Set([...TAB_PATHS, '/games']);
 
 /**
  * The section switcher, as real anchors.

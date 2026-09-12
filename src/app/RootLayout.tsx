@@ -10,7 +10,7 @@ import { AppShell } from '@src/primitives/AppShell';
 import { RouterBridge } from '../compat/expo-router';
 import { ErrorBoundary } from './ErrorBoundary';
 import { RouteChrome } from './RouteChrome';
-import { TabBar, TAB_PATHS } from './TabBar';
+import { TabBar, TAB_BAR_PATHS } from './TabBar';
 
 /** Routes reachable without an account. */
 const PUBLIC_PATHS = new Set(['/login', '/register', '/onboarding', '/setup']);
@@ -73,7 +73,7 @@ function PageSkeleton() {
 function Shell() {
   useRouteGuard();
   const { pathname } = useLocation();
-  const showTabs = TAB_PATHS.has(pathname);
+  const showTabs = TAB_BAR_PATHS.has(pathname);
 
   return (
     <AppShell>

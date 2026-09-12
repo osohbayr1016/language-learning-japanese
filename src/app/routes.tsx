@@ -48,6 +48,7 @@ export const routes: RouteObject[] = [
   { path: 'home', Component: lazy(() => import('@src/features/home/HomeScreen')) },
   { path: 'study', Component: lazy(() => import('@src/features/study/StudyHubScreen')) },
   { path: 'kanji', Component: lazy(() => import('@src/features/kanji/KanjiScreen')) },
+  { path: 'kana', Component: lazy(() => import('@src/features/kana/KanaHubScreen')) },
   { path: 'games', Component: lazy(() => import('@src/features/games/GamesHubScreen')) },
   { path: 'profile', Component: lazy(() => import('@src/features/profile/ProfileScreen')) },
 
@@ -63,6 +64,9 @@ export const routes: RouteObject[] = [
   { path: 'study/hanzi', Component: lazy(() => import('@screens/study/hanzi')) },
   { path: 'study/grammar', Component: lazy(() => import('@screens/study/grammar/index')) },
   { path: 'study/grammar/:id', Component: lazy(() => import('@screens/study/grammar/[id]')) },
+  { path: 'study/loop', Component: lazy(() => import('@screens/study/loop')) },
+  { path: 'study/ai-reading', Component: lazy(() => import('@screens/study/ai-reading')) },
+  { path: 'study/category-words', Component: lazy(() => import('@screens/study/category-words')) },
 
   // ── Games ────────────────────────────────────────────────────────────────
   { path: 'games/match', Component: lazy(() => import('@screens/games/match')) },
@@ -84,6 +88,9 @@ export const routes: RouteObject[] = [
   { path: 'profile/settings', Component: lazy(() => import('@screens/profile/settings')) },
   { path: 'profile/vocabulary', Component: lazy(() => import('@screens/profile/vocabulary')) },
   { path: 'profile/word/:id', Component: lazy(() => import('@screens/profile/word/[id]')) },
+  { path: 'profile/learned-words', Component: lazy(() => import('@screens/profile/learned-words')) },
+  { path: 'profile/learned-word-detail', Component: lazy(() => import('@screens/profile/learned-word-detail')) },
+  { path: 'profile/learned-kanjis', Component: lazy(() => import('@screens/profile/learned-kanjis')) },
 
   // ── Admin ────────────────────────────────────────────────────────────────
   // Guarded in RootLayout: signed in AND is_admin, else bounced.
@@ -115,7 +122,9 @@ export const legacyRedirects: Record<string, string> = {
   '/(tabs)/home': '/home',
   '/(tabs)/study': '/study',
   '/(tabs)/kanji': '/kanji',
-  '/(tabs)/games': '/games',
+  // The games slot in the native tab bar now holds the kana hub.
+  '/(tabs)/games': '/kana',
+  '/(tabs)/kana': '/kana',
   '/(tabs)/profile': '/profile',
   '/(auth)/login': '/login',
   '/(auth)/register': '/register',

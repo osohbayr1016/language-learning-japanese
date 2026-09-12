@@ -13,7 +13,7 @@ export function PromptCard({ word }: Props) {
       <Text style={styles.label}>Утга</Text>
       <Text style={styles.meaning}>{word.meaning_mn}</Text>
       <PronounceButton wordId={word.id} meaningMn={word.meaning_mn} size="lg" style={styles.pronBtn} />
-      <Text style={styles.hint}>Pinyin эсвэл ханз бичээрэй</Text>
+      <Text style={styles.hint}>Romaji эсвэл кана, ханзаар бичээрэй</Text>
     </Card>
   );
 }

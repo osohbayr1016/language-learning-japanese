@@ -8,9 +8,9 @@ import { useRandomWords } from '../../../hooks/useRandomWords';
 import { StudyHeader } from '../StudyHeader';
 import { colors, spacing } from '../../../theme';
 
-const SPEAK_TITLE = 'Speak';
-const SPEAK_DESC = 'Use the mic to say the target phrase in Japanese (web and device).';
-const SPEAK_SESSION_AVG = 'Session average ({count} items): {avg}/100';
+const SPEAK_TITLE = 'Ярих';
+const SPEAK_DESC = 'Микрофон дараад япон үг, өгүүлбэрийг чанга хэлээрэй. Апп таны дуудлагыг япон хэлээр таньж, оноо өгнө.';
+const SPEAK_SESSION_AVG = 'Дундаж оноо ({count} үг): {avg}/100';
 
 export default function SpeakPracticeScreen() {
   const router = useRouter();
@@ -53,8 +53,8 @@ export default function SpeakPracticeScreen() {
     return (
       <Screen scroll>
         <StudyHeader title={SPEAK_TITLE} index={0} total={1} />
-        <Text style={styles.err}>{error ?? 'Could not load words.'}</Text>
-        <Button label="Back" onPress={() => safeBack(router, '/(tabs)/study')} />
+        <Text style={styles.err}>{error ?? 'Үг ачаалж чадсангүй.'}</Text>
+        <Button label="Буцах" onPress={() => safeBack(router, '/(tabs)/study')} />
       </Screen>
     );
   }
@@ -67,7 +67,6 @@ export default function SpeakPracticeScreen() {
       <JapaneseSpeechCard
         key={`speak-${idx}-${current.id}`}
         word={current}
-        hideMongolian
         onEvaluated={() => setRoundDone(true)}
         onScore={(n) => {
           setSessionSum((s) => s + n);
@@ -76,7 +75,7 @@ export default function SpeakPracticeScreen() {
       />
       {roundDone ? (
         <View style={styles.footer}>
-          <Button label="Next" onPress={next} />
+          <Button label="Дараах" onPress={next} />
         </View>
       ) : null}
     </Screen>

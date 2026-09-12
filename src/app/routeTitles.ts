@@ -24,6 +24,7 @@ const EXACT: Record<string, string> = {
   '/home': mn.tabs.home,
   '/study': mn.tabs.study,
   '/kanji': mn.tabs.kanji,
+  '/kana': mn.tabs.kana,
   '/games': games.hub,
   '/profile': mn.tabs.profile,
 
@@ -37,6 +38,9 @@ const EXACT: Record<string, string> = {
   '/study/grammar': study.grammarTitle,
   '/study/mock-exam': study.mockExamTitle,
   '/study/hanzi': mn.tabs.kanji,
+  '/study/loop': study.learn,
+  '/study/ai-reading': 'AI уншлага',
+  '/study/category-words': 'Үгийн бүлэг',
 
   '/games/match': games.match,
   '/games/translate': games.translate,
@@ -49,6 +53,9 @@ const EXACT: Record<string, string> = {
   '/profile/settings': 'Тохиргоо',
   '/profile/vocabulary': 'Миний үгс',
   '/profile/avatar': 'Профайл зураг',
+  '/profile/learned-words': 'Сурсан үгс',
+  '/profile/learned-word-detail': 'Сурсан үг',
+  '/profile/learned-kanjis': 'Сурсан ханз',
 
   '/lessons': 'Хичээлүүд',
   '/cartoons': 'Хүүхэлдэйн кино',

@@ -38,7 +38,7 @@ export function LearnedWordsScreen() {
         <View style={styles.empty}>
           <Ionicons name="library-outline" size={48} color={colors.text.muted} />
           <Text style={styles.emptyText}>Одоогоор сурсан үг байхгүй байна.</Text>
-          <Text style={styles.emptyHint}>Study хуудсаас үг сурч эхлэнэ үү!</Text>
+          <Text style={styles.emptyHint}>«Давтах» хэсгээс үг сурч эхлээрэй.</Text>
         </View>
       ) : (
         <FlatList

@@ -45,7 +45,21 @@ jobs:
           test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
           echo "dist: $(find dist -type f | wc -l) files, $(du -sh dist | cut -f1)"
 
+      # The deploy needs a Cloudflare API token in the repo's Actions secrets.
+      # Without it the build above still runs as a check, and this step
+      # explains what is missing instead of failing with a wrangler stack trace.
+      - name: Check for the Cloudflare token
+        id: token
+        env:
+          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        run: |
+          echo "present=$HAS_TOKEN" >> "$GITHUB_OUTPUT"
+          if [ "$HAS_TOKEN" != "true" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN is not set, so this push was built but not deployed. Add it under Settings → Secrets and variables → Actions, or run 'npm run deploy' locally."
+          fi
+
       - name: Deploy to Cloudflare Workers
+        if: steps.token.outputs.present == 'true'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

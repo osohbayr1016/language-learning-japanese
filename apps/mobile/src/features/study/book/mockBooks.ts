@@ -19,15 +19,30 @@ export type Book = {
   pages: BookPage[];
 };
 
+import bookAnimals from "../../../../assets/images/book/book_animals_cat_dog_1778909388792.png";
+import bookActions from "../../../../assets/images/book/book_actions_1778909521464.png";
+import bookFeelings from "../../../../assets/images/book/book_feelings_1778914386125.png";
+import bookFood from "../../../../assets/images/book/book_food_1778914468819.png";
+import bookPlaces from "../../../../assets/images/book/book_places_1778914757937.png";
+
+/**
+ * Metro hands an imported image back as an asset id; Vite hands back a URL.
+ * Both end up as something <Image source> accepts. (A CommonJS `require()`
+ * here used to throw "require is not defined" and crash the site's learning
+ * loop before the first page rendered.)
+ */
+const asSource = (m: unknown): ImageSourcePropType =>
+  (typeof m === "string" ? { uri: m } : m) as ImageSourcePropType;
+
 const IMG = {
-  animals:  require("../../../../assets/images/book/book_animals_cat_dog_1778909388792.png"),
-  actions:  require("../../../../assets/images/book/book_actions_1778909521464.png"),
-  feelings: require("../../../../assets/images/book/book_feelings_1778914386125.png"),
-  food:     require("../../../../assets/images/book/book_food_1778914468819.png"),
-  places:   require("../../../../assets/images/book/book_places_1778914757937.png"),
+  animals:  asSource(bookAnimals),
+  actions:  asSource(bookActions),
+  feelings: asSource(bookFeelings),
+  food:     asSource(bookFood),
+  places:   asSource(bookPlaces),
   // Reusing places image for family/time until a new one is generated
-  family:   require("../../../../assets/images/book/book_places_1778914757937.png"),
-  time:     require("../../../../assets/images/book/book_actions_1778909521464.png"),
+  family:   asSource(bookPlaces),
+  time:     asSource(bookActions),
 };
 
 export const MOCK_BOOKS: Record<string, Book> = {

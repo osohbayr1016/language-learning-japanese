@@ -14,8 +14,8 @@ type Props = {
 
 export function SayFallback({ disabled, onSpoken, onSkip, english = false }: Props) {
   const notice = english
-    ? 'Speech recognition may be limited in this build. Say the phrase aloud, then tap “I said it”.'
-    : 'Микрофоны функц зөвхөн dev build дээр ажилладаг. Та өгүүлбэрийг чанга уншаад "Хэллээ" дээр дарна уу.';
+    ? 'This browser has no speech recognition (try Chrome, Edge or Safari). Say the phrase aloud, then tap “I said it”.'
+    : 'Энэ хөтөч дуу таних функцийг дэмждэггүй (Chrome, Edge, Safari ашиглана уу). Өгүүлбэрийг чанга уншаад «Хэллээ» дээр дарна уу.';
   const spokenLabel = english ? 'I said it' : 'ХЭЛЛЭЭ';
   const skipLabel = english ? 'Skip' : 'АЛГАСАХ';
   return (
