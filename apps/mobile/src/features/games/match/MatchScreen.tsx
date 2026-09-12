@@ -98,6 +98,12 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
     if (onDone) onDone(score, acc);
   };
 
+  useEffect(() => {
+    if (!loading && words.length === 0 && onDone && !done) {
+      onDone(0, 0);
+    }
+  }, [loading, words.length, onDone, done]);
+
   if (!initialWords && loading) {
     return (
       <Screen>
@@ -105,12 +111,6 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
       </Screen>
     );
   }
-
-  useEffect(() => {
-    if (!loading && words.length === 0 && onDone && !done) {
-      onDone(0, 0);
-    }
-  }, [loading, words.length, onDone, done]);
 
   if (words.length === 0) {
     return (

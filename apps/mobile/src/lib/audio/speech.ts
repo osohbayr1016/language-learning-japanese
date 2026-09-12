@@ -15,7 +15,8 @@ import {
   webSpeechAvailable,
   type WebRecHandle,
 } from './speechWeb';
-import type { SpeechResult, SpeechState } from './speechTypes';
+import { EMPTY_SPEECH_BUFFER } from './speechTypes';
+import type { SpeechBuffer, SpeechResult, SpeechState } from './speechTypes';
 
 export type { SpeechResult, SpeechState } from './speechTypes';
 
@@ -35,8 +36,7 @@ export function useSpeechSession() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const webRec = useRef<WebRecHandle | null>(null);
   const autoTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const nativeCommittedRef = useRef('');
-  const nativeLastPreviewRef = useRef('');
+  const nativeBuffer = useRef<SpeechBuffer>({ ...EMPTY_SPEECH_BUFFER });
 
   const clearAutoStop = useCallback(() => {
     if (autoTimerRef.current != null) {
@@ -45,15 +45,12 @@ export function useSpeechSession() {
     }
   }, []);
 
-  useNativeContinuousBindings(
-    clearAutoStop,
-    nativeCommittedRef,
-    nativeLastPreviewRef,
+  useNativeContinuousBindings(clearAutoStop, nativeBuffer, {
     setLiveTranscript,
     setResult,
     setErrorMessage,
-    setState
-  );
+    setState,
+  });
 
   useEffect(
     () => () => {
@@ -67,8 +64,7 @@ export function useSpeechSession() {
 
   const reset = useCallback(() => {
     clearAutoStop();
-    nativeCommittedRef.current = '';
-    nativeLastPreviewRef.current = '';
+    nativeBuffer.current = { ...EMPTY_SPEECH_BUFFER };
     setResult(null);
     setLiveTranscript('');
     setErrorMessage(null);
@@ -85,8 +81,7 @@ export function useSpeechSession() {
     (contextual?: string[]) => {
       clearAutoStop();
       setErrorMessage(null);
-      nativeCommittedRef.current = '';
-      nativeLastPreviewRef.current = '';
+      nativeBuffer.current = { ...EMPTY_SPEECH_BUFFER };
       setLiveTranscript('');
       setResult(null);
 
@@ -106,8 +101,8 @@ export function useSpeechSession() {
             setErrorMessage(null);
           },
           (preview) => setLiveTranscript(preview),
-          (text, confidence) => {
-            setResult({ transcript: text, confidence });
+          (text, confidence, alternatives) => {
+            setResult({ transcript: text, confidence, alternatives });
             setLiveTranscript('');
             setState('processing');
           },

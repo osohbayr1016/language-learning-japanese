@@ -1,0 +1,28 @@
+# The website. Cloudflare Workers Static Assets serves the Vite build in ./dist.
+#
+# Replaces apps/web, which did the same job for the old Expo web export. Same
+# Worker name, so the deployed URL does not change.
+# Pinned because the logged-in user has access to more than one Cloudflare
+# account, and wrangler cannot choose between them non-interactively.
+# This is the account that hosts the live site and the nihongo-mn-api Worker.
+account_id = "aabe952df5d4e4b780339bf3b4217ed7"
+name = "nihongo-mn-web"
+main = "src/server/worker.ts"
+compatibility_date = "2025-09-01"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+# Client-side routing: unknown paths return index.html rather than a 404, so
+# /study/learn works on a hard refresh and on a shared link.
+not_found_handling = "single-page-application"
+html_handling = "auto-trailing-slash"
+
+[env.production]
+name = "nihongo-mn-web"
+
+[env.production.assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+html_handling = "auto-trailing-slash"

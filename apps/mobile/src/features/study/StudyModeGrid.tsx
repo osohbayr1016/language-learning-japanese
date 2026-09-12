@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors, radius, shadows, spacing, typography } from '../../theme';
+import { SectionHeading, Touchable } from '../../primitives';
+import { colors, motion, radius, shadows, spacing, tint, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 
 type Mode = {
@@ -81,114 +82,130 @@ const MODES: Mode[] = [
   },
 ];
 
+function a11y(mode: Mode) {
+  return { accessibilityLabel: mode.title, accessibilityHint: mode.subtitle };
+}
+
 function LargeCard({ mode, onPress }: { mode: Mode; onPress: () => void }) {
   return (
-    <Pressable
-      style={({ pressed }) => [styles.largeCard, { borderColor: mode.color }, pressed && styles.pressed]}
+    <Touchable
+      {...a11y(mode)}
       onPress={onPress}
+      scaleTo={motion.scale.pressLg}
+      hoverLift={3}
+      style={[styles.largeCard, { borderColor: colors.border }]}
+      hoveredStyle={{ borderColor: mode.color, backgroundColor: tint(mode.color, 0.04) }}
     >
-      <View style={[styles.largeIconBox, { backgroundColor: `${mode.color}1A` }]}>
-        <Ionicons name={mode.icon} size={32} color={mode.color} />
+      <View style={[styles.largeIconBox, { backgroundColor: tint(mode.color, 0.12) }]}>
+        <Ionicons name={mode.icon} size={30} color={mode.color} />
       </View>
       <View style={styles.largeBody}>
         <Text style={styles.largeTitle}>{mode.title}</Text>
         <Text style={styles.largeSubtitle}>{mode.subtitle}</Text>
       </View>
-      <Ionicons name="chevron-forward" size={24} color={mode.color} />
-    </Pressable>
+      <Ionicons name="chevron-forward" size={22} color={mode.color} />
+    </Touchable>
   );
 }
 
 function HalfCard({ mode, onPress }: { mode: Mode; onPress: () => void }) {
   return (
-    <Pressable
-      style={({ pressed }) => [styles.halfCard, { borderTopColor: mode.color }, pressed && styles.pressed]}
+    <Touchable
+      {...a11y(mode)}
       onPress={onPress}
+      hoverLift={3}
+      style={[styles.halfCard, { borderTopColor: mode.color }]}
+      hoveredStyle={{ backgroundColor: tint(mode.color, 0.05) }}
     >
-      <View style={[styles.halfIconBox, { backgroundColor: `${mode.color}1A` }]}>
-        <Ionicons name={mode.icon} size={24} color={mode.color} />
+      <View style={[styles.halfIconBox, { backgroundColor: tint(mode.color, 0.12) }]}>
+        <Ionicons name={mode.icon} size={22} color={mode.color} />
       </View>
-      <Text style={styles.halfTitle} numberOfLines={1}>{mode.title}</Text>
-      <Text style={styles.halfSubtitle} numberOfLines={2}>{mode.subtitle}</Text>
-    </Pressable>
+      <Text style={styles.halfTitle} numberOfLines={1}>
+        {mode.title}
+      </Text>
+      <Text style={styles.halfSubtitle} numberOfLines={2}>
+        {mode.subtitle}
+      </Text>
+    </Touchable>
   );
 }
 
-function ListRow({ mode, onPress }: { mode: Mode; onPress: () => void }) {
+function ListRow({ mode, onPress, last }: { mode: Mode; onPress: () => void; last?: boolean }) {
   return (
-    <Pressable
-      style={({ pressed }) => [styles.listRow, pressed && styles.pressed]}
+    <Touchable
+      {...a11y(mode)}
       onPress={onPress}
+      hoverLift={0}
+      hoverShadow={false}
+      scaleTo={motion.scale.pressLg}
+      style={[styles.listRow, last ? styles.listRowLast : null]}
+      hoveredStyle={{ backgroundColor: colors.bg.washi }}
     >
-      <View style={[styles.listIconBox, { backgroundColor: `${mode.color}1A` }]}>
+      <View style={[styles.listIconBox, { backgroundColor: tint(mode.color, 0.12) }]}>
         <Ionicons name={mode.icon} size={20} color={mode.color} />
       </View>
       <View style={styles.listBody}>
         <Text style={styles.listTitle}>{mode.title}</Text>
-        <Text style={styles.listSubtitle} numberOfLines={1}>{mode.subtitle}</Text>
+        <Text style={styles.listSubtitle} numberOfLines={1}>
+          {mode.subtitle}
+        </Text>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.text.muted} />
-    </Pressable>
+    </Touchable>
   );
 }
 
 export function StudyModeGrid() {
   const router = useRouter();
-
+  const go = (m: Mode) => () => router.push(m.href as never);
   const getMode = (key: string) => MODES.find((m) => m.key === key)!;
+
+  const flashcard = getMode('flashcard');
+  const grammar = getMode('grammar');
+  const mock = getMode('mock');
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionHeading}>Өдөр тутмын давталт</Text>
-      <LargeCard mode={getMode('flashcard')} onPress={() => router.push(getMode('flashcard').href as never)} />
+      <SectionHeading
+        step={1}
+        title="Өдөр тутмын давталт"
+        subtitle="Мартахаас өмнө сэргээх — өдөр бүр эндээс эхэл"
+      />
+      <LargeCard mode={flashcard} onPress={go(flashcard)} />
 
-      <Text style={styles.sectionHeading}>Ур чадвар хөгжүүлэх</Text>
+      <SectionHeading
+        step={2}
+        title="Ур чадвар хөгжүүлэх"
+        subtitle="Сул талаа сонгон дадлагажуул"
+      />
       <View style={styles.row}>
-        <HalfCard mode={getMode('weak')} onPress={() => router.push(getMode('weak').href as never)} />
-        <HalfCard mode={getMode('writer')} onPress={() => router.push(getMode('writer').href as never)} />
+        <HalfCard mode={getMode('weak')} onPress={go(getMode('weak'))} />
+        <HalfCard mode={getMode('writer')} onPress={go(getMode('writer'))} />
       </View>
       <View style={styles.row}>
-        <HalfCard mode={getMode('speak')} onPress={() => router.push(getMode('speak').href as never)} />
-        <HalfCard mode={getMode('write')} onPress={() => router.push(getMode('write').href as never)} />
+        <HalfCard mode={getMode('speak')} onPress={go(getMode('speak'))} />
+        <HalfCard mode={getMode('write')} onPress={go(getMode('write'))} />
       </View>
 
-      <Text style={styles.sectionHeading}>Нэмэлт ба Шалгалт</Text>
+      <SectionHeading step={3} title="Нэмэлт ба Шалгалт" subtitle="Дүрэм судлах, түвшин шалгах" />
       <View style={styles.listContainer}>
-        <ListRow mode={getMode('grammar')} onPress={() => router.push(getMode('grammar').href as never)} />
-        <ListRow mode={getMode('mock')} onPress={() => router.push(getMode('mock').href as never)} />
+        <ListRow mode={grammar} onPress={go(grammar)} />
+        <ListRow mode={mock} onPress={go(mock)} last />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    marginBottom: spacing.lg,
-  },
-  sectionHeading: {
-    ...typography.heading.sm,
-    color: colors.text.primary,
-    marginBottom: spacing.sm,
-    marginTop: spacing.md,
-    marginLeft: spacing.xs,
-  },
-  row: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  pressed: {
-    opacity: 0.85,
-    transform: [{ scale: 0.98 }],
-  },
-  // Large Card
+  container: { marginBottom: spacing.lg },
+  row: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
   largeCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
     padding: spacing.md,
-    borderWidth: 2,
+    borderWidth: 1,
     ...shadows.sm,
   },
   largeIconBox: {
@@ -199,19 +216,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  largeBody: {
-    flex: 1,
-  },
-  largeTitle: {
-    ...typography.heading.md,
-    color: colors.text.primary,
-    marginBottom: 4,
-  },
-  largeSubtitle: {
-    ...typography.body.sm,
-    color: colors.text.secondary,
-  },
-  // Half Card
+  largeBody: { flex: 1 },
+  largeTitle: { ...typography.heading.md, color: colors.text.primary, marginBottom: 2 },
+  largeSubtitle: { ...typography.body.sm, color: colors.text.secondary },
   halfCard: {
     flex: 1,
     backgroundColor: colors.bg.card,
@@ -230,30 +237,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.sm,
   },
-  halfTitle: {
-    ...typography.heading.sm,
-    color: colors.text.primary,
-    marginBottom: 2,
-  },
-  halfSubtitle: {
-    ...typography.body.xs,
-    color: colors.text.secondary,
-  },
-  // List Row
+  halfTitle: { ...typography.heading.sm, color: colors.text.primary, marginBottom: 2 },
+  halfSubtitle: { ...typography.body.xs, color: colors.text.secondary },
   listContainer: {
     backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
+    ...shadows.sm,
   },
   listRow: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.borderLight,
   },
+  listRowLast: { borderBottomWidth: 0 },
   listIconBox: {
     width: 36,
     height: 36,
@@ -262,17 +263,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: spacing.md,
   },
-  listBody: {
-    flex: 1,
-  },
-  listTitle: {
-    ...typography.body.md,
-    fontWeight: '700',
-    color: colors.text.primary,
-  },
-  listSubtitle: {
-    ...typography.body.xs,
-    color: colors.text.secondary,
-    marginTop: 2,
-  },
+  listBody: { flex: 1 },
+  listTitle: { ...typography.body.md, fontWeight: '700', color: colors.text.primary },
+  listSubtitle: { ...typography.body.xs, color: colors.text.secondary, marginTop: 2 },
 });

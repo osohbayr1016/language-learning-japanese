@@ -8,8 +8,10 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import { colors } from '../../theme';
 
-const GREEN = '#58CC02';
+/** Brand success tone — was a leftover Duolingo green. */
+const GREEN = colors.success;
 
 /** Increment `stamp` on each successful pass to replay the animation. */
 export function SpeakSuccessCelebration({ stamp }: { stamp: number }) {

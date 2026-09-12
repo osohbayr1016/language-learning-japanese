@@ -5,7 +5,7 @@ import { Button } from '../../primitives';
 import { PronounceButton } from '../../components/audio/PronounceButton';
 import { SpeakMicPanel } from '../../components/practice/SpeakMicPanel';
 import { SpeakSuccessCelebration } from '../../components/practice/SpeakSuccessCelebration';
-import { useMandarinSpeechRound } from '../../components/practice/useMandarinSpeechRound';
+import { useJapaneseSpeechRound } from '../../components/practice/useJapaneseSpeechRound';
 import { SayFallback } from '../lessons/exercises/SayFallback';
 import { getSpeechDisplay } from '../../lib/audio/speechCardTargets';
 import type { Word } from '../../lib/types';
@@ -46,7 +46,7 @@ function ListenSpeakSpeakPhase({
   onPass: () => void;
   onListenAgain: () => void;
 }) {
-  const { hanzi: target, pinyin: pinyinLine } = getSpeechDisplay(word, 'word');
+  const target = getSpeechDisplay(word, 'word');
   const passAndComplete = useCallback(
     (ok: boolean) => {
       if (ok) onPass();
@@ -54,10 +54,9 @@ function ListenSpeakSpeakPhase({
     [onPass]
   );
 
-  const speech = useMandarinSpeechRound({
+  const speech = useJapaneseSpeechRound({
     word,
     target,
-    pinyinLine,
     speechPrompt: 'word',
     hideMongolian: false,
     disabled: false,

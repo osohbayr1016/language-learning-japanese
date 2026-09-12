@@ -3,13 +3,13 @@ import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { safeBack } from '../../../lib/navigation/safeBack';
 import { Button, Screen } from '../../../primitives';
-import { MandarinSpeechCard } from '../../../components/practice/MandarinSpeechCard';
+import { JapaneseSpeechCard } from '../../../components/practice/JapaneseSpeechCard';
 import { useRandomWords } from '../../../hooks/useRandomWords';
 import { StudyHeader } from '../StudyHeader';
 import { colors, spacing } from '../../../theme';
 
 const SPEAK_TITLE = 'Speak';
-const SPEAK_DESC = 'Use the mic to say the target phrase in Mandarin (web and device).';
+const SPEAK_DESC = 'Use the mic to say the target phrase in Japanese (web and device).';
 const SPEAK_SESSION_AVG = 'Session average ({count} items): {avg}/100';
 
 export default function SpeakPracticeScreen() {
@@ -64,7 +64,7 @@ export default function SpeakPracticeScreen() {
       <StudyHeader title={SPEAK_TITLE} index={idx} total={pool.length} />
       <Text style={styles.sub}>{SPEAK_DESC}</Text>
       {sessionAvgLabel ? <Text style={styles.sessionAvg}>{sessionAvgLabel}</Text> : null}
-      <MandarinSpeechCard
+      <JapaneseSpeechCard
         key={`speak-${idx}-${current.id}`}
         word={current}
         hideMongolian

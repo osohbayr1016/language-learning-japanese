@@ -22,7 +22,7 @@ export async function nativeEnsurePermission(): Promise<boolean> {
 export function nativeStart(contextual?: string[]): void {
   if (!SPEECH_SUPPORTED || !mod) return;
   mod.ExpoSpeechRecognitionModule.start({
-    lang: 'zh-CN',
+    lang: 'ja-JP',
     interimResults: true,
     maxAlternatives: 3,
     continuous: true,

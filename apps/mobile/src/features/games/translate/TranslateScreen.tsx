@@ -51,15 +51,15 @@ export default function TranslateScreen({ initialWords, onDone }: Props) {
 
   useEffect(() => { if (current) timer.start(); }, [current, timer]);
 
-  if (!initialWords && loading) {
-    return <Screen><View style={styles.center}><ActivityIndicator color={colors.accent.purple} /></View></Screen>;
-  }
-
   useEffect(() => {
     if (!loading && queue.length === 0 && onDone && !done) {
       onDone(0, 0);
     }
   }, [loading, queue.length, onDone, done]);
+
+  if (!initialWords && loading) {
+    return <Screen><View style={styles.center}><ActivityIndicator color={colors.accent.purple} /></View></Screen>;
+  }
 
   if (queue.length === 0) {
     return (

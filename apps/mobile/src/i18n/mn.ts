@@ -43,6 +43,7 @@ export const mn = {
     home: 'Нүүр',
     study: 'Давтах',
     kana: 'Кана',
+    games: 'Тоглоом',
     kanji: 'Канжи',
     cartoons: 'Кино',
     profile: 'Профайл',

@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="mn">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#BE4A79" />
+    <meta
+      name="description"
+      content="Япон хэл сурах — хичээл, тоглоом, дуу сонсох. Learn Japanese with lessons, games, and audio."
+    />
+    <meta property="og:title" content="Япон хэл сурах" />
+    <meta
+      property="og:description"
+      content="Япон хэл сурах — хичээл, тоглоом, дуу сонсох."
+    />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <title>Япон хэл сурах</title>
+
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --plum: #be4a79;
+        --plum-dark: #9c3862;
+        --teal: #2b7b88;
+        --paper: #f6f4f1;
+        --ink: #1c1917;
+        --muted: #6b7280;
+        --border: #e7e3de;
+        --focus: #2b6cb0;
+        --soft-brand: #fdf2f6;
+        --tabbar-h: 74px;
+      }
+
+      html,
+      body,
+      #root {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        overflow-x: hidden;
+        overflow-y: auto;
+        background: var(--paper);
+        background-image: linear-gradient(180deg, #fdf2f6 0px, #faf5f3 260px, var(--paper) 520px);
+        background-attachment: fixed;
+        color: var(--ink);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+        font-family: "Noto Sans", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", Roboto, sans-serif;
+      }
+
+      #root {
+        display: flex;
+        flex-direction: column;
+        min-height: 100%;
+        background: transparent;
+      }
+
+      * {
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 2px;
+        border-radius: 6px;
+      }
+
+      ::selection {
+        background: #f6d9e4;
+        color: var(--ink);
+      }
+
+      /* ── Responsive frame ────────────────────────────────────────────────
+         Below 720px the column is edge-to-edge: a floating card on a phone
+         reads as broken. Above it, the app sits in a framed column so a
+         desktop visitor gets a page, not a stretched phone screen. */
+      @media (min-width: 720px) {
+        #app-column {
+          margin: 28px auto;
+          min-height: calc(100% - 56px);
+          border-radius: 24px;
+          border: 1px solid var(--border);
+          box-shadow: 0 18px 44px rgba(63, 42, 51, 0.16);
+          overflow: hidden;
+        }
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: #d8d2cc transparent;
+        }
+        ::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+          background: #d8d2cc;
+          border-radius: 999px;
+          border: 3px solid transparent;
+          background-clip: content-box;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+          background: #bdb6ae;
+          background-clip: content-box;
+        }
+      }
+
+      /* ── Tab bar ─────────────────────────────────────────────────────────
+         Real anchors, so middle-click and open-in-new-tab work. Pinned to the
+         bottom on phones where a thumb reaches it; on desktop it sits in the
+         flow at the base of the framed column. */
+      .tabbar {
+        display: flex;
+        align-items: stretch;
+        gap: 4px;
+        height: var(--tabbar-h);
+        padding: 8px 4px calc(10px + env(safe-area-inset-bottom, 0px));
+        background: #fff;
+        border-top: 1px solid var(--border);
+        box-shadow: 0 -2px 10px rgba(63, 42, 51, 0.05);
+        position: sticky;
+        bottom: 0;
+        z-index: 20;
+      }
+
+      .tabbar__item {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--muted);
+        transition: background-color 160ms ease;
+      }
+      .tabbar__item:hover {
+        background: #faf8f6;
+      }
+      .tabbar__item:active {
+        transform: scale(0.94);
+      }
+
+      .tabbar__pill {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 46px;
+        height: 28px;
+        border-radius: 999px;
+        transition: background-color 160ms ease;
+      }
+      .tabbar__item.is-active .tabbar__pill {
+        background: var(--soft-brand);
+      }
+
+      .tabbar__label {
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.2;
+      }
+      .tabbar__item.is-active .tabbar__label {
+        color: var(--plum);
+        font-weight: 800;
+      }
+
+      /* ── Admin header ────────────────────────────────────────────────────
+         The tab bar is hidden inside /admin, so this bar is the only way out. */
+      .admin {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+      }
+      .admin__bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 8px;
+        background: #fff;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 15;
+      }
+      .admin__title {
+        flex: 1;
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+        text-align: center;
+        color: var(--ink);
+      }
+      .admin__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        cursor: pointer;
+        color: var(--ink);
+      }
+      .admin__btn:hover {
+        background: #faf8f6;
+      }
+
+      .crash {
+        margin: auto;
+        padding: 40px 24px;
+        max-width: 720px;
+        text-align: center;
+      }
+      .crash h1 {
+        color: var(--plum);
+        margin: 0 0 8px;
+      }
+      .crash__actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin: 20px 0;
+      }
+      .crash__actions button,
+      .crash__actions a {
+        padding: 10px 18px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: #fff;
+        color: var(--ink);
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .crash__detail {
+        text-align: left;
+        white-space: pre-wrap;
+        font-size: 12px;
+        line-height: 1.5;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px;
+        overflow-x: auto;
+        color: #7a2b2b;
+      }
+
+      /* Route-chunk loading placeholder. Mirrors the shape of a hub screen
+         (heading, sub, cards) so content arrival does not jump the layout. */
+      .skeleton {
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .skeleton__line,
+      .skeleton__card {
+        border-radius: 12px;
+        background: linear-gradient(90deg, #eae5e0 25%, #f3efeb 37%, #eae5e0 63%);
+        background-size: 400% 100%;
+        animation: skeleton-shimmer 1.4s linear infinite;
+      }
+      .skeleton__line--title {
+        height: 30px;
+        width: 55%;
+        border-radius: 8px;
+        margin-top: 8px;
+      }
+      .skeleton__line--sub {
+        height: 14px;
+        width: 75%;
+        border-radius: 7px;
+        margin-bottom: 8px;
+      }
+      .skeleton__card {
+        height: 128px;
+        border-radius: 16px;
+      }
+      .skeleton__card--short {
+        height: 88px;
+      }
+      @keyframes skeleton-shimmer {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: 0 0;
+        }
+      }
+
+      .notfound {
+        margin: auto;
+        padding: 48px 24px;
+        text-align: center;
+        max-width: 380px;
+      }
+      .notfound__mark {
+        width: 96px;
+        height: 96px;
+        margin: 0 auto 20px;
+        border-radius: 28px;
+        display: grid;
+        place-items: center;
+        background: var(--soft-brand);
+        border: 1px solid var(--border);
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 1px;
+        color: var(--plum);
+      }
+      .notfound__title {
+        font-size: 24px;
+        line-height: 1.25;
+        margin: 0 0 8px;
+        color: var(--ink);
+      }
+      .notfound__body {
+        margin: 0 0 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+      .notfound__path {
+        margin: 0 0 24px;
+      }
+      .notfound__path code {
+        font-size: 12px;
+        color: var(--muted);
+        background: var(--paper);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 3px 8px;
+        word-break: break-all;
+      }
+      .notfound__actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      /* Matches the in-app Button primitive: pill, plinth, sink on press. */
+      .notfound__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 50px;
+        padding: 0 24px;
+        border-radius: 999px;
+        font-weight: 800;
+        text-decoration: none;
+        color: var(--ink);
+        background: #fff;
+        border: 2px solid #cfcbc5;
+        transition: transform 140ms cubic-bezier(0.2, 0, 0, 1),
+          background-color 140ms cubic-bezier(0.2, 0, 0, 1),
+          box-shadow 140ms cubic-bezier(0.2, 0, 0, 1);
+      }
+      .notfound__btn:hover {
+        background: #faf8f6;
+      }
+      .notfound__btn:active {
+        transform: scale(0.97);
+      }
+      .notfound__btn--primary {
+        color: #fff;
+        background: var(--plum);
+        border: 0;
+        border-bottom: 4px solid var(--plum-dark);
+      }
+      .notfound__btn--primary:hover {
+        background: #cb5686;
+      }
+      .notfound__btn--primary:active {
+        transform: translateY(4px);
+        border-bottom-width: 0;
+        margin-bottom: 4px;
+      }
+
+      /* ── Boot shell ──────────────────────────────────────────────────────
+         Shaped like the screen that follows, so the handover doesn't jump. */
+      #web-boot-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--paper);
+        transition: opacity 0.22s cubic-bezier(0.2, 0, 0, 1);
+      }
+      #web-boot-splash .boot-inner {
+        width: 240px;
+        text-align: center;
+      }
+      #web-boot-splash .boot-logo {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 20px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--plum), var(--teal));
+        box-shadow: 0 8px 22px rgba(190, 74, 121, 0.32);
+        animation: boot-pulse 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+      #web-boot-splash .boot-line {
+        height: 10px;
+        border-radius: 6px;
+        background: linear-gradient(90deg, #eae5e0 25%, #f3efeb 37%, #eae5e0 63%);
+        background-size: 400% 100%;
+        margin-bottom: 8px;
+        animation: boot-shimmer 1.4s linear infinite;
+      }
+      #web-boot-splash .boot-line.short {
+        width: 65%;
+        margin: 0 auto;
+      }
+
+      @keyframes boot-pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(0.92);
+          opacity: 0.78;
+        }
+      }
+      @keyframes boot-shimmer {
+        0% {
+          background-position: 100% 0;
+        }
+        100% {
+          background-position: 0 0;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.001ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="web-boot-splash" aria-hidden="true">
+      <div class="boot-inner">
+        <div class="boot-logo"></div>
+        <div class="boot-line"></div>
+        <div class="boot-line short"></div>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

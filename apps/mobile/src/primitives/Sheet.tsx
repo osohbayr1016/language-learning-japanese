@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, spacing } from '../theme';
+import { colors, motion, radius, shadows, spacing } from '../theme';
 
 type Props = {
   visible: boolean;
@@ -21,12 +21,12 @@ export function Sheet({ visible, onClose, children, height }: Props) {
     Animated.parallel([
       Animated.timing(translateY, {
         toValue: visible ? 0 : HIDDEN_OFFSET,
-        duration: visible ? 280 : 220,
+        duration: visible ? motion.duration.slow : motion.duration.base,
         useNativeDriver: true,
       }),
       Animated.timing(opacity, {
         toValue: visible ? 1 : 0,
-        duration: visible ? 280 : 220,
+        duration: visible ? motion.duration.slow : motion.duration.base,
         useNativeDriver: true,
       }),
     ]).start();
@@ -57,18 +57,19 @@ const styles = StyleSheet.create({
   root: { flex: 1, justifyContent: 'flex-end' },
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: colors.overlay },
   sheet: {
-    backgroundColor: colors.bg.secondary,
+    backgroundColor: colors.bg.primary,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
+    ...shadows.lg,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
   },
   handle: {
     alignSelf: 'center',
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.borderLight,
+    width: 44,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: colors.borderStrong,
     marginBottom: spacing.md,
   },
 });

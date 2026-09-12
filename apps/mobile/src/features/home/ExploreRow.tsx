@@ -17,7 +17,8 @@ type Item = {
 const ITEMS: Item[] = [
   { key: 'study', title: mn.tabs.study, icon: 'book', color: colors.accent.blue, href: '/(tabs)/study' },
   { key: 'kana', title: mn.tabs.kana, icon: 'apps', color: colors.accent.purple, href: '/(tabs)/games' },
-  { key: 'cartoons', title: mn.tabs.cartoons, icon: 'play-circle', color: colors.accent.pink, href: '/(tabs)/cartoons' },
+  { key: 'games', title: mn.tabs.games, icon: 'game-controller', color: colors.accent.pink, href: '/games' },
+  { key: 'kanji', title: mn.tabs.kanji, icon: 'language', color: colors.accent.teal, href: '/(tabs)/kanji' },
 ];
 
 export function ExploreRow() {
@@ -25,7 +26,6 @@ export function ExploreRow() {
 
   return (
     <View style={styles.section}>
-      <Text style={styles.title}>{mn.home.moreShortcuts}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroller}>
         {ITEMS.map((it) => (
           <Pressable

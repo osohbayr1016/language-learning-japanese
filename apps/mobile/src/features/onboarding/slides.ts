@@ -1,3 +1,7 @@
+import onboarding1 from '../../../assets/images/onboarding-1.png';
+import onboarding2 from '../../../assets/images/onboarding-2.png';
+import onboarding3 from '../../../assets/images/onboarding-3.png';
+
 export type OnboardingSlide = {
   id: string;
   /** Main headline in Japanese (kanji/kana). */
@@ -6,7 +10,8 @@ export type OnboardingSlide = {
   romaji: string;
   /** Copy key matching strings (s1, s2, s3). */
   copyKey: 's1' | 's2' | 's3';
-  image: number;
+  /** Resolved asset URL. */
+  image: string;
 };
 
 export const slides: OnboardingSlide[] = [
@@ -15,20 +20,20 @@ export const slides: OnboardingSlide[] = [
     japanese: 'アニメを見る',
     romaji: 'anime o miru',
     copyKey: 's1',
-    image: require('../../../assets/images/onboarding-1.png'),
+    image: onboarding1,
   },
   {
     id: 's2',
     japanese: 'ゲームで覚える',
     romaji: 'gēmu de oboeru',
     copyKey: 's2',
-    image: require('../../../assets/images/onboarding-2.png'),
+    image: onboarding2,
   },
   {
     id: 's3',
     japanese: '毎日続ける',
     romaji: 'mainichi tsuzukeru',
     copyKey: 's3',
-    image: require('../../../assets/images/onboarding-3.png'),
+    image: onboarding3,
   },
 ];
