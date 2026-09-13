@@ -86,6 +86,10 @@ const styles = StyleSheet.create({
   wrap: {
     flex: 1,
     minHeight: 320,
+    // A card taller than this is just empty white; the rating controls then
+    // sit off-screen on a phone and the whole page has to scroll.
+    maxHeight: 440,
+    width: "100%",
     backgroundColor: "transparent",
   },
   face: {

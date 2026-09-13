@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     borderColor: colors.accent.purple,
   },
   chipLabel: { ...typography.heading.sm, color: colors.text.secondary },
-  chipLabelActive: { color: colors.text.primary },
+  chipLabelActive: { color: colors.text.inverse },
   tipRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
   tip: { ...typography.body.md, color: colors.text.secondary, flex: 1 },
 });

@@ -1,5 +1,6 @@
 export const study = {
   flashcard: "Цээжлэх карт",
+  flipHint: "Картыг дарж эргүүлээд утгыг нь хараарай",
   learn: "Сурах горим",
   write: "Бичих",
   writer: "Канжи бичих",

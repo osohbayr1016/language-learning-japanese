@@ -294,7 +294,7 @@ export default function KanjiScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={mn.writer.watch}
                       >
-                        <Ionicons name="create-outline" size={16} color={hskC} />
+                        <Ionicons name="create-outline" size={14} color={hskC} />
                       </Pressable>
                     </View>
                   );
@@ -464,18 +464,19 @@ const styles = StyleSheet.create({
     marginTop: 1,
     textAlign: "center",
   },
+  // Sits inside the tile's top-left corner; it used to hang off the bottom
+  // edge and collide with the row beneath.
   strokeFab: {
     position: "absolute",
-    bottom: -8,
-    right: -4,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    top: 5,
+    left: 5,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: colors.bg.primary,
     borderWidth: 1.5,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 2,
-    ...shadows.sm,
   },
 });

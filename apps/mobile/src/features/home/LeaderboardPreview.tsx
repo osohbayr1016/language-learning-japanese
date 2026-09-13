@@ -33,8 +33,8 @@ export function LeaderboardPreview() {
       <SectionHeading
         title={mn.home.leaderboard}
         subtitle="Энэ долоо хоногийн тэргүүлэгчид"
-        actionLabel={mn.tabs.games}
-        onAction={() => router.push('/(tabs)/games' as never)}
+        actionLabel="Бүгд"
+        onAction={() => router.push('/games' as never)}
       />
       {rows.map((r, i) => (
         <LeaderboardRow key={`${r.display_name}-${i}`} row={r} rank={i + 1} />

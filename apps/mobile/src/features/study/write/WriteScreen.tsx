@@ -103,5 +103,7 @@ export default function WriteScreen() {
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  body: { flex: 1, justifyContent: 'space-between', paddingTop: spacing.md, paddingBottom: spacing.lg },
+  // The input sits right under the prompt; a 'space-between' layout used to
+  // push it to the bottom of the screen with a screen-high gap.
+  body: { flex: 1, justifyContent: 'flex-start', gap: spacing.md, paddingTop: spacing.md, paddingBottom: spacing.lg },
 });

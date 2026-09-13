@@ -3,7 +3,7 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { safeBack } from '../../lib/navigation/safeBack';
-import { Screen } from '../../primitives';
+import { EmptyState, Screen } from '../../primitives';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import type { GrammarRow } from '../../lib/api/grammar';
@@ -15,9 +15,13 @@ export function GrammarListScreen() {
   const { token } = useAuth();
   const [rows, setRows] = useState<GrammarRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setFailed(false);
+    setLoading(true);
     void (async () => {
       if (!token) {
         setRows([]);
@@ -28,7 +32,10 @@ export function GrammarListScreen() {
         const r = await api.grammar.list(token);
         if (!cancelled) setRows(r.data ?? []);
       } catch {
-        if (!cancelled) setRows([]);
+        if (!cancelled) {
+          setRows([]);
+          setFailed(true);
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -36,7 +43,7 @@ export function GrammarListScreen() {
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, attempt]);
 
   return (
     <Screen edges={['top']} scroll scrollBottomInset={88}>
@@ -56,11 +63,35 @@ export function GrammarListScreen() {
         <View style={styles.backBtn} />
       </View>
       {!token ? (
-        <Text style={styles.hint}>{mn.auth.loginTitle}</Text>
+        <EmptyState
+          icon="log-in-outline"
+          title={mn.auth.loginTitle}
+          body="Грамматикийн хичээлүүд бүртгэлтэй хэрэглэгчид нээлттэй."
+          actionLabel={mn.auth.signIn}
+          onAction={() => router.push('/login' as never)}
+        />
       ) : loading ? (
         <ActivityIndicator style={styles.center} color={colors.brand.primary} />
+      ) : failed ? (
+        <EmptyState
+          icon="cloud-offline-outline"
+          tone="warning"
+          title="Ачаалж чадсангүй"
+          body="Интернэт холболтоо шалгаад дахин оролдоно уу."
+          actionLabel="Дахин оролдох"
+          onAction={() => setAttempt((n) => n + 1)}
+          secondaryLabel={mn.common.back}
+          onSecondary={() => safeBack(router, '/(tabs)/study')}
+        />
       ) : rows.length === 0 ? (
-        <Text style={styles.hint}>{mn.study.courseEmpty}</Text>
+        <EmptyState
+          icon="book-outline"
+          tone="neutral"
+          title="Грамматикийн хичээл алга"
+          body="Хичээлүүд нэмэгдэхээр энд харагдана. Одоохондоо үг хэллэгээ давтаарай."
+          actionLabel={mn.tabs.study}
+          onAction={() => safeBack(router, '/(tabs)/study')}
+        />
       ) : (
         <View style={styles.list}>
           {rows.map((g) => (

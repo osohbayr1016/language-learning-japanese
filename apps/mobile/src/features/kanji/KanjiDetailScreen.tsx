@@ -29,15 +29,18 @@ import { HanziWriterView, type HanziWriterMode } from '../../components/writing/
 
 // ─── Activity Types ───────────────────────────────────────────────────────────
 
+type ActivityIcon = React.ComponentProps<typeof Ionicons>['name'];
+
 const ACTIVITIES: {
   key: KanjiActivityKey;
-  icon: string;
+  icon: ActivityIcon;
+  color: string;
   label: string;
   description: string;
 }[] = [
-  { key: 'listen',   icon: '🔊', label: 'Сонсох & Хэлэх', description: 'Сонсоод давтан хэлээрэй' },
-  { key: 'write',    icon: '✍️', label: 'Бичих',          description: 'Зурлагын дарааллаар зур' },
-  { key: 'sentence', icon: '📖', label: 'Өгүүлбэр',       description: 'Жишээ өгүүлбэрийг уншаарай' },
+  { key: 'listen',   icon: 'volume-high', color: colors.accent.purple, label: 'Сонсох & Хэлэх', description: 'Сонсоод давтан хэлээрэй' },
+  { key: 'write',    icon: 'create',      color: colors.accent.teal,   label: 'Бичих',          description: 'Зурлагын дарааллаар зур' },
+  { key: 'sentence', icon: 'book',        color: colors.accent.pink,   label: 'Өгүүлбэр',       description: 'Жишээ өгүүлбэрийг уншаарай' },
 ];
 
 // ─── Sentence sub-component ───────────────────────────────────────────────────
@@ -339,7 +342,7 @@ export function KanjiDetailScreen() {
       <View style={styles.progressSection}>
         <Text style={styles.progressLabel}>
           {allDone
-            ? '✅ Бүх даалгавар дууслаа!'
+            ? 'Бүх даалгавар дууслаа!'
             : `${completed.size} / ${ACTIVITIES.length} даалгавар дууссан`}
         </Text>
         <View style={styles.progressTrack}>
@@ -377,8 +380,8 @@ export function KanjiDetailScreen() {
                 }}
               >
                 {/* Icon + done badge */}
-                <View style={styles.activityIconWrap}>
-                  <Text style={styles.activityIcon}>{act.icon}</Text>
+                <View style={[styles.activityIconWrap, { backgroundColor: `${act.color}1F` }]}>
+                  <Ionicons name={act.icon} size={22} color={act.color} />
                   {done && (
                     <View style={styles.doneCheck}>
                       <Ionicons name="checkmark" size={11} color="#fff" />
@@ -391,7 +394,7 @@ export function KanjiDetailScreen() {
                     {act.label}
                   </Text>
                   <Text style={styles.activityDesc} numberOfLines={1}>
-                    {done ? 'Дууссан ✓' : act.description}
+                    {done ? 'Дууссан' : act.description}
                   </Text>
                 </View>
 
@@ -451,9 +454,14 @@ export function KanjiDetailScreen() {
             ? 'Хадгалж байна...'
             : allDone
             ? 'Суралцлаа гэж тэмдэглэх (+20 XP)'
-            : 'Бүх даалгавраа дуусгасны дараа'}
+            : 'Сурсан гэж тэмдэглэх'}
         </Text>
       </Pressable>
+      {!allDone ? (
+        <Text style={styles.learnHint}>
+          Дээрх {ACTIVITIES.length} даалгаврыг дуусгавал энэ ханзыг сурсан гэж тэмдэглэж, +20 XP авна.
+        </Text>
+      ) : null}
 
       <Dialog
         visible={dialogVisible}
@@ -566,7 +574,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activityIcon: { fontSize: 28 },
   doneCheck: {
     position: 'absolute',
     top: -1,
@@ -622,5 +629,12 @@ const styles = StyleSheet.create({
   },
   learnBtnTextDisabled: {
     color: colors.text.muted,
+  },
+  learnHint: {
+    ...typography.body.sm,
+    color: colors.text.muted,
+    textAlign: 'center',
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
   },
 });

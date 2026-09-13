@@ -26,6 +26,7 @@ export function LearningDayHistoryCard({ monthStart, days, onPrev, onNext }: Pro
 
   return (
     <SectionCard
+      stackRight
       title={mn.insights.history.title}
       right={<RangeTabs active="monthly" enabled={['monthly']} />}
     >

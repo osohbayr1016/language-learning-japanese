@@ -29,6 +29,7 @@ export function LearningTimeCard({ weekStart, data, onPrev, onNext }: Props) {
 
   return (
     <SectionCard
+      stackRight
       title={mn.insights.time.title}
       right={<RangeTabs active="weekly" enabled={['weekly']} />}
     >

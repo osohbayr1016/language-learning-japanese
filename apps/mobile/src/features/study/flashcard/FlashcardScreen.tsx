@@ -138,6 +138,7 @@ export default function FlashcardScreen({ onSessionDone, initialWords }: { onSes
           front={<CardFront word={current} />}
           back={<CardBack word={current} />}
         />
+        {!flipped ? <Text style={styles.flipHint}>{mn.study.flipHint}</Text> : null}
       </View>
       {flipped ? (
         <View style={styles.bottom}>
@@ -152,8 +153,14 @@ export default function FlashcardScreen({ onSessionDone, initialWords }: { onSes
 
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  cardArea: { flex: 1, paddingVertical: spacing.lg },
+  cardArea: { flex: 1, paddingVertical: spacing.lg, justifyContent: "flex-start" },
   bottom: { paddingBottom: spacing.lg, gap: spacing.sm },
+  flipHint: {
+    ...typography.body.md,
+    color: colors.text.muted,
+    textAlign: "center",
+    paddingTop: spacing.md,
+  },
   keysHint: {
     ...typography.body.sm,
     color: colors.text.muted,

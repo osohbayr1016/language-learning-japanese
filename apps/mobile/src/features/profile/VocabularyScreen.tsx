@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
-import { Screen } from '../../primitives';
+import { EmptyState, Screen } from '../../primitives';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import type { WordWithProgress } from '../../lib/types';
@@ -109,7 +109,16 @@ export function VocabularyScreen() {
           onEndReached={() => {
             if (hasMore && !loadingMore && !loading) void fetchPage(false);
           }}
-          ListEmptyComponent={<Text style={styles.muted}>{mn.profile.noSeenWords}</Text>}
+          ListEmptyComponent={
+            <EmptyState
+              icon="albums-outline"
+              tone="neutral"
+              title="Үзсэн үг алга"
+              body="Хичээл, давталт хийхэд орсон үгс энд цугларна."
+              actionLabel={mn.tabs.study}
+              onAction={() => router.push('/(tabs)/study' as never)}
+            />
+          }
           ListFooterComponent={
             loadingMore ? <ActivityIndicator color={colors.brand.primary} style={{ padding: spacing.md }} /> : null
           }

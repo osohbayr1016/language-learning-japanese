@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 import { mn } from '../../i18n/mn';
 import { colors, spacing, typography } from '../../theme';
 
+/**
+ * Admin-only maintenance: re-read the account's role from the server after
+ * someone has been granted admin. Hidden from ordinary learners, who used to
+ * see a card talking about database columns.
+ */
 export function SettingsRoleRefreshCard() {
-  const { refreshAdminRole } = useAuth();
+  const { refreshAdminRole, isAdmin } = useAuth();
   const [busy, setBusy] = useState(false);
+  const { admin } = useLocalSearchParams<{ admin?: string }>();
+
+  if (!isAdmin && admin !== '1') return null;
 
   return (
     <View style={styles.card}>

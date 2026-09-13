@@ -5,6 +5,7 @@ import type { ExamTemplate } from '../../lib/api/exams';
 import { mn } from '../../i18n/mn';
 import { mockExamStyles as styles } from './mockExamStyles';
 import { colors } from '../../theme';
+import { jlptNLabel } from '../../lib/jlptLabel';
 
 type Props = {
   templates: ExamTemplate[];
@@ -39,7 +40,7 @@ export function MockExamTemplatePicker({ templates, onPick, onBack }: Props) {
       <Text style={styles.p}>{mn.study.mockExamPickHint}</Text>
       {sections.map(([lvl, rows]) => (
         <View key={lvl} style={{ width: '100%' }}>
-          <Text style={[styles.tplMeta, { marginTop: 12, marginBottom: 8, fontWeight: '600' }]}>HSK {lvl}</Text>
+          <Text style={[styles.tplMeta, { marginTop: 12, marginBottom: 8, fontWeight: '600' }]}>{jlptNLabel(lvl)}</Text>
           {[...rows]
             .sort((a, b) => a.id - b.id)
             .map((t) => (

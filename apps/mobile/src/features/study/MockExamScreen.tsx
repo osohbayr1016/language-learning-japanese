@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { ActivityIndicator, Pressable, Text } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { safeBack } from '../../lib/navigation/safeBack';
-import { Screen } from '../../primitives';
+import { EmptyState, Screen } from '../../primitives';
+import { ProfileScreenBackBar } from '../profile/ProfileScreenBackBar';
 import { useAuth } from '../../context/AuthContext';
 import { mn } from '../../i18n/mn';
 import { colors } from '../../theme';
@@ -33,7 +34,16 @@ export function MockExamScreen() {
   if (!token) {
     return (
       <Screen edges={['top']}>
-        <Text style={styles.muted}>{mn.auth.loginTitle}</Text>
+        <ProfileScreenBackBar title="Загвар шалгалт" fallback="/(tabs)/study" style={{ marginBottom: 8 }} />
+        <EmptyState
+          icon="log-in-outline"
+          title={mn.auth.loginTitle}
+          body="Загвар шалгалт бүртгэлтэй хэрэглэгчид нээлттэй."
+          actionLabel={mn.auth.signIn}
+          onAction={() => router.push('/login' as never)}
+          secondaryLabel={mn.common.back}
+          onSecondary={exit}
+        />
       </Screen>
     );
   }
@@ -49,16 +59,15 @@ export function MockExamScreen() {
   if (deeplinkInvalid) {
     return (
       <Screen edges={['top']} scroll>
-        <Text style={styles.muted}>{mn.study.mockExamDeeplinkInvalid}</Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={mn.common.back}
-          style={styles.pickerBack}
-          onPress={exit}
-          hitSlop={12}
-        >
-          <Text style={styles.pickerBackTx}>{mn.common.back}</Text>
-        </Pressable>
+        <ProfileScreenBackBar title="Загвар шалгалт" fallback="/(tabs)/study" style={{ marginBottom: 8 }} />
+        <EmptyState
+          icon="link-outline"
+          tone="warning"
+          title="Шалгалт олдсонгүй"
+          body={mn.study.mockExamDeeplinkInvalid}
+          actionLabel={mn.common.back}
+          onAction={exit}
+        />
       </Screen>
     );
   }
@@ -67,7 +76,21 @@ export function MockExamScreen() {
     if (selectable.length === 0 || startFailed) {
       return (
         <Screen edges={['top']}>
-          <Text style={styles.muted}>{mn.study.courseEmpty}</Text>
+        <ProfileScreenBackBar title="Загвар шалгалт" fallback="/(tabs)/study" style={{ marginBottom: 8 }} />
+          <EmptyState
+            icon={startFailed ? 'cloud-offline-outline' : 'document-text-outline'}
+            tone={startFailed ? 'warning' : 'neutral'}
+            title={startFailed ? 'Шалгалт эхлүүлж чадсангүй' : 'Загвар шалгалт алга'}
+            body={
+              startFailed
+                ? 'Интернэт холболтоо шалгаад дахин оролдоно уу.'
+                : 'Шалгалтууд нэмэгдэхээр энд харагдана. Одоохондоо үг хэллэгээ давтаарай.'
+            }
+            actionLabel={startFailed ? 'Дахин оролдох' : mn.tabs.study}
+            onAction={startFailed ? () => router.replace('/study/mock-exam' as never) : exit}
+            secondaryLabel={startFailed ? mn.common.back : undefined}
+            onSecondary={startFailed ? exit : undefined}
+          />
         </Screen>
       );
     }

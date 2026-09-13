@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, radius, shadows, spacing, typography } from '../../theme';
+import { Touchable } from '../../primitives/Touchable';
 import { mn } from '../../i18n/mn';
 
 type Item = {
@@ -21,46 +22,51 @@ const ITEMS: Item[] = [
   { key: 'kanji', title: mn.tabs.kanji, icon: 'language', color: colors.accent.teal, href: '/(tabs)/kanji' },
 ];
 
+/**
+ * Four equal tiles that fit the column. This was a horizontal scroller that
+ * cut the fourth tile in half at phone width, which read as a layout bug
+ * rather than as "there is more".
+ */
 export function ExploreRow() {
   const router = useRouter();
 
   return (
-    <View style={styles.section}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.scroller}>
-        {ITEMS.map((it) => (
-          <Pressable
-            key={it.key}
-            accessibilityRole="button"
-            accessibilityLabel={it.title}
-            style={({ pressed }) => [styles.tile, pressed && styles.pressed]}
-            onPress={() => router.push(it.href as never)}
-          >
-            <View style={[styles.iconBox, { backgroundColor: `${it.color}22` }]}>
-              <Ionicons name={it.icon} size={24} color={it.color} />
-            </View>
-            <Text style={styles.label} numberOfLines={1}>{it.title}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
+    <View style={styles.grid}>
+      {ITEMS.map((it) => (
+        <Touchable
+          key={it.key}
+          accessibilityLabel={it.title}
+          style={styles.tile}
+          hoveredStyle={{ borderColor: it.color }}
+          onPress={() => router.push(it.href as never)}
+        >
+          <View style={[styles.iconBox, { backgroundColor: `${it.color}1F` }]}>
+            <Ionicons name={it.icon} size={22} color={it.color} />
+          </View>
+          <Text style={styles.label} numberOfLines={1}>
+            {it.title}
+          </Text>
+        </Touchable>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  section: { marginBottom: spacing.lg },
-  title: { ...typography.heading.md, color: colors.text.primary, marginBottom: spacing.md },
-  scroller: { gap: spacing.sm, paddingRight: spacing.md },
+  grid: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
   tile: {
-    width: 110,
+    flex: 1,
+    minWidth: 0,
     backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
-    padding: spacing.md,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xs,
     alignItems: 'center',
     gap: spacing.sm,
+    ...shadows.sm,
   },
-  pressed: { opacity: 0.85, transform: [{ scale: 0.98 }] },
   iconBox: {
     width: 44,
     height: 44,
@@ -68,5 +74,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  label: { ...typography.body.sm, color: colors.text.primary, textAlign: 'center' },
+  label: { ...typography.body.sm, fontWeight: '700', color: colors.text.primary, textAlign: 'center' },
 });

@@ -61,7 +61,7 @@ export function DynamicReadingScreen() {
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.brand.primary} />
           <Text style={styles.loadingText}>Таны мэдлэгт тааруулан түүх зохиож байна...</Text>
-          <Text style={styles.loadingHint}>Хиймэл оюун ухаан ашиглаж байна 🤖</Text>
+          <Text style={styles.loadingHint}>Хиймэл оюун ухаан ашиглаж байна</Text>
         </View>
       </Screen>
     );
@@ -157,7 +157,7 @@ export function DynamicReadingScreen() {
         )}
 
         <View style={styles.newWordsSection}>
-          <Text style={styles.newWordsTitle}>Шинэ үгнүүд ✨</Text>
+          <Text style={styles.newWordsTitle}>Шинэ үгнүүд</Text>
           <Text style={styles.newWordsSubtitle}>Энэхүү өгүүллэгт орсон шинэ үгс:</Text>
           
           <View style={styles.wordsGrid}>
@@ -172,7 +172,7 @@ export function DynamicReadingScreen() {
         </View>
 
         <Button 
-          label="Уншиж дуусгасан ✓" 
+          label="Уншиж дуусгасан" 
           onPress={handleFinish} 
           style={styles.finishBtn} 
         />
@@ -180,7 +180,7 @@ export function DynamicReadingScreen() {
 
       <Dialog
         visible={dialogVisible}
-        title="Амжилттай! 🎉"
+        title="Амжилттай!"
         message={`Та 2 шинэ үг сурлаа! Таны "Сурсан үгнүүд" жагсаалтад нэмэгдлээ.`}
         onClose={() => {
           setDialogVisible(false);

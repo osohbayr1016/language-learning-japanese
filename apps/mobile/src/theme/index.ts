@@ -278,5 +278,5 @@ export const interaction = {
 
 /** Web `AppShell`: centered app column for the whole app (including `/admin`). */
 export const layout = {
-  phoneWebMaxWidth: 480,
+  phoneWebMaxWidth: 560,
 } as const;

@@ -62,6 +62,7 @@ export function LearnScreen({ source = 'due' }: Props) {
   if (words.length === 0) {
     return (
       <StudyEmptyState
+        kind={error ? 'error' : 'empty'}
         message={
           error
             ? mn.study.wordsLoadError

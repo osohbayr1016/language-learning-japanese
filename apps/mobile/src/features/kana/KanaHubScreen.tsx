@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   header: {
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
-    backgroundColor: colors.brand.secondary + '18',
+    backgroundColor: colors.soft.teal,
     borderRadius: radius.lg,
     marginBottom: spacing.lg,
     borderWidth: 1,
@@ -39,9 +39,8 @@ const styles = StyleSheet.create({
   },
   title: {
     ...typography.heading.lg,
-    color: colors.brand.primary,
+    color: colors.brand.secondary,
     marginBottom: 6,
-    fontWeight: '800',
   },
   subtitle: { ...typography.body.md, color: colors.text.secondary },
 });

@@ -16,7 +16,7 @@ export function AiReadingBanner() {
         <View style={styles.badge}>
           <Text style={styles.badgeText}>Шинэ</Text>
         </View>
-        <Text style={styles.title}>AI Уншлага 🤖</Text>
+        <Text style={styles.title}>AI уншлага</Text>
         <Text style={styles.subtitle}>Таны сурсан үгнүүд дээр суурилан өгүүллэг уншиж, шинэ 2 үг сураарай!</Text>
       </View>
       <Ionicons name="chevron-forward" size={24} color="#fff" />

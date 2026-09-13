@@ -187,7 +187,14 @@ export function StudyCasualWords() {
                       onPress={() => handlePressWord(category.id)}
                     >
                       <View style={styles.kanaWrap}>
-                        <Text style={[styles.kana, { color: category.color }]}>{word.kana}</Text>
+                        <Text
+                          style={[styles.kana, { color: category.color }]}
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
+                          minimumFontScale={0.75}
+                        >
+                          {word.kana}
+                        </Text>
                         {word.kanji !== word.kana ? <Text style={styles.kanji}>{word.kanji}</Text> : null}
                       </View>
                       <Text style={styles.meaning}>{word.meaning_mn}</Text>
@@ -273,7 +280,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.bg.card,
     borderRadius: radius.lg,
     padding: spacing.md,
-    width: 130,
+    // Wide enough for a five-mora word (おかあさん) on one line at 24 px.
+    width: 148,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: 'center',

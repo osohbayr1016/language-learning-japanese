@@ -72,9 +72,9 @@ export function GameHud({ title, score, timeLeft, elapsedSeconds, progressLabel,
             <Text style={[styles.chipText, { color: isFever ? '#FFF' : colors.warning }]}>x{combo}</Text>
           </View>
         ) : null}
-        <View style={styles.chip}>
+        <View style={styles.chip} accessibilityLabel={`${score} ${mn.games.score}`}>
           <Ionicons name="star" size={14} color={colors.accent.purple} />
-          <Text style={[styles.chipText, { color: colors.accent.purple }]}>{score} {mn.games.score}</Text>
+          <Text style={[styles.chipText, { color: colors.accent.purple }]}>{score}</Text>
         </View>
       </View>
     </View>
