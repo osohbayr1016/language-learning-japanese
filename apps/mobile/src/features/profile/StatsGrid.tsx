@@ -39,6 +39,6 @@ const styles = StyleSheet.create({
   },
   cell: { flexBasis: '48%', flexGrow: 1, alignItems: 'center' },
   statIcon: { marginBottom: spacing.xs },
-  value: { ...typography.heading.xl, color: colors.accent.purple },
+  value: { ...typography.heading.xl, color: colors.brand.primary },
   label: { ...typography.body.md, color: colors.text.secondary, marginTop: 2 },
 });
