@@ -421,6 +421,27 @@ test('kana checkpoint can be completed with keyboard only', async ({ page }) => 
   await expect(page.getByRole('button', { name: 'N5 суралцах зам руу орох' })).toBeVisible();
 });
 
+
+test('missing pronunciation audio fails visibly instead of hanging', async ({ page }) => {
+  await seedAuthenticated(page);
+  await mockApi(page, {
+    action: {
+      kind: 'review',
+      title: 'Өнөөдрийн давталтаа хийх',
+      subtitle: '1 үг',
+      href: '/study/flashcard',
+      reason: 'due_srs',
+      due_count: 1,
+    },
+  });
+
+  await page.goto('/study/flashcard');
+  const audioButton = page.getByRole('button', { name: 'Дуудлага сонсох' }).first();
+  await expect(audioButton).toBeVisible();
+  await audioButton.click();
+  await expect(page.getByText('Дууг тоглуулж чадсангүй. Дахин оролдоно уу.')).toBeVisible();
+});
+
 test('mic permission denial produces a learner-visible result instead of hanging', async ({ page }) => {
   await page.addInitScript(() => {
     class FakeRecognition {
