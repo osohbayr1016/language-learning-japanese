@@ -2,7 +2,13 @@ import { passesJlptN5AdvanceGate } from './jlptGate';
 import { studyQueueCount } from './studyQueue';
 import { getLearningPreferences, type LearningReason } from './learningPreferences';
 
-export type StudyActionKind = 'review' | 'foundation' | 'lesson' | 'weak_skill' | 'explore';
+export type StudyActionKind =
+  | 'review'
+  | 'foundation'
+  | 'checkpoint'
+  | 'lesson'
+  | 'weak_skill'
+  | 'explore';
 
 export type StudyNextAction = {
   kind: StudyActionKind;
@@ -18,6 +24,7 @@ export type StudyNextAction = {
 export type StudyRecommendationInput = {
   dueCount: number;
   needsKanaFoundation?: boolean;
+  needsN5Checkpoint?: boolean;
   nextLessonId: number | null;
   weakSkill: string | null;
   learningReason?: LearningReason | null;
@@ -83,6 +90,16 @@ export function selectStudyAction(input: StudyRecommendationInput): StudyNextAct
     };
   }
 
+  if (input.needsN5Checkpoint) {
+    return {
+      kind: 'checkpoint',
+      title: 'N5 түвшнээ баталгаажуулах',
+      subtitle: 'Түвшин тогтоох шалгалт өндөр гарсан тул N5 mock өгөөд дараагийн түвшнээ нээгээрэй',
+      href: '/study/mock-exam',
+      reason: 'placement_requires_n5_checkpoint',
+    };
+  }
+
   if (input.nextLessonId != null) {
     return {
       kind: 'lesson',
@@ -145,8 +162,11 @@ export function selectStudyAction(input: StudyRecommendationInput): StudyNextAct
   };
 }
 
-async function findNextLessonId(db: D1Database, userId: number): Promise<number | null> {
-  const gateOk = await passesJlptN5AdvanceGate(db, userId);
+async function findNextLessonId(
+  db: D1Database,
+  userId: number,
+  gateOk: boolean
+): Promise<number | null> {
   const row = await db
     .prepare(
       `SELECT l.id
@@ -210,7 +230,22 @@ export async function getStudyNextAction(
     });
   }
 
-  const nextLessonId = await findNextLessonId(db, userId);
+  const gateOk = await passesJlptN5AdvanceGate(db, userId);
+  const placementAboveN5 =
+    preferences.placement_level != null && preferences.placement_level !== 'n5';
+
+  if (placementAboveN5 && !gateOk) {
+    return selectStudyAction({
+      dueCount: 0,
+      needsKanaFoundation: false,
+      needsN5Checkpoint: true,
+      nextLessonId: null,
+      weakSkill: null,
+      learningReason: preferences.learning_reason,
+    });
+  }
+
+  const nextLessonId = await findNextLessonId(db, userId, gateOk);
   if (nextLessonId != null) {
     return selectStudyAction({
       dueCount: 0,
