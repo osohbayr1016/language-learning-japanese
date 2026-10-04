@@ -12,6 +12,7 @@ export async function submitLessonCompleteToServer(opts: {
   results: ExerciseResult[];
   detail: LessonDetail | null;
   completionId: string;
+  accuracyOverride?: number | null;
   xpEarned: number;
   durationSec: number;
   addLocalXp: (n: number) => void;
@@ -29,6 +30,7 @@ export async function submitLessonCompleteToServer(opts: {
     results,
     detail,
     completionId,
+    accuracyOverride,
     xpEarned,
     durationSec,
     addLocalXp,
@@ -37,7 +39,8 @@ export async function submitLessonCompleteToServer(opts: {
 
   const totalCount = results.length;
   const correctCount = results.filter((r) => r.correct).length;
-  const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
+  const measuredAccuracy = totalCount > 0 ? correctCount / totalCount : 0;
+  const accuracy = accuracyOverride == null ? measuredAccuracy : Math.max(0, Math.min(1, accuracyOverride));
   const wordsById = new Map<number, WordWithProgress>();
   for (const w of detail?.words ?? []) wordsById.set(w.id, w);
 
