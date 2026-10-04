@@ -1,0 +1,45 @@
+name: Quality checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: quality-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Type-check and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.3
+          run_install: false
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: Install workspace
+        run: pnpm install --frozen-lockfile
+
+      - name: Type-check website
+        run: pnpm typecheck
+
+      - name: Type-check API
+        run: pnpm --dir apps/api type-check
+
+      - name: Build production website
+        run: pnpm build
+
+      - name: Verify production artifact
+        run: |
+          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
+          test "$(find dist -type f | wc -l)" -gt 1 || { echo "Production build is unexpectedly empty"; exit 1; }
