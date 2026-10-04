@@ -369,13 +369,18 @@ Minimum coverage:
 Before claiming a phase is done, all of these must pass:
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm typecheck
+npm ci
+npm run typecheck
+npm run build
+
+# API/workspace validation until pnpm-lock.yaml is regenerated:
+pnpm install --no-frozen-lockfile
 pnpm --dir apps/api type-check
-pnpm build
 ```
 
 Also run the relevant tests you add.
+
+The repository currently has a stale `pnpm-lock.yaml`. Treat regenerating/reconciling it as package-manager maintenance; do not manually fabricate lockfile entries.
 
 Do not say “production ready” if checks are red.
 
