@@ -21,7 +21,7 @@ export function buildImportedLearnExercises(content: ImportedLessonContent): Exe
   const out: Exercise[] = [];
   const kRows = kanjiRows(content.vocab);
   const pRows = phraseRows(content.vocab);
-  const hasEasy = content.dialogues.some((d) => Boolean(d.text_cn?.trim()));
+  const hasEasy = content.dialogues.some((d) => Boolean(d.text_jp?.trim()));
   const hasDialogueLines = content.dialogues.some((d) => (d.lines?.length ?? 0) > 0);
 
   pushIf(out, 'summary', content, Boolean(content.summary?.trim()));
