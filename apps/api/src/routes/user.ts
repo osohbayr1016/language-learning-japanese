@@ -61,7 +61,7 @@ user.get('/dashboard', async (c) => {
     c.env.DB
       .prepare(`SELECT xp_earned FROM user_daily_activity WHERE user_id = ? AND activity_date = date('now')`)
       .bind(sub)
-      .first(),
+      .first<{ xp_earned?: number }>(),
   ]);
 
   const streak = streakRaw
