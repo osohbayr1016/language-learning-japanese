@@ -72,7 +72,7 @@ jobs:
         run: pnpm --dir apps/api type-check
 
       - name: Test study recommendation domain
-        run: pnpm dlx tsx@4.21.0 --test apps/api/tests/studyRecommendation.test.ts
+        run: pnpm dlx tsx@4.21.0 --test apps/api/tests/*.test.ts
 
       - name: Audit mobile TypeScript debt
         id: mobile_typecheck
