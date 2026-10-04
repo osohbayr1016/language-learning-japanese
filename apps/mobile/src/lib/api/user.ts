@@ -29,6 +29,7 @@ export type Dashboard = {
   streak: Streak;
   stats: Stats;
   due_today: number;
+  today_xp: number;
 };
 
 export type ProgressResult = {
