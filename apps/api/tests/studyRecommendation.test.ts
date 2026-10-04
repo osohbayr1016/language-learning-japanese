@@ -82,3 +82,25 @@ test('learning reason changes exploration after required work is clear', () => {
   });
   assert.equal(culture.href, '/study/ai-reading');
 });
+
+test('due review still wins over a placement checkpoint', () => {
+  const action = selectStudyAction({
+    dueCount: 2,
+    needsN5Checkpoint: true,
+    nextLessonId: 42,
+    weakSkill: null,
+  });
+  assert.equal(action.kind, 'review');
+});
+
+test('high placement routes through the N5 checkpoint before an ordinary lesson', () => {
+  const action = selectStudyAction({
+    dueCount: 0,
+    needsN5Checkpoint: true,
+    nextLessonId: 42,
+    weakSkill: null,
+  });
+  assert.equal(action.kind, 'checkpoint');
+  assert.equal(action.href, '/study/mock-exam');
+  assert.equal(action.reason, 'placement_requires_n5_checkpoint');
+});
