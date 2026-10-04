@@ -1,4 +1,4 @@
-import { passesJlptN5AdvanceGate } from './hskGate';
+import { passesJlptN5AdvanceGate } from './jlptGate';
 import { studyQueueCount } from './studyQueue';
 import { getLearningPreferences, type LearningReason } from './learningPreferences';
 
