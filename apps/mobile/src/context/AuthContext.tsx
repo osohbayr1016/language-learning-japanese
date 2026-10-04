@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: false,
     hasSeenOnboarding: false,
     jlptLevel: null,
-    chineseLevel: null;
+    chineseLevel: null,
     reason: null,
   });
 
