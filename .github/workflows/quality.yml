@@ -42,6 +42,17 @@ jobs:
           test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
           test "$(find dist -type f | wc -l)" -gt 1 || { echo "Production build is unexpectedly empty"; exit 1; }
 
+      - name: Guard web JavaScript chunk size
+        run: |
+          largest="$(find dist/assets -type f -name '*.js' -printf '%s %p\n' | sort -nr | head -1)"
+          bytes="$(printf '%s' "$largest" | awk '{print $1}')"
+          file="$(printf '%s' "$largest" | cut -d' ' -f2-)"
+          echo "Largest JS chunk: $bytes bytes ($file)"
+          test "$bytes" -le 600000 || {
+            echo "::error::Largest web JS chunk exceeds 600 KB raw budget: $file ($bytes bytes)"
+            exit 1
+          }
+
       - name: Report web typecheck debt
         if: always() && steps.web_typecheck.outcome == 'failure'
         run: echo "::warning::Web TypeScript baseline is still red; see docs/JAPANESE-LEARNING-AUDIT.md."
