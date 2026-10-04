@@ -21,6 +21,10 @@ export type LessonState = {
   durationSec: number;
   error: string | null;
   accuracyOverride: number | null;
+  mastered: boolean | null;
+  masteryRequired: number;
+  finalizing: boolean;
+  finalizeError: string | null;
 };
 
 export function useLessonSession(lessonId: number, opts: { mode?: LessonSessionMode } = {}) {
@@ -38,9 +42,16 @@ export function useLessonSession(lessonId: number, opts: { mode?: LessonSessionM
     durationSec: 0,
     error: null,
     accuracyOverride: null,
+    mastered: null,
+    masteryRequired: 0.8,
+    finalizing: false,
+    finalizeError: null,
   });
   const startedAt = useRef(Date.now());
   const exerciseStartAt = useRef(Date.now());
+  const completionIdRef = useRef('');
+  const finalizeInFlightRef = useRef(false);
+  const finalizedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -54,7 +65,14 @@ export function useLessonSession(lessonId: number, opts: { mode?: LessonSessionM
       durationSec: 0,
       error: null,
       accuracyOverride: null,
+      mastered: null,
+      masteryRequired: 0.8,
+      finalizing: false,
+      finalizeError: null,
     });
+    completionIdRef.current = `lesson-${lessonId}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    finalizeInFlightRef.current = false;
+    finalizedRef.current = false;
     void (async () => {
       try {
         const res = await fetchLessonSessionDetail({ lessonId, token, adminPreview });
@@ -160,10 +178,14 @@ export function useLessonSession(lessonId: number, opts: { mode?: LessonSessionM
 
   const finalize = useCallback(async () => {
     if (adminPreview || !token || state.status !== 'done') return;
+    if (finalizeInFlightRef.current || finalizedRef.current) return;
+    finalizeInFlightRef.current = true;
+    setState((s) => ({ ...s, finalizing: true, finalizeError: null }));
     try {
-      await submitLessonCompleteToServer({
+      const result = await submitLessonCompleteToServer({
         token,
         lessonId,
+        completionId: completionIdRef.current,
         exercises: state.exercises,
         results: state.results,
         detail: state.detail,
@@ -172,8 +194,23 @@ export function useLessonSession(lessonId: number, opts: { mode?: LessonSessionM
         addLocalXp,
         refreshGam,
       });
+      finalizedRef.current = true;
+      setState((s) => ({
+        ...s,
+        xpEarned: result.xp_earned,
+        mastered: result.mastered,
+        masteryRequired: result.mastery_required,
+        finalizing: false,
+        finalizeError: null,
+      }));
     } catch (e) {
-      console.warn('lesson complete failed', e);
+      setState((s) => ({
+        ...s,
+        finalizing: false,
+        finalizeError: e instanceof Error ? e.message : 'Хичээлийн дүнг хадгалж чадсангүй',
+      }));
+    } finally {
+      finalizeInFlightRef.current = false;
     }
   }, [
     adminPreview,
