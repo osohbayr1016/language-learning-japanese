@@ -34,7 +34,7 @@ export function StudyPathProgressCards() {
       title: mn.tabs.kana,
       sub: 'Хирагана · Катакана',
       color: colors.accent.blue,
-      href: '/(tabs)/games',
+      href: '/kana',
     },
     {
       key: 'kanji',
