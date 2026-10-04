@@ -1,18 +1,18 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import type { ExamTemplate } from '../../lib/api/exams';
-import type { HskLevel, ImportedLessonContent } from '../../lib/types';
+import type { JlptLevel, ImportedLessonContent } from '../../lib/types';
 
 export type LessonDoneMockExam = {
   templateId: number | null;
   loading: boolean;
   usedExplicitId: boolean;
-  /** Ижил HSK-ийн олон нийтлэг загвараас ID хамгийн ихийг сонгов */
-  usedHskMaxIdFallback: boolean;
+  /** Ижил JLPT түвшний олон нийтлэг загвараас ID хамгийн ихийг сонгов */
+  usedJlptMaxIdFallback: boolean;
 };
 
-function pickByHsk(templates: ExamTemplate[], hsk: HskLevel): { id: number; multiple: boolean } | null {
-  const match = templates.filter((t) => t.jlpt_level === hsk);
+function pickByJlpt(templates: ExamTemplate[], jlptLevel: JlptLevel): { id: number; multiple: boolean } | null {
+  const match = templates.filter((t) => t.jlpt_level === jlptLevel);
   if (!match.length) return null;
   if (match.length === 1) return { id: match[0]!.id, multiple: false };
   const maxId = Math.max(...match.map((t) => t.id));
@@ -22,7 +22,7 @@ function pickByHsk(templates: ExamTemplate[], hsk: HskLevel): { id: number; mult
 export function useLessonDoneMockExam(
   token: string | null | undefined,
   imported: ImportedLessonContent | null | undefined,
-  chapterHsk: HskLevel | undefined
+  chapterJlptLevel: JlptLevel | undefined
 ): LessonDoneMockExam {
   const [templates, setTemplates] = useState<ExamTemplate[] | null>(null);
 
@@ -50,7 +50,7 @@ export function useLessonDoneMockExam(
       templateId: null,
       loading: true,
       usedExplicitId: false,
-      usedHskMaxIdFallback: false,
+      usedJlptMaxIdFallback: false,
     };
   }
 
@@ -60,19 +60,19 @@ export function useLessonDoneMockExam(
       templateId: explicit,
       loading: false,
       usedExplicitId: true,
-      usedHskMaxIdFallback: false,
+      usedJlptMaxIdFallback: false,
     };
   }
 
   if (imported?.mock_exam_template_id != null && !templates.some((t) => t.id === imported.mock_exam_template_id)) {
-    if (chapterHsk != null) {
-      const picked = pickByHsk(templates, chapterHsk);
+    if (chapterJlptLevel != null) {
+      const picked = pickByJlpt(templates, chapterJlptLevel);
       if (picked) {
         return {
           templateId: picked.id,
           loading: false,
           usedExplicitId: false,
-          usedHskMaxIdFallback: picked.multiple,
+          usedJlptMaxIdFallback: picked.multiple,
         };
       }
     }
@@ -80,26 +80,26 @@ export function useLessonDoneMockExam(
       templateId: null,
       loading: false,
       usedExplicitId: false,
-      usedHskMaxIdFallback: false,
+      usedJlptMaxIdFallback: false,
     };
   }
 
-  if (chapterHsk == null) {
+  if (chapterJlptLevel == null) {
     return {
       templateId: null,
       loading: false,
       usedExplicitId: false,
-      usedHskMaxIdFallback: false,
+      usedJlptMaxIdFallback: false,
     };
   }
 
-  const picked = pickByHsk(templates, chapterHsk);
+  const picked = pickByJlpt(templates, chapterJlptLevel);
   if (!picked) {
     return {
       templateId: null,
       loading: false,
       usedExplicitId: false,
-      usedHskMaxIdFallback: false,
+      usedJlptMaxIdFallback: false,
     };
   }
 
@@ -107,6 +107,6 @@ export function useLessonDoneMockExam(
     templateId: picked.id,
     loading: false,
     usedExplicitId: false,
-    usedHskMaxIdFallback: picked.multiple,
+    usedJlptMaxIdFallback: picked.multiple,
   };
 }
