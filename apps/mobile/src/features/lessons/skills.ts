@@ -31,7 +31,7 @@ export function computeSkillCounts(
   const totals: SkillCounts = {
     listening: { hits: 0, total: 0 },
     pronunciation: { hits: 0, total: 0 },
-    tones: { hits: 0, total: 0 },
+    pitch: { hits: 0, total: 0 },
     recall: { hits: 0, total: 0 },
     reading: { hits: 0, total: 0 },
     stroke: { hits: 0, total: 0 },
@@ -59,7 +59,7 @@ export function computeSkills(
 ): SkillScores {
   const counts = computeSkillCounts(exercises, results);
   const out: SkillScores = {
-    listening: 0, pronunciation: 0, tones: 0, recall: 0, reading: 0, stroke: 0,
+    listening: 0, pronunciation: 0, pitch: 0, recall: 0, reading: 0, stroke: 0,
   };
   for (const k of Object.keys(counts) as SkillKey[]) {
     const t = counts[k];
