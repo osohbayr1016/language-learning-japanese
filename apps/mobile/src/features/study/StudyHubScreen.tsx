@@ -7,18 +7,21 @@ import { StudyPathProgressCards } from './StudyPathProgressCards';
 import { StudyModeGrid } from './StudyModeGrid';
 import { AiReadingBanner } from './AiReadingBanner';
 import { StudyCasualWords } from './StudyCasualWords';
+import { useLessonChapters } from '../lessons/useLessonChapters';
 
 export default function StudyHubScreen() {
+  const { chapters, loading, advanceGateOk } = useLessonChapters();
+
   return (
     <Screen scroll scrollBottomInset={70}>
       <StudyHubHeader />
-      <StudyHero />
+      <StudyHero chapters={chapters} lessonsLoading={loading} />
 
       <SectionHeading
         title="Суралцах үндсэн зам"
         subtitle="Дарааллаар нь хичээлээ хийж JLPT түвшнээ ахиул"
       />
-      <JlptJourneyCard />
+      <JlptJourneyCard chapters={chapters} loading={loading} advanceGateOk={advanceGateOk} />
 
       <SectionHeading
         title="Суурь чадвар"
