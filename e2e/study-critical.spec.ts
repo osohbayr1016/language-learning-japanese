@@ -248,6 +248,30 @@ async function mockApi(
   });
 }
 
+test('desktop shell uses learn-first navigation and a progress rail', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 820 });
+  await seedAuthenticated(page);
+  await mockApi(page, {
+    action: {
+      kind: 'lesson',
+      title: 'Дараагийн хичээлээ үргэлжлүүлэх',
+      subtitle: 'JLPT замаараа нэг алхам урагшил',
+      href: '/lessons/1',
+      reason: 'next_unfinished_lesson',
+      lesson_id: 1,
+    },
+  });
+
+  await page.goto('/home');
+  const nav = page.getByRole('navigation', { name: 'Үндсэн цэс' });
+  await expect(nav.getByText('Сурах', { exact: true })).toBeVisible();
+  await expect(nav.getByText('Дадлага', { exact: true })).toBeVisible();
+  await expect(nav.getByText('Явц', { exact: true })).toBeVisible();
+  await expect(nav.getByText('Профайл', { exact: true })).toBeVisible();
+  await expect(page.getByRole('complementary', { name: 'Өдрийн явц' })).toBeVisible();
+  await expect(page.getByText('ӨНӨӨДРИЙН ЗОРИЛГО')).toBeVisible();
+});
+
 test('zero learner is directed to kana foundation', async ({ page }) => {
   await seedAuthenticated(page, { level: 'none', reason: 'fun' });
   await mockApi(page, {
