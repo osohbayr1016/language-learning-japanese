@@ -15,10 +15,12 @@ export type LearningPreferencesPatch = Partial<{
   learning_reason: LearningReason | null;
   daily_xp_goal: number;
   kana_foundation_completed: boolean;
+  placement_level: Exclude<JlptSelfLevel, 'none'> | null;
 }>;
 
 const LEVELS = new Set<JlptSelfLevel>(['none', 'n5', 'n4', 'n3', 'n2', 'n1']);
 const REASONS = new Set<LearningReason>(['university', 'career', 'travel', 'culture', 'fun']);
+const PLACEMENT_LEVELS = new Set<Exclude<JlptSelfLevel, 'none'>>(['n5', 'n4', 'n3', 'n2', 'n1']);
 
 export function validateLearningPreferencesPatch(
   body: LearningPreferencesPatch
@@ -32,6 +34,13 @@ export function validateLearningPreferencesPatch(
     !REASONS.has(body.learning_reason as LearningReason)
   ) {
     return 'Сурах зорилго буруу байна';
+  }
+  if (
+    'placement_level' in body &&
+    body.placement_level !== null &&
+    !PLACEMENT_LEVELS.has(body.placement_level as Exclude<JlptSelfLevel, 'none'>)
+  ) {
+    return 'Түвшин тогтоох шалгалтын дүн буруу байна';
   }
   if ('daily_xp_goal' in body) {
     const goal = Number(body.daily_xp_goal);
@@ -91,18 +100,27 @@ export async function updateLearningPreferences(
       patch.kana_foundation_completed !== undefined
         ? patch.kana_foundation_completed
         : current.kana_foundation_completed,
+    placement_level:
+      patch.placement_level !== undefined ? patch.placement_level : current.placement_level,
+    placement_completed_at:
+      patch.placement_level !== undefined
+        ? (patch.placement_level ? new Date().toISOString() : null)
+        : current.placement_completed_at,
   };
 
   await db
     .prepare(
       `INSERT INTO user_learning_preferences (
-         user_id, self_level, learning_reason, daily_xp_goal, kana_foundation_completed, updated_at
-       ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+         user_id, self_level, learning_reason, daily_xp_goal, kana_foundation_completed,
+         placement_level, placement_completed_at, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
        ON CONFLICT(user_id) DO UPDATE SET
          self_level = excluded.self_level,
          learning_reason = excluded.learning_reason,
          daily_xp_goal = excluded.daily_xp_goal,
          kana_foundation_completed = excluded.kana_foundation_completed,
+         placement_level = excluded.placement_level,
+         placement_completed_at = excluded.placement_completed_at,
          updated_at = CURRENT_TIMESTAMP`
     )
     .bind(
@@ -110,7 +128,9 @@ export async function updateLearningPreferences(
       next.self_level,
       next.learning_reason,
       next.daily_xp_goal,
-      next.kana_foundation_completed ? 1 : 0
+      next.kana_foundation_completed ? 1 : 0,
+      next.placement_level,
+      next.placement_completed_at
     )
     .run();
 
