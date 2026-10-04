@@ -410,14 +410,17 @@ test('kana checkpoint can be completed with keyboard only', async ({ page }) => 
 
   await page.goto('/kana/checkpoint');
   const keys = ['1', '2', '2', '3', '3', '3', '1', '1', '2', '4', '4', '2'];
-  for (const key of keys) {
-    await page.keyboard.press(key);
-    await page.waitForTimeout(20);
+  for (let i = 0; i < keys.length; i += 1) {
+    await page.keyboard.press(keys[i]);
     await page.keyboard.press('Enter');
-    await page.waitForTimeout(20);
+
+    if (i < keys.length - 1) {
+      await expect(page.getByText(new RegExp(`^${i + 2}/12`))).toBeVisible();
+    }
   }
 
-  await expect(page.getByText('12/12')).toBeVisible();
+  await expect(page.getByText('Суурь бэлэн байна')).toBeVisible();
+  await expect(page.getByText('12/12', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'N5 суралцах зам руу орох' })).toBeVisible();
 });
 
