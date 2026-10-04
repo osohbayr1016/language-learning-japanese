@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button, Card, Screen } from '../../primitives';
@@ -35,6 +35,7 @@ export default function KanaCheckpointScreen() {
   const questions = useMemo(() => QUESTIONS, []);
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
+  const selectedRef = useRef<string | null>(null);
   const [correct, setCorrect] = useState(0);
   const [finished, setFinished] = useState(false);
   const [passed, setPassed] = useState(false);
@@ -43,8 +44,14 @@ export default function KanaCheckpointScreen() {
 
   const question = questions[index];
 
+  const choose = useCallback((option: string) => {
+    selectedRef.current = option;
+    setSelected(option);
+  }, []);
+
   const reset = useCallback(() => {
     setIndex(0);
+    selectedRef.current = null;
     setSelected(null);
     setCorrect(0);
     setFinished(false);
@@ -53,12 +60,14 @@ export default function KanaCheckpointScreen() {
   }, []);
 
   const advance = useCallback(async () => {
-    if (!selected || !question) return;
-    const nextCorrect = correct + (selected === question.answer ? 1 : 0);
+    const answer = selectedRef.current ?? selected;
+    if (!answer || !question) return;
+    const nextCorrect = correct + (answer === question.answer ? 1 : 0);
 
     if (index < questions.length - 1) {
       setCorrect(nextCorrect);
       setIndex((v) => v + 1);
+      selectedRef.current = null;
       setSelected(null);
       return;
     }
@@ -88,17 +97,17 @@ export default function KanaCheckpointScreen() {
       const optionIndex = Number(event.key) - 1;
       if (Number.isInteger(optionIndex) && optionIndex >= 0 && optionIndex < question.options.length) {
         event.preventDefault();
-        setSelected(question.options[optionIndex]);
+        choose(question.options[optionIndex]);
         return;
       }
-      if (event.key === 'Enter' && selected) {
+      if (event.key === 'Enter' && selectedRef.current) {
         event.preventDefault();
         void advance();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [advance, finished, question.options, selected]);
+  }, [advance, choose, finished, question.options]);
 
   if (finished) {
     return (
@@ -158,7 +167,7 @@ export default function KanaCheckpointScreen() {
                 accessibilityLabel={`${optionIndex + 1}. ${option}`}
                 accessibilityHint="Сонгохын тулд дарна уу. Вэб дээр тоон товч ашиглаж болно."
                 accessibilityState={{ selected: active }}
-                onPress={() => setSelected(option)}
+                onPress={() => choose(option)}
                 style={[styles.option, active && styles.optionActive]}
               >
                 <Text style={[styles.optionText, active && styles.optionTextActive]}>{option}</Text>
