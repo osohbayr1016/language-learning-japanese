@@ -8,6 +8,12 @@ import { studyQueueCount } from '../lib/studyQueue';
 import userVocabularyRoutes from './userVocabulary';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
 import { getStudyNextAction } from '../lib/studyRecommendation';
+import {
+  getLearningPreferences,
+  updateLearningPreferences,
+  validateLearningPreferencesPatch,
+  type LearningPreferencesPatch,
+} from '../lib/learningPreferences';
 
 const user = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -21,6 +27,22 @@ user.get('/profile', async (c) => {
   ).bind(sub).first();
   if (!profile) return c.json({ error: 'Хэрэглэгч олдсонгүй' }, 404);
   return c.json({ data: profile });
+});
+
+user.get('/preferences', async (c) => {
+  const { sub } = c.get('user');
+  const data = await getLearningPreferences(c.env.DB, sub);
+  return c.json({ data });
+});
+
+user.put('/preferences', async (c) => {
+  const { sub } = c.get('user');
+  const body = await readJsonBody<LearningPreferencesPatch>(c);
+  if (!body) return jsonBodyInvalid(c);
+  const validationError = validateLearningPreferencesPatch(body);
+  if (validationError) return c.json({ error: validationError }, 400);
+  const data = await updateLearningPreferences(c.env.DB, sub, body);
+  return c.json({ message: 'Суралцах тохиргоо хадгалагдлаа', data });
 });
 
 user.put('/profile', async (c) => {
@@ -52,7 +74,7 @@ user.get('/stats', async (c) => {
 user.get('/dashboard', async (c) => {
   const { sub } = c.get('user');
   await syncUserStatsAggregates(c.env.DB, sub);
-  const [profile, streakRaw, statsRaw, dueToday, todayActivity] = await Promise.all([
+  const [profile, streakRaw, statsRaw, dueToday, todayActivity, preferences] = await Promise.all([
     c.env.DB.prepare(
       'SELECT id, email, display_name, avatar_url FROM users WHERE id = ?'
     ).bind(sub).first(),
@@ -63,6 +85,7 @@ user.get('/dashboard', async (c) => {
       .prepare(`SELECT xp_earned FROM user_daily_activity WHERE user_id = ? AND activity_date = date('now')`)
       .bind(sub)
       .first<{ xp_earned?: number }>(),
+    getLearningPreferences(c.env.DB, sub),
   ]);
 
   const streak = streakRaw
@@ -95,6 +118,7 @@ user.get('/dashboard', async (c) => {
       stats,
       due_today: dueToday,
       today_xp: Number(todayActivity?.xp_earned ?? 0),
+      daily_xp_goal: preferences.daily_xp_goal,
     },
   });
 });
