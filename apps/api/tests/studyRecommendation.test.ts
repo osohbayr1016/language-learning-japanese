@@ -44,3 +44,41 @@ test('safe kana exploration is used when the learner has nothing else queued', (
   assert.equal(action.kind, 'explore');
   assert.equal(action.href, '/kana');
 });
+
+test('complete beginner gets kana foundation before an ordinary lesson', () => {
+  const action = selectStudyAction({
+    dueCount: 0,
+    needsKanaFoundation: true,
+    nextLessonId: 42,
+    weakSkill: null,
+    learningReason: 'fun',
+  });
+  assert.equal(action.kind, 'foundation');
+  assert.equal(action.href, '/kana');
+});
+
+test('learning reason changes exploration after required work is clear', () => {
+  const travel = selectStudyAction({
+    dueCount: 0,
+    nextLessonId: null,
+    weakSkill: null,
+    learningReason: 'travel',
+  });
+  assert.equal(travel.href, '/study/speak');
+
+  const career = selectStudyAction({
+    dueCount: 0,
+    nextLessonId: null,
+    weakSkill: null,
+    learningReason: 'career',
+  });
+  assert.equal(career.href, '/study/grammar');
+
+  const culture = selectStudyAction({
+    dueCount: 0,
+    nextLessonId: null,
+    weakSkill: null,
+    learningReason: 'culture',
+  });
+  assert.equal(culture.href, '/study/ai-reading');
+});
