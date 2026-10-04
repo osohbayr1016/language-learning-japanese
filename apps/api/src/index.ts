@@ -22,6 +22,18 @@ import { examImportApp } from './routes/admin/examImportRoutes';
 const app = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // ── Middleware ──────────────────────────────────────────────
+app.use('*', async (c, next) => {
+  const incoming = c.req.header('X-Request-ID')?.trim();
+  const requestId =
+    incoming && /^[A-Za-z0-9._:-]{1,120}$/.test(incoming)
+      ? incoming
+      : crypto.randomUUID();
+
+  c.set('requestId', requestId);
+  c.header('X-Request-ID', requestId);
+  await next();
+});
+
 app.use('*', logger());
 
 function isAllowedOrigin(origin: string, env: Env): boolean {
@@ -66,7 +78,8 @@ app.use(
       if (isAllowedOrigin(origin, c.env)) return origin;
     },
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
+    exposeHeaders: ['X-Request-ID'],
     credentials: true,
   })
 );
@@ -91,12 +104,30 @@ app.route('/api/admin/exams', examImportApp);
 app.route('/api/admin', adminRoutes);
 
 // ── 404 handler ─────────────────────────────────────────────
-app.notFound((c) => c.json({ error: 'Route олдсонгүй' }, 404));
+app.notFound((c) =>
+  c.json({ error: 'Route олдсонгүй', code: 'NOT_FOUND', request_id: c.get('requestId') }, 404)
+);
 
 // ── Error handler ────────────────────────────────────────────
 app.onError((err, c) => {
-  console.error('API Error:', err);
-  return c.json({ error: 'Серверт алдаа гарлаа', detail: err.message }, 500);
+  const requestId = c.get('requestId');
+  console.error(JSON.stringify({
+    level: 'error',
+    request_id: requestId,
+    method: c.req.method,
+    path: c.req.path,
+    message: err.message,
+    stack: c.env.ENVIRONMENT === 'production' ? undefined : err.stack,
+  }));
+  return c.json(
+    {
+      error: 'Серверт алдаа гарлаа',
+      code: 'INTERNAL_ERROR',
+      request_id: requestId,
+      ...(c.env.ENVIRONMENT === 'production' ? {} : { detail: err.message }),
+    },
+    500
+  );
 });
 
 export default app;
