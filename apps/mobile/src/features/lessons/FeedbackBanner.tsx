@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../../primitives';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, spacing, tint, typography } from '../../theme';
 
 type Props = {
   visible: boolean;
@@ -12,64 +12,84 @@ type Props = {
   onContinue: () => void;
 };
 
-export function FeedbackBanner({ visible, correct, message, correctAnswer, onContinue }: Props) {
+export function FeedbackBanner({
+  visible,
+  correct,
+  message,
+  correctAnswer,
+  onContinue,
+}: Props) {
   if (!visible) return null;
 
-  const bg = correct ? '#D7FFB8' : '#FFDFE0';
   const accent = correct ? colors.success : colors.error;
-  const headline = correct ? 'Зөв байна!' : 'Алдаа гарлаа';
 
   return (
-    <View style={[styles.bar, { backgroundColor: bg, borderTopColor: accent }]}>
+    <View
+      accessibilityRole="alert"
+      style={[
+        styles.bar,
+        {
+          backgroundColor: tint(accent, 0.09),
+          borderTopColor: tint(accent, 0.35),
+        },
+      ]}
+    >
       <View style={styles.row}>
-        <View style={[styles.iconBox, { backgroundColor: '#FFFFFF' }]}>
+        <View style={[styles.iconBox, { backgroundColor: tint(accent, 0.12) }]}>
           <Ionicons
-            name={correct ? 'checkmark-circle' : 'close-circle'}
-            size={28}
+            name={correct ? 'checkmark' : 'close'}
+            size={24}
             color={accent}
           />
         </View>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.title, { color: accent }]}>{headline}</Text>
+
+        <View style={styles.copy}>
+          <Text style={[styles.title, { color: accent }]}>
+            {correct ? 'Зөв байна!' : 'Энд нэг зүйл засъя'}
+          </Text>
           {!correct && correctAnswer ? (
-            <Text style={styles.detail} numberOfLines={2}>
-              Зөв хариулт: {correctAnswer}
-            </Text>
+            <Text style={styles.detail}>Зөв хариулт: {correctAnswer}</Text>
           ) : null}
-          {message ? (
-            <Text style={styles.detail} numberOfLines={2}>
-              {message}
-            </Text>
-          ) : null}
+          {message ? <Text style={styles.detail}>{message}</Text> : null}
         </View>
+
+        <Button
+          label="ҮРГЭЛЖЛҮҮЛЭХ"
+          onPress={onContinue}
+          variant={correct ? 'success' : 'danger'}
+          fullWidth={false}
+          size="md"
+        />
       </View>
-      <Button
-        label="ОЙЛГОЛОО"
-        onPress={onContinue}
-        variant={correct ? 'primary' : 'danger'}
-        style={{ marginTop: spacing.sm }}
-      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   bar: {
+    marginHorizontal: -spacing.lg,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.lg,
-    borderTopWidth: 4,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopWidth: 2,
   },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
   iconBox: {
     width: 44,
     height: 44,
-    borderRadius: radius.full,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { ...typography.heading.md, fontWeight: '800' },
-  detail: { ...typography.body.md, color: colors.text.primary, marginTop: 2 },
+  copy: { flex: 1 },
+  title: { ...typography.heading.md },
+  detail: {
+    ...typography.body.md,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
 });

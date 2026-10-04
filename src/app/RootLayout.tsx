@@ -11,6 +11,7 @@ import { RouterBridge } from '../compat/expo-router';
 import { ErrorBoundary } from './ErrorBoundary';
 import { RouteChrome } from './RouteChrome';
 import { TabBar, TAB_BAR_PATHS } from './TabBar';
+import { WebRightRail } from './WebRightRail';
 
 /** Routes reachable without an account. */
 const PUBLIC_PATHS = new Set(['/login', '/register', '/onboarding', '/setup']);
@@ -77,17 +78,23 @@ function Shell() {
 
   return (
     <AppShell>
-      {/* Sends every new page to the top and restores position on back/forward.
-          Without it a tap on a tab landed the visitor part-way down the next
-          page, at whatever offset the previous one happened to be scrolled. */}
       <ScrollRestoration />
       <RouteChrome />
-      <ErrorBoundary key={pathname}>
-        <Suspense fallback={<PageSkeleton />}>
-          <Outlet />
-        </Suspense>
-      </ErrorBoundary>
-      {showTabs ? <TabBar /> : null}
+      <div className={showTabs ? 'web-shell web-shell--tabs' : 'web-shell web-shell--plain'}>
+        {showTabs ? <TabBar /> : null}
+
+        <main className="web-shell__main">
+          <ErrorBoundary key={pathname}>
+            <Suspense fallback={<PageSkeleton />}>
+              <div key={pathname} className="route-stage">
+                <Outlet />
+              </div>
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+
+        {showTabs ? <WebRightRail /> : null}
+      </div>
     </AppShell>
   );
 }

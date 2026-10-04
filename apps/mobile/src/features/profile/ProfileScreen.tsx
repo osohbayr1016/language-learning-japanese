@@ -83,12 +83,6 @@ export default function ProfileScreen() {
               ]
             : []),
           {
-            key: 'insights',
-            label: mn.insights.menu,
-            icon: 'stats-chart-outline',
-            onPress: () => router.push('/profile/insights'),
-          },
-          {
             key: 'learnedWords',
             label: 'Сурсан үгнүүд',
             icon: 'star-outline' as const,

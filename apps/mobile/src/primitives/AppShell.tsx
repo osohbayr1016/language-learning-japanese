@@ -5,7 +5,8 @@ import { colors, layout as layoutTokens } from '../theme';
 type Props = { children: React.ReactNode };
 
 /**
- * On web: centers the app in a single column (same for main app and `/admin`).
+ * On web: provides the wide responsive product frame. RootLayout decides
+ * whether that frame is a phone-like single column or a desktop learning grid.
  * On native: pass-through.
  *
  * The column used to float as a bare white strip with hard left/right rules
@@ -22,7 +23,7 @@ export function AppShell({ children }: Props) {
     <View style={styles.page as ViewStyle}>
       <View
         nativeID="app-column"
-        style={[styles.column as ViewStyle, { maxWidth: layoutTokens.phoneWebMaxWidth }]}
+        style={[styles.column as ViewStyle, { maxWidth: layoutTokens.desktopWebMaxWidth }]}
       >
         {children}
       </View>

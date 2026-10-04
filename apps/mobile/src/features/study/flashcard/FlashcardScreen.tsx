@@ -1,51 +1,59 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Platform, StyleSheet, Text, View } from "react-native";
-import type { ReviewRating } from "@japanese-learning/srs";
-import { Screen } from "../../../primitives";
-import { useDueWords } from "../../../hooks/useDueWords";
-import { useSrsRating } from "../../../hooks/useSrsRating";
-import { useAdaptiveTimer } from "../../../hooks/useAdaptiveTimer";
-import { calculateXP } from "@japanese-learning/srs";
-import { colors, spacing, typography } from "../../../theme";
-import { StudyHeader } from "../StudyHeader";
-import { StudyEmptyState } from "../EmptyState";
-import { SessionDoneScreen } from "../SessionDoneScreen";
-import { RatingBar } from "../../../components/srs/RatingBar";
-import { ConfidenceBar } from "../../../components/srs/ConfidenceBar";
-import { mn } from "../../../i18n/mn";
-import { FlipCard } from "./FlipCard";
-import { CardFront } from "./CardFront";
-import { CardBack } from "./CardBack";
-import type { ConfidenceLevel } from "../../../lib/srs/adaptive";
-import { useFlashcardWebKeys } from "../../../hooks/useFlashcardWebKeys";
-import { PinyinToggleWeb } from "../PinyinToggleWeb";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
+import type { ReviewRating } from '@japanese-learning/srs';
+import { Button, Screen } from '../../../primitives';
+import { useDueWords } from '../../../hooks/useDueWords';
+import { useSrsRating } from '../../../hooks/useSrsRating';
+import { useAdaptiveTimer } from '../../../hooks/useAdaptiveTimer';
+import { calculateXP } from '@japanese-learning/srs';
+import { colors, spacing, typography } from '../../../theme';
+import { StudyHeader } from '../StudyHeader';
+import { StudyEmptyState } from '../EmptyState';
+import { SessionDoneScreen } from '../SessionDoneScreen';
+import { RatingBar } from '../../../components/srs/RatingBar';
+import { mn } from '../../../i18n/mn';
+import { FlipCard } from './FlipCard';
+import { CardFront } from './CardFront';
+import { CardBack } from './CardBack';
+import { useFlashcardWebKeys } from '../../../hooks/useFlashcardWebKeys';
+import { RomajiToggleWeb } from '../RomajiToggleWeb';
 
-import type { Word } from "@japanese-learning/db";
+import type { Word } from '@japanese-learning/db';
 
-export default function FlashcardScreen({ onSessionDone, initialWords }: { onSessionDone?: (xp: number, correct: number, total: number, words: Word[]) => void, initialWords?: Word[] } = {}) {
+function confidenceForRating(rating: ReviewRating): 0 | 1 | 2 {
+  if (rating <= 1) return 0;
+  if (rating === 3) return 1;
+  return 2;
+}
+
+export default function FlashcardScreen({
+  onSessionDone,
+  initialWords,
+}: {
+  onSessionDone?: (xp: number, correct: number, total: number, words: Word[]) => void;
+  initialWords?: Word[];
+} = {}) {
   const { words: dueWords, loading, error } = useDueWords(15);
   const words = initialWords || dueWords;
-  const session = useSrsRating("flashcard");
+  const session = useSrsRating('flashcard');
   const timer = useAdaptiveTimer();
 
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [confidence, setConfidence] = useState<ConfidenceLevel | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
 
   const handleRateRef = useRef<(rating: ReviewRating) => Promise<void>>(async () => {});
-
   const current = words[idx];
 
   useEffect(() => {
-    if (current) timer.start();
-  }, [current, timer]);
+    if (current && !flipped) timer.start();
+  }, [current, flipped, timer]);
 
   const xp = useMemo(
     () =>
       calculateXP({
-        type: "flashcard",
+        type: 'flashcard',
         correct: correctCount,
         total: words.length,
       }),
@@ -55,6 +63,7 @@ export default function FlashcardScreen({ onSessionDone, initialWords }: { onSes
   handleRateRef.current = async (rating: ReviewRating) => {
     if (!current) return;
     const responseMs = timer.stopAndReset();
+
     session.record(
       current.id,
       {
@@ -62,11 +71,16 @@ export default function FlashcardScreen({ onSessionDone, initialWords }: { onSes
         interval: current.interval || 0,
         repetitions: current.repetitions || 0,
       },
-      { rating, responseMs, confidence: confidence ?? undefined },
+      {
+        rating,
+        responseMs,
+        confidence: confidenceForRating(rating),
+      },
     );
+
     if (rating >= 3) setCorrectCount((n) => n + 1);
-    setConfidence(null);
     setFlipped(false);
+
     if (idx + 1 >= words.length) {
       await session.flush(xp + (rating >= 3 ? 5 : 0));
       setDone(true);
@@ -76,94 +90,105 @@ export default function FlashcardScreen({ onSessionDone, initialWords }: { onSes
   };
 
   const toggleFlip = useCallback(() => {
-    setFlipped((f) => !f);
+    setFlipped((value) => !value);
   }, []);
 
-  const keysDisabled =
-    loading || words.length === 0 || done || !current;
+  const keysDisabled = loading || words.length === 0 || done || !current;
 
   useFlashcardWebKeys({
     flipped,
     disabled: keysDisabled,
     onFlip: toggleFlip,
-    onRate: (r) => void handleRateRef.current(r),
+    onRate: (rating) => void handleRateRef.current(rating),
   });
-
-  const handleRate = async (rating: ReviewRating) => {
-    await handleRateRef.current(rating);
-  };
 
   if (loading && !initialWords) {
     return (
       <Screen>
         <View style={styles.center}>
-          <ActivityIndicator color={colors.accent.purple} />
+          <ActivityIndicator color={colors.brand.primary} />
         </View>
       </Screen>
     );
   }
 
   if (words.length === 0) {
-    return (
-      <StudyEmptyState message={error ? mn.study.wordsLoadError : undefined} />
-    );
+    return <StudyEmptyState message={error ? mn.study.wordsLoadError : undefined} />;
   }
 
   if (done) {
     if (onSessionDone) {
-      // Small timeout to allow state to settle before navigating
       setTimeout(() => onSessionDone(xp, correctCount, words.length, words), 0);
       return null;
     }
-    return (
-      <SessionDoneScreen xp={xp} total={words.length} correct={correctCount} />
-    );
+    return <SessionDoneScreen xp={xp} total={words.length} correct={correctCount} />;
   }
 
   return (
     <Screen scroll={false}>
       <StudyHeader
-        title={mn.study.flashcard}
+        title="Давталт"
         index={idx}
         total={words.length}
-        trailing={<PinyinToggleWeb />}
+        trailing={Platform.OS === 'web' ? <RomajiToggleWeb /> : undefined}
       />
-      {Platform.OS === "web" ? (
-        <Text style={styles.keysHint}>{mn.study.webKeysFlashcard}</Text>
+
+      {Platform.OS === 'web' ? (
+        <Text style={styles.keysHint}>
+          {flipped ? '1 / 3 / 4 / 5 = үнэлэх' : 'Space = хариулт харах'}
+        </Text>
       ) : null}
+
       <View style={styles.cardArea}>
         <FlipCard
           flipped={flipped}
-          onPress={() => setFlipped((f) => !f)}
+          onPress={() => setFlipped((value) => !value)}
           front={<CardFront word={current} />}
           back={<CardBack word={current} />}
         />
-        {!flipped ? <Text style={styles.flipHint}>{mn.study.flipHint}</Text> : null}
       </View>
-      {flipped ? (
-        <View style={styles.bottom}>
-          <ConfidenceBar value={confidence} onChange={setConfidence} />
-          <View style={{ height: spacing.md }} />
-          <RatingBar onRate={handleRate} />
-        </View>
-      ) : null}
+
+      <View style={styles.bottom}>
+        {!flipped ? (
+          <>
+            <Text style={styles.prompt}>Утгыг санаж байна уу?</Text>
+            <Button
+              label="ХАРИУЛТ ХАРАХ"
+              size="lg"
+              onPress={() => setFlipped(true)}
+            />
+          </>
+        ) : (
+          <>
+            <Text style={styles.prompt}>Хэр сайн санав?</Text>
+            <RatingBar onRate={(rating) => void handleRateRef.current(rating)} />
+          </>
+        )}
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: "center", justifyContent: "center" },
-  cardArea: { flex: 1, paddingVertical: spacing.lg, justifyContent: "flex-start" },
-  bottom: { paddingBottom: spacing.lg, gap: spacing.sm },
-  flipHint: {
-    ...typography.body.md,
-    color: colors.text.muted,
-    textAlign: "center",
-    paddingTop: spacing.md,
-  },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   keysHint: {
-    ...typography.body.sm,
+    ...typography.body.xs,
     color: colors.text.muted,
+    textAlign: 'right',
     marginBottom: spacing.xs,
+  },
+  cardArea: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    justifyContent: 'center',
+  },
+  bottom: {
+    paddingBottom: spacing.lg,
+    gap: spacing.sm,
+  },
+  prompt: {
+    ...typography.heading.sm,
+    color: colors.text.secondary,
+    textAlign: 'center',
   },
 });

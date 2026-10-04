@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#BE4A79" />
+    <meta name="theme-color" content="#2E8B57" />
     <meta
       name="description"
       content="Япон хэл сурах — хичээл, тоглоом, дуу сонсох. Learn Japanese with lessons, games, and audio."
@@ -27,16 +27,19 @@
 
     <style>
       :root {
-        --plum: #be4a79;
-        --plum-dark: #9c3862;
-        --teal: #2b7b88;
-        --paper: #f6f4f1;
-        --ink: #1c1917;
-        --muted: #6b7280;
-        --border: #e7e3de;
-        --focus: #2b6cb0;
-        --soft-brand: #fdf2f6;
+        --plum: #2e8b57;
+        --plum-dark: #1f6b42;
+        --teal: #3b82f6;
+        --paper: #f5f7f8;
+        --ink: #17211d;
+        --muted: #66736d;
+        --border: #dde4e2;
+        --focus: #2563eb;
+        --soft-brand: #eaf8ef;
         --tabbar-h: 74px;
+        --sidebar-w: 220px;
+        --content-w: 680px;
+        --rail-w: 270px;
       }
 
       html,
@@ -51,7 +54,7 @@
         overflow-x: hidden;
         overflow-y: auto;
         background: var(--paper);
-        background-image: linear-gradient(180deg, #fdf2f6 0px, #faf5f3 260px, var(--paper) 520px);
+        background-image: radial-gradient(circle at 50% -120px, #effaf2 0, transparent 440px);
         background-attachment: fixed;
         color: var(--ink);
         -webkit-font-smoothing: antialiased;
@@ -83,58 +86,79 @@
         color: var(--ink);
       }
 
-      /* ── Responsive frame ────────────────────────────────────────────────
-         Below 720px the column is edge-to-edge: a floating card on a phone
-         reads as broken. Above it, the app sits in a framed column so a
-         desktop visitor gets a page, not a stretched phone screen. */
-      @media (min-width: 720px) {
-        #app-column {
-          margin: 28px auto;
-          min-height: calc(100% - 56px);
-          border-radius: 24px;
-          border: 1px solid var(--border);
-          box-shadow: 0 18px 44px rgba(63, 42, 51, 0.16);
-          overflow: hidden;
+      /* ── Product shell ─────────────────────────────────────────────────── */
+      #app-column {
+        width: 100%;
+        min-height: 100%;
+        background: transparent;
+      }
+
+      .web-shell {
+        min-height: 100vh;
+      }
+
+      .web-shell--tabs {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      .web-shell__main {
+        min-width: 0;
+        min-height: 100vh;
+        background: #fff;
+      }
+
+      .web-shell--tabs .web-shell__main {
+        order: 1;
+        min-height: calc(100vh - var(--tabbar-h));
+        flex: 1 0 auto;
+      }
+
+      .web-shell--tabs .tabbar {
+        order: 2;
+      }
+
+      .route-stage {
+        min-height: 100%;
+        animation: route-enter 180ms cubic-bezier(0.2, 0, 0, 1);
+      }
+
+      @keyframes route-enter {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
         }
-        * {
-          scrollbar-width: thin;
-          scrollbar-color: #d8d2cc transparent;
-        }
-        ::-webkit-scrollbar {
-          width: 10px;
-          height: 10px;
-        }
-        ::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-          background: #d8d2cc;
-          border-radius: 999px;
-          border: 3px solid transparent;
-          background-clip: content-box;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-          background: #bdb6ae;
-          background-clip: content-box;
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
       }
 
-      /* ── Tab bar ─────────────────────────────────────────────────────────
-         Real anchors, so middle-click and open-in-new-tab work. Pinned to the
-         bottom on phones where a thumb reaches it; on desktop it sits in the
-         flow at the base of the framed column. */
+      /* ── Mobile navigation ─────────────────────────────────────────────── */
       .tabbar {
         display: flex;
         align-items: stretch;
         gap: 4px;
         height: var(--tabbar-h);
-        padding: 8px 4px calc(10px + env(safe-area-inset-bottom, 0px));
-        background: #fff;
+        padding: 8px 8px calc(10px + env(safe-area-inset-bottom, 0px));
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: blur(14px);
         border-top: 1px solid var(--border);
-        box-shadow: 0 -2px 10px rgba(63, 42, 51, 0.05);
+        box-shadow: 0 -4px 18px rgba(23, 33, 29, 0.06);
         position: sticky;
         bottom: 0;
         z-index: 20;
+      }
+
+      .tabbar__brand {
+        display: none;
+      }
+
+      .tabbar__items {
+        display: flex;
+        flex: 1;
+        gap: 4px;
       }
 
       .tabbar__item {
@@ -144,14 +168,16 @@
         align-items: center;
         justify-content: center;
         gap: 2px;
-        border-radius: 12px;
+        border-radius: 14px;
         text-decoration: none;
         color: var(--muted);
-        transition: background-color 160ms ease;
+        transition: transform 120ms ease, background-color 160ms ease, color 160ms ease;
       }
+
       .tabbar__item:hover {
-        background: #faf8f6;
+        background: #f4f8f5;
       }
+
       .tabbar__item:active {
         transform: scale(0.94);
       }
@@ -163,20 +189,314 @@
         width: 46px;
         height: 28px;
         border-radius: 999px;
-        transition: background-color 160ms ease;
+        transition: background-color 160ms ease, transform 160ms ease;
       }
+
       .tabbar__item.is-active .tabbar__pill {
         background: var(--soft-brand);
+        transform: translateY(-1px);
       }
 
       .tabbar__label {
         font-size: 11px;
-        font-weight: 600;
+        font-weight: 700;
         line-height: 1.2;
       }
+
       .tabbar__item.is-active .tabbar__label {
         color: var(--plum);
-        font-weight: 800;
+        font-weight: 900;
+      }
+
+      .right-rail {
+        display: none;
+      }
+
+      @media (min-width: 720px) and (max-width: 1023px) {
+        #app-column {
+          max-width: 680px !important;
+          margin: 20px auto;
+          min-height: calc(100% - 40px);
+          border-radius: 26px;
+          border: 1px solid var(--border);
+          box-shadow: 0 18px 48px rgba(23, 33, 29, 0.10);
+          overflow: hidden;
+        }
+      }
+
+      @media (min-width: 1024px) {
+        #app-column {
+          max-width: 1240px !important;
+          margin: 0 auto;
+          overflow: visible;
+        }
+
+        .web-shell--tabs {
+          display: grid;
+          grid-template-columns: var(--sidebar-w) minmax(0, var(--content-w)) var(--rail-w);
+          gap: 32px;
+          align-items: start;
+          justify-content: center;
+          padding: 24px 18px 48px;
+        }
+
+        .web-shell--tabs .tabbar,
+        .web-shell--tabs .web-shell__main {
+          order: initial;
+        }
+
+        .web-shell--tabs .web-shell__main {
+          min-height: calc(100vh - 48px);
+          border: 1px solid var(--border);
+          border-radius: 28px;
+          overflow: hidden;
+          box-shadow: 0 12px 36px rgba(23, 33, 29, 0.06);
+        }
+
+        .web-shell--plain {
+          max-width: 760px;
+          margin: 0 auto;
+          min-height: 100vh;
+          background: #fff;
+        }
+
+        .tabbar {
+          position: sticky;
+          top: 24px;
+          bottom: auto;
+          height: auto;
+          min-height: 0;
+          flex-direction: column;
+          align-self: start;
+          padding: 0;
+          gap: 14px;
+          border: 0;
+          box-shadow: none;
+          background: transparent;
+          backdrop-filter: none;
+        }
+
+        .tabbar__brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 6px 10px 18px;
+          text-decoration: none;
+          color: var(--ink);
+        }
+
+        .tabbar__brand-mark {
+          width: 48px;
+          height: 48px;
+          border-radius: 16px;
+          display: grid;
+          place-items: center;
+          background: var(--plum);
+          color: #fff;
+          font-family: "Noto Sans JP", sans-serif;
+          font-size: 24px;
+          font-weight: 800;
+          border-bottom: 4px solid var(--plum-dark);
+        }
+
+        .tabbar__brand-copy {
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+
+        .tabbar__brand-copy strong {
+          font-size: 19px;
+          line-height: 1.1;
+        }
+
+        .tabbar__brand-copy small {
+          margin-top: 3px;
+          color: var(--muted);
+          font-size: 10px;
+          line-height: 1.25;
+        }
+
+        .tabbar__items {
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .tabbar__item {
+          min-height: 56px;
+          flex: none;
+          flex-direction: row;
+          justify-content: flex-start;
+          gap: 12px;
+          padding: 0 14px;
+          border: 2px solid transparent;
+          border-radius: 16px;
+        }
+
+        .tabbar__item:hover {
+          background: #f4f8f5;
+        }
+
+        .tabbar__item.is-active {
+          background: var(--soft-brand);
+          border-color: #cdebd7;
+        }
+
+        .tabbar__pill {
+          width: 36px;
+          height: 36px;
+        }
+
+        .tabbar__item.is-active .tabbar__pill {
+          background: transparent;
+          transform: none;
+        }
+
+        .tabbar__label {
+          font-size: 15px;
+          font-weight: 800;
+        }
+
+        .right-rail {
+          position: sticky;
+          top: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          align-self: start;
+        }
+
+        .rail-card {
+          border: 2px solid var(--border);
+          border-radius: 20px;
+          background: #fff;
+          padding: 18px;
+        }
+
+        .rail-card--goal {
+          border-color: #cdebd7;
+          background: linear-gradient(180deg, #f7fdf9 0%, #fff 100%);
+        }
+
+        .rail-card--tip {
+          background: #fbfcfb;
+        }
+
+        .rail-card__eyebrow {
+          color: var(--plum);
+          font-size: 10px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          margin-bottom: 10px;
+        }
+
+        .rail-card p {
+          color: var(--muted);
+          font-size: 13px;
+          line-height: 1.5;
+          margin: 8px 0 0;
+        }
+
+        .rail-goal__top {
+          display: flex;
+          justify-content: space-between;
+          align-items: baseline;
+          gap: 12px;
+          color: var(--ink);
+        }
+
+        .rail-goal__top strong {
+          font-size: 18px;
+        }
+
+        .rail-goal__top span {
+          color: var(--plum);
+          font-size: 12px;
+          font-weight: 900;
+        }
+
+        .rail-progress {
+          height: 12px;
+          margin-top: 10px;
+          border-radius: 999px;
+          overflow: hidden;
+          background: #e8eeeb;
+        }
+
+        .rail-progress__fill {
+          height: 100%;
+          border-radius: 999px;
+          background: var(--plum);
+          transition: width 420ms cubic-bezier(0.05, 0.7, 0.1, 1);
+        }
+
+        .rail-stat {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .rail-stat + .rail-stat {
+          margin-top: 14px;
+          padding-top: 14px;
+          border-top: 1px solid var(--border);
+        }
+
+        .rail-stat__icon {
+          width: 38px;
+          height: 38px;
+          display: grid;
+          place-items: center;
+          border-radius: 13px;
+          background: #f5f7f8;
+          font-size: 20px;
+        }
+
+        .rail-stat div {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .rail-stat strong {
+          color: var(--ink);
+          font-size: 14px;
+        }
+
+        .rail-stat span:not(.rail-stat__icon) {
+          margin-top: 2px;
+          color: var(--muted);
+          font-size: 11px;
+        }
+
+        .rail-link {
+          display: inline-block;
+          margin-top: 12px;
+          color: var(--plum);
+          font-size: 13px;
+          font-weight: 900;
+          text-decoration: none;
+        }
+
+        * {
+          scrollbar-width: thin;
+          scrollbar-color: #cfd8d4 transparent;
+        }
+
+        ::-webkit-scrollbar {
+          width: 10px;
+          height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+          background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+          background: #cfd8d4;
+          border-radius: 999px;
+          border: 3px solid transparent;
+          background-clip: content-box;
+        }
       }
 
       /* ── Admin header ────────────────────────────────────────────────────

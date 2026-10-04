@@ -15,13 +15,13 @@ export const colors = {
   bg: {
     primary: '#FFFFFF',
     /** Page/backdrop behind the app column. */
-    secondary: '#F6F4F1',
+    secondary: '#F5F7F8',
     card: '#FFFFFF',
     /** Recessed surface: progress tracks, empty slots, inset rows. */
-    elevated: '#F6F4F1',
+    elevated: '#EEF2F3',
     input: '#FFFFFF',
     /** Warm paper tone for large passive areas. */
-    washi: '#FAF8F6',
+    washi: '#F8FAF8',
   },
 
   accent: {
@@ -29,7 +29,7 @@ export const colors = {
     blue: '#2B7B88', // Muted teal
     teal: '#0B7F96',
     pink: '#C14D5C', // Deep sakura rose
-    green: '#1B8450',
+    green: '#2E8B57',
     amber: '#9A6400',
   },
 
@@ -41,17 +41,17 @@ export const colors = {
     pink: '#FCEFF1',
     green: '#ECF7F1',
     amber: '#FAF3E6',
-    brand: '#FDF2F6',
-    sakura: '#FEE4D1',
+    brand: '#EAF8EF',
+    sakura: '#FFF0E6',
   },
 
   brand: {
-    primary: '#BE4A79', // Red plum
-    primaryDark: '#9C3862',
-    primaryShadow: '#9C3862',
+    primary: '#2E8B57', // Matcha green
+    primaryDark: '#1F6B42',
+    primaryShadow: '#1F6B42',
     /** Lifted tone for hover on brand-filled surfaces. */
-    primaryHover: '#CB5686',
-    secondary: '#2B7B88', // Muted teal
+    primaryHover: '#37A267',
+    secondary: '#3B82F6', // Learning blue
   },
 
   tone: {
@@ -63,7 +63,7 @@ export const colors = {
   },
 
   jlpt: {
-    1: '#BE4A79', // N5
+    1: '#2E8B57', // N5
     2: '#2B7B88', // N4
     3: '#0B7F96', // N3
     4: '#8A4FD8', // N2
@@ -80,15 +80,15 @@ export const colors = {
     inverse: '#FFFFFF',
   },
 
-  success: '#1B8450',
+  success: '#2E8B57',
   error: '#D93B3B',
   warning: '#A35A00',
   info: '#2B6CB0',
 
-  border: '#E7E3DE',
-  borderLight: '#F1EEEA',
+  border: '#DDE4E2',
+  borderLight: '#EDF1F0',
   /** Visible boundary for interactive controls that need a real edge. */
-  borderStrong: '#CFCBC5',
+  borderStrong: '#B9C5C1',
   /** Keyboard focus ring — one colour everywhere. */
   focus: '#2B6CB0',
 
@@ -114,10 +114,10 @@ export const spacing = {
 };
 
 export const radius = {
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 24,
+  sm: 10,
+  md: 14,
+  lg: 18,
+  xl: 26,
   full: 9999,
 };
 
@@ -209,9 +209,9 @@ export const shadows = {
 };
 
 export const gradients = {
-  hero: ['#BE4A79', '#2B7B88'] as const,
-  flame: ['#C2410C', '#A35A00'] as const,
-  success: ['#1B8450', '#2B7B88'] as const,
+  hero: ['#2E8B57', '#3B82F6'] as const,
+  flame: ['#F59E0B', '#EA580C'] as const,
+  success: ['#2E8B57', '#22A36A'] as const,
 };
 
 /**
@@ -279,4 +279,8 @@ export const interaction = {
 /** Web `AppShell`: centered app column for the whole app (including `/admin`). */
 export const layout = {
   phoneWebMaxWidth: 560,
+  desktopWebMaxWidth: 1180,
+  learningColumnMaxWidth: 680,
+  sidebarWidth: 220,
+  rightRailWidth: 270,
 } as const;

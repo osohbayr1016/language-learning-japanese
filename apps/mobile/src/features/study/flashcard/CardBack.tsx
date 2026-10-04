@@ -13,7 +13,7 @@ export function CardBack({ word }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <JapaneseText text={word.kanji} size="lg" />
+      <JapaneseText text={word.kanji || word.kana || ''} size="lg" />
       {showRomaji ? <RomajiRow romaji={word.romaji} size="lg" /> : null}
       <Text style={styles.meaning}>{word.meaning_mn}</Text>
       {word.example_jp ? (

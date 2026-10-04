@@ -124,6 +124,7 @@ export default function KanjiScreen() {
   return (
     <Screen scroll scrollBottomInset={70}>
       <View style={styles.header}>
+        <Text style={styles.eyebrow}>КАНЖИ</Text>
         <Text style={styles.title}>{mn.kanji.title}</Text>
         <Text style={styles.subtitle}>{mn.kanji.subtitle}</Text>
       </View>
@@ -201,7 +202,7 @@ export default function KanjiScreen() {
       ) : (
         levels.map((lvl) => {
           const stats = levelStats[lvl];
-          const hskColor =
+          const levelColor =
             colors.jlpt[lvl as keyof typeof colors.jlpt] ??
             colors.brand.primary;
           const pct = stats.total > 0 ? stats.learned / stats.total : 0;
@@ -211,14 +212,14 @@ export default function KanjiScreen() {
               <View style={styles.sectionHeader}>
                 <View
                   style={[
-                    styles.hskBadge,
+                    styles.jlptBadge,
                     {
-                      backgroundColor: hskColor + "20",
-                      borderColor: hskColor + "60",
+                      backgroundColor: levelColor + "20",
+                      borderColor: levelColor + "60",
                     },
                   ]}
                 >
-                  <Text style={[styles.hskBadgeText, { color: hskColor }]}>
+                  <Text style={[styles.jlptBadgeText, { color: levelColor }]}>
                     {jlptNLabel(lvl)}
                   </Text>
                 </View>
@@ -232,7 +233,7 @@ export default function KanjiScreen() {
                         styles.sectionProgressFill,
                         {
                           width: `${pct * 100}%` as any,
-                          backgroundColor: hskColor,
+                          backgroundColor: levelColor,
                         },
                       ]}
                     />
@@ -243,7 +244,7 @@ export default function KanjiScreen() {
               <View style={styles.grid}>
                 {grouped[lvl].map((word) => {
                   const state = progressMap[word.id] ?? "none";
-                  const hskC =
+                  const levelC =
                     colors.jlpt[word.jlpt_level as keyof typeof colors.jlpt] ??
                     colors.brand.primary;
                   return (
@@ -274,13 +275,13 @@ export default function KanjiScreen() {
                         )}
                         <Text
                           style={[
-                            styles.hanzi,
-                            state !== "none" && styles.hanziLearned,
+                            styles.kanji,
+                            state !== "none" && styles.kanjiLearned,
                           ]}
                         >
                           {word.kanji}
                         </Text>
-                        <Text style={styles.pinyin} numberOfLines={1}>
+                        <Text style={styles.romaji} numberOfLines={1}>
                           {pronunciationLine(word)}
                         </Text>
                         <Text style={styles.meaning} numberOfLines={1}>
@@ -288,13 +289,13 @@ export default function KanjiScreen() {
                         </Text>
                       </Pressable>
                       <Pressable
-                        style={[styles.strokeFab, { borderColor: hskC + "60" }]}
+                        style={[styles.strokeFab, { borderColor: levelC + "60" }]}
                         onPress={() => setStrokeWord(word)}
                         hitSlop={8}
                         accessibilityRole="button"
                         accessibilityLabel={mn.writer.watch}
                       >
-                        <Ionicons name="create-outline" size={14} color={hskC} />
+                        <Ionicons name="create-outline" size={14} color={levelC} />
                       </Pressable>
                     </View>
                   );
@@ -318,17 +319,17 @@ export default function KanjiScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.brand.primary + "15",
-    borderRadius: radius.lg,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.brand.primary + "40",
+    paddingTop: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  eyebrow: {
+    ...typography.overline,
+    color: colors.brand.primary,
+    marginBottom: spacing.xs,
   },
   title: {
-    ...typography.heading.lg,
-    color: colors.brand.primary,
+    ...typography.heading.xl,
+    color: colors.text.primary,
     marginBottom: 4,
   },
   subtitle: {
@@ -365,13 +366,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     marginBottom: spacing.md,
   },
-  hskBadge: {
+  jlptBadge: {
     paddingHorizontal: spacing.sm + 4,
     paddingVertical: spacing.xs,
     borderRadius: radius.full,
     borderWidth: 1.5,
   },
-  hskBadgeText: {
+  jlptBadgeText: {
     fontSize: 13,
     fontWeight: "800",
   },
@@ -444,16 +445,16 @@ const styles = StyleSheet.create({
   badgeMastered: {
     backgroundColor: colors.accent.amber,
   },
-  hanzi: {
+  kanji: {
     fontSize: 30,
     fontWeight: "700",
     color: colors.text.primary,
     marginBottom: 2,
   },
-  hanziLearned: {
+  kanjiLearned: {
     color: colors.brand.primaryDark,
   },
-  pinyin: {
+  romaji: {
     fontSize: 11,
     color: colors.text.secondary,
     textAlign: "center",
