@@ -25,7 +25,7 @@ export const lesson = {
   metrics: {
     listening: 'Сонсох',
     pronunciation: 'Дуудлага',
-    tones: 'Өнгө',
+    pitch: 'Аялга',
     recall: 'Цээж',
     reading: 'Унших',
     stroke: 'Зураас',
@@ -34,8 +34,8 @@ export const lesson = {
   micListening: 'Сонсож байна... зогсооход дарна уу',
   speechMatch: 'Таны хэлсэн: {n}% таарсан',
   doneMockExam: 'Mock шалгалт өгөх',
-  doneMockExamHskFallbackHint:
-    'Ижил HSK түвшний олон загвар байгаа тул хамгийн их ID-тайг нь эхлүүлнэ. Тодорхой загвар: импортын JSON-д mock_exam_template_id.',
+  doneMockExamJlptFallbackHint:
+    'Ижил JLPT түвшний олон загвар байгаа тул хамгийн их ID-тайг нь эхлүүлнэ. Тодорхой загвар: импортын JSON-д mock_exam_template_id.',
   continueNextPrefix: 'Дараах →',
   backToStudy: 'Судлах хэсэг рүү',
   importedEmptySummary: 'Товч танилцуулга энэ хувилбарт байхгүй байна.',
