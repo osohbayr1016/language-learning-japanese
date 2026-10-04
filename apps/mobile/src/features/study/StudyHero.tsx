@@ -4,7 +4,7 @@ import { HeroCard } from '../../primitives';
 import { colors } from '../../theme';
 import { useGamification } from '../../context/GamificationContext';
 import { mn } from '../../i18n/mn';
-import { useLessonChapters } from '../lessons/useLessonChapters';
+import type { Chapter } from '../../lib/types';
 
 type Plan = {
   title: string;
@@ -13,17 +13,18 @@ type Plan = {
   href: string;
 };
 
-export function StudyHero() {
+type Props = { chapters: Chapter[]; lessonsLoading: boolean };
+
+export function StudyHero({ chapters, lessonsLoading }: Props) {
   const router = useRouter();
   const { dueToday } = useGamification();
-  const { chapters } = useLessonChapters();
 
   const nextLessonId = useMemo(() => {
     const ordered = chapters
       .filter((chapter) => !chapter.locked_below_advance_gate)
       .sort((a, b) => a.jlpt_level - b.jlpt_level || a.order_num - b.order_num)
       .flatMap((chapter) =>
-        [...(chapter.lessons ?? [])].sort((a, b) => a.order_num - b.order_num)
+        [...(chapter.lessons ?? [])].sort((a, b) => a.order_num - b.order_num),
       );
     return ordered.find((lesson) => !lesson.progress?.completed_at)?.id ?? ordered[0]?.id ?? null;
   }, [chapters]);
@@ -43,8 +44,8 @@ export function StudyHero() {
           href: `/lessons/${nextLessonId}`,
         }
       : {
-          title: mn.study.heroFallbackTitle,
-          subtitle: mn.study.heroFallbackSubtitle,
+          title: lessonsLoading ? 'Хичээлийн замыг ачаалж байна…' : mn.study.heroFallbackTitle,
+          subtitle: lessonsLoading ? 'Түр хүлээлгүйгээр давталтын горимоо сонгож болно' : mn.study.heroFallbackSubtitle,
           icon: 'school',
           href: '/study/learn',
         };
