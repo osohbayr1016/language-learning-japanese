@@ -260,7 +260,7 @@ test('zero learner is directed to kana foundation', async ({ page }) => {
     },
   });
 
-  await page.goto('/study');
+  await page.goto('/home');
   await expect(page.getByText('Эхлээд кана сууриа тавья')).toBeVisible();
   await page.getByRole('button', { name: /Эхлээд кана сууриа тавья/ }).click();
   await expect(page).toHaveURL(/\/kana$/);
@@ -281,9 +281,10 @@ test('returning N5 learner sees due review and truthful progress', async ({ page
     chapters: n5Chapters(true),
   });
 
-  await page.goto('/study');
+  await page.goto('/home');
   await expect(page.getByText('Өнөөдрийн давталтаа хийх')).toBeVisible();
-  await expect(page.getByText(/1\/2 хичээл · 50% дууссан/)).toBeVisible();
+  await expect(page.getByText('JLPT N5')).toBeVisible();
+  await expect(page.getByText('Өдөр тутмын яриа')).toBeVisible();
 });
 
 test('advanced learner can see the N4 path after the gate', async ({ page }) => {
@@ -301,8 +302,9 @@ test('advanced learner can see the N4 path after the gate', async ({ page }) => 
     advanceGateOk: true,
   });
 
-  await page.goto('/study');
-  await expect(page.getByText('JLPT N4 суралцах зам')).toBeVisible();
+  await page.goto('/home');
+  await expect(page.getByText('JLPT N4')).toBeVisible();
+  await expect(page.getByText('N4 эхлэл')).toBeVisible();
   await expect(page.getByText('Дараагийн хичээлээ үргэлжлүүлэх')).toBeVisible();
 });
 
@@ -320,8 +322,8 @@ test('temporary recommendation failure is visible and retry recovers', async ({ 
     failNextActionOnce: true,
   });
 
-  await page.goto('/study');
-  await expect(page.getByText('Хувийн төлөвлөгөөг ачаалж чадсангүй')).toBeVisible();
+  await page.goto('/home');
+  await expect(page.getByText('Төлөвлөгөөг ачаалж чадсангүй')).toBeVisible();
   await page.getByRole('button', { name: 'Дахин оролдох' }).first().click();
   await expect(page.getByText('Дараагийн хичээлээ үргэлжлүүлэх')).toBeVisible();
 });
@@ -351,7 +353,7 @@ test('expired session returns the learner to login', async ({ page }) => {
     });
   });
 
-  await page.goto('/study');
+  await page.goto('/home');
   await expect(page).toHaveURL(/\/login/);
 });
 
@@ -374,7 +376,7 @@ test('lesson route survives a hard refresh', async ({ page }) => {
   await expect(page.getByText('Танилцах үед хэрэглэдэг япон хэллэг.')).toBeVisible();
 });
 
-test('study hub does not overflow a 360px mobile viewport', async ({ page }) => {
+test('learn path does not overflow a 360px mobile viewport', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 780 });
   await seedAuthenticated(page);
   await mockApi(page, {
@@ -388,12 +390,33 @@ test('study hub does not overflow a 360px mobile viewport', async ({ page }) => 
     },
   });
 
-  await page.goto('/study');
-  await expect(page.getByText('Суралцах үндсэн зам')).toBeVisible();
+  await page.goto('/home');
+  await expect(page.getByText('Таны суралцах зам')).toBeVisible();
   const hasPageOverflow = await page.evaluate(
     () => document.documentElement.scrollWidth > window.innerWidth + 1
   );
   expect(hasPageOverflow).toBe(false);
+});
+
+test('practice hub keeps tools out of the main learning path', async ({ page }) => {
+  await seedAuthenticated(page);
+  await mockApi(page, {
+    action: {
+      kind: 'review',
+      title: 'Өнөөдрийн давталтаа хийх',
+      subtitle: '7 үг',
+      href: '/study/flashcard',
+      reason: 'due_srs',
+      due_count: 7,
+    },
+  });
+
+  await page.goto('/study');
+  await expect(page.getByText('Сул чадвараа хүчтэй болго')).toBeVisible();
+  await expect(page.getByText('Кана')).toBeVisible();
+  await expect(page.getByText('Канжи')).toBeVisible();
+  await expect(page.getByText('Ярих')).toBeVisible();
+  await expect(page.getByText('JLPT checkpoint')).toBeVisible();
 });
 
 test('kana checkpoint can be completed with keyboard only', async ({ page }) => {
