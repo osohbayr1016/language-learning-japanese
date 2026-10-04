@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import type { Chapter } from '../../lib/types';
 
-/** Сурах / нүүр — HSK хичээлийн бүлгүүдийг API-аас татаж хадгална. */
+/** Сурах / нүүр — JLPT хичээлийн бүлгүүдийг API-аас татаж хадгална. */
 export function useLessonChapters() {
   const { token } = useAuth();
   const [chapters, setChapters] = useState<Chapter[]>([]);
