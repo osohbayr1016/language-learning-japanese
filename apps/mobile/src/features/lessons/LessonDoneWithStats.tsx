@@ -99,7 +99,7 @@ export function LessonDoneWithStats({
       <View style={styles.grid}>
         <MetricRing label="Сонсох" value={skills.listening} icon="ear" color={colors.brand.secondary} />
         <MetricRing label="Дуудлага" value={skills.pronunciation} icon="mic" color={colors.error} />
-        <MetricRing label="Өнгө" value={skills.tones} icon="musical-notes" color={colors.warning} />
+        <MetricRing label="Аялга" value={skills.pitch} icon="musical-notes" color={colors.warning} />
         <MetricRing label="Цээж" value={skills.recall} icon="bulb" color={colors.brand.primary} />
         <MetricRing label="Унших" value={skills.reading} icon="book" color={colors.accent.purple} />
         <MetricRing label="Зураас" value={skills.stroke} icon="brush" color={colors.accent.pink} />
