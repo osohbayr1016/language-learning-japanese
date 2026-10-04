@@ -57,7 +57,7 @@ Examples found during audit:
 - `PinyinToggleWeb.tsx`
 - `AuthContext` still stores `chinese_level`
 - admin route/key names still contain `hsk1`
-- `apps/mobile/src/lib/content/hsk1TextbookPdf.ts` points to a real **Chinese HSK 1 textbook**, which must never appear in the Japanese learner journey.
+- `apps/mobile/src/lib/content/hsk1TextbookPdf.ts` pointed to a real **Chinese HSK 1 textbook**. The constant had no indexed references and has now been deleted from this branch.
 
 Some legacy names may need temporary compatibility, but **no Chinese learning content or HSK terminology may be visible to Japanese learners**.
 
@@ -92,7 +92,7 @@ This PR does **not** hand-edit a generated lockfile. API CI temporarily installs
 ## P0 work still required
 
 1. Run migration `0027_daily_xp.sql` in local/staging before testing this branch.
-2. Remove or quarantine the Chinese HSK textbook constant. Replace it only with a licensed/approved Japanese learning source.
+2. Keep the deleted Chinese HSK textbook constant out of the product. Add external Japanese learning material only when it is approved/licensed and appropriate.
 3. Audit every route reachable from Home/Study for:
    - route exists
    - loading state
