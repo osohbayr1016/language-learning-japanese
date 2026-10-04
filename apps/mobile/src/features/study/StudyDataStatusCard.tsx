@@ -31,6 +31,7 @@ export function StudyDataStatusCard({ kind, title, message, onRetry }: Props) {
           label="Дахин оролдох"
           variant="secondary"
           size="sm"
+          fullWidth={false}
           onPress={onRetry}
           style={styles.retry}
         />
