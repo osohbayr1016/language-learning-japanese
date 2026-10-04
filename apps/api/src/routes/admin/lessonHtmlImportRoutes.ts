@@ -52,7 +52,7 @@ export function registerLessonHtmlImportRoutes(admin: Hono<{ Bindings: Env; Vari
         chapterId,
         content,
         links: wordStats.links,
-        isPublished: body.is_published !== false,
+        isPublished: body.is_published === true,
       });
       return c.json({
         data: {
