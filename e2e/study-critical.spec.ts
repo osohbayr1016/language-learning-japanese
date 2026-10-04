@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 
 type Action = {
-  kind: 'review' | 'foundation' | 'lesson' | 'weak_skill' | 'explore';
+  kind: 'review' | 'foundation' | 'checkpoint' | 'lesson' | 'weak_skill' | 'explore';
   title: string;
   subtitle: string;
   href: string;
