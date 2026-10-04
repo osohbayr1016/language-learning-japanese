@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { ToneColoredText, PinyinRow } from "../../../components/hanzi";
+import { JapaneseText, RomajiRow } from "../../../components/japanese";
 import { useDisplayPrefs } from "../../../context/DisplayPrefsContext";
 import { PronounceButton } from "../../../components/audio/PronounceButton";
 import { colors, spacing, typography } from "../../../theme";
@@ -10,12 +10,12 @@ import type { WordWithProgress } from "../../../lib/types";
 type Props = { word: WordWithProgress };
 
 export function CardFront({ word }: Props) {
-  const { showPinyin } = useDisplayPrefs();
+  const { showRomaji } = useDisplayPrefs();
 
   return (
     <View style={styles.wrap}>
-      <ToneColoredText hanzi={word.kanji} tones={undefined} size="xl" />
-      {showPinyin && word.romaji ? <PinyinRow pinyin={word.romaji} size="md" /> : null}
+      <JapaneseText text={word.kanji} size="xl" />
+      {showRomaji && word.romaji ? <RomajiRow romaji={word.romaji} size="md" /> : null}
       <View style={styles.listenBlock}>
         <PronounceButton wordId={word.id} meaningMn={word.meaning_mn} size="lg" />
         <Text style={styles.backHint}>{mn.study.meaningOnBack}</Text>

@@ -1,19 +1,12 @@
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth';
 import type { Env, Variables } from '../types';
-import { updateStreak } from '../lib/streak';
-import { buildProgressStatements, bumpStats, type ProgressResult } from '../lib/progress';
-import {
-  bumpDailyActivity,
-  bumpLessonOutcome,
-  bumpSkillStats,
-  type SkillResults,
-} from '../lib/activity';
 import { publishedLessonTree, safeAll } from '../lib/lessonCatalog';
 import { fetchPublishedLessonDetail } from '../lib/lessonDetail';
 import { computeLessonFlashcardEligibleAt } from '../lib/lessonFlashcardDelay';
-import { lessonChapterHskLevel, passesHsk1AdvanceGate } from '../lib/hskGate';
+import { lessonChapterJlptLevel, passesJlptN5AdvanceGate } from '../lib/jlptGate';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
+import { applyLessonCompletion, type LessonCompletionBody } from '../lib/lessonCompletion';
 
 const lessons = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -23,7 +16,7 @@ lessons.get('/catalog', async (c) => {
   return c.json({ data });
 });
 
-// Public lesson body — нэвтрээгүй хэрэглэгч ч HSK замаар суралцах боломжтой.
+// Public lesson body — нэвтрээгүй хэрэглэгч ч JLPT замаар суралцах боломжтой.
 lessons.get('/public/:id', async (c) => {
   const id = Number(c.req.param('id'));
   if (!Number.isFinite(id)) return c.json({ error: 'Буруу id' }, 400);
@@ -61,7 +54,7 @@ lessons.get('/', async (c) => {
     });
   }
   const dataRaw = await publishedLessonTree(c.env.DB, progress);
-  const gateOk = await passesHsk1AdvanceGate(c.env.DB, sub);
+  const gateOk = await passesJlptN5AdvanceGate(c.env.DB, sub);
   const data = (dataRaw as { jlpt_level?: number; lessons?: unknown[] }[]).map((ch) => ({
     ...ch,
     locked_below_advance_gate:
@@ -75,9 +68,9 @@ lessons.get('/:id', async (c) => {
   const { sub } = c.get('user');
   const id = Number(c.req.param('id'));
   if (!Number.isFinite(id)) return c.json({ error: 'Буруу id' }, 400);
-  const hsk = await lessonChapterHskLevel(c.env.DB, id);
-  if (hsk !== null && hsk >= 2) {
-    const gateOk = await passesHsk1AdvanceGate(c.env.DB, sub);
+  const jlptLevel = await lessonChapterJlptLevel(c.env.DB, id);
+  if (jlptLevel !== null && jlptLevel >= 2) {
+    const gateOk = await passesJlptN5AdvanceGate(c.env.DB, sub);
     if (!gateOk) {
       return c.json(
         {
@@ -99,9 +92,10 @@ lessons.post('/:id/complete', async (c) => {
   const lessonId = Number(c.req.param('id'));
   if (!Number.isFinite(lessonId)) return c.json({ error: 'Буруу id' }, 400);
 
-  const hsk = await lessonChapterHskLevel(c.env.DB, lessonId);
-  if (hsk !== null && hsk >= 2) {
-    const gateOk = await passesHsk1AdvanceGate(c.env.DB, sub);
+  const jlptLevel = await lessonChapterJlptLevel(c.env.DB, lessonId);
+  if (jlptLevel === null) return c.json({ error: 'Хичээл олдсонгүй' }, 404);
+  if (jlptLevel >= 2) {
+    const gateOk = await passesJlptN5AdvanceGate(c.env.DB, sub);
     if (!gateOk) {
       return c.json(
         {
@@ -113,46 +107,25 @@ lessons.post('/:id/complete', async (c) => {
     }
   }
 
-  const body = await readJsonBody<{
-    accuracy: number;
-    xp_earned: number;
-    duration_seconds?: number;
-    results?: ProgressResult[];
-    skill_results?: SkillResults;
-  }>(c);
+  const body = await readJsonBody<LessonCompletionBody>(c);
   if (!body) return jsonBodyInvalid(c);
+  if (typeof body.accuracy !== 'number' || !Number.isFinite(body.accuracy)) {
+    return c.json({ error: 'Нарийвчлал буруу байна' }, 400);
+  }
 
-  const accuracy = Math.max(0, Math.min(1, body.accuracy));
-  const xp = Math.max(0, Math.floor(body.xp_earned));
-  const rawResults = body.results ?? [];
   const eligibleAt = await computeLessonFlashcardEligibleAt(c.env.DB, lessonId);
-  const results = rawResults.map((r) => ({ ...r, flashcard_eligible_at: eligibleAt }));
-  const duration = Math.max(0, Math.floor(body.duration_seconds ?? 0));
-
-  const stmts = [
-    c.env.DB.prepare(
-      `INSERT INTO user_lesson_progress (user_id, lesson_id, best_accuracy, attempts, completed_at, updated_at)
-       VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-       ON CONFLICT(user_id, lesson_id) DO UPDATE SET
-         best_accuracy = MAX(user_lesson_progress.best_accuracy, excluded.best_accuracy),
-         attempts = user_lesson_progress.attempts + 1,
-         completed_at = CURRENT_TIMESTAMP,
-         updated_at = CURRENT_TIMESTAMP`
-    ).bind(sub, lessonId, accuracy),
-    ...buildProgressStatements(c.env.DB, sub, results),
-  ];
-
-  await c.env.DB.batch(stmts);
-  await bumpStats(c.env.DB, sub, xp, results.length);
-  await updateStreak(c.env.DB, sub);
-  await bumpDailyActivity(c.env.DB, sub, duration);
-  await bumpLessonOutcome(c.env.DB, sub, accuracy >= 0.95);
-  if (body.skill_results) await bumpSkillStats(c.env.DB, sub, body.skill_results);
-
-  return c.json({
-    message: 'Хичээл хадгалагдлаа',
-    data: { lesson_id: lessonId, accuracy, xp_earned: xp },
-  });
+  try {
+    const data = await applyLessonCompletion(c.env.DB, sub, lessonId, body, eligibleAt);
+    return c.json({
+      message: data.already_applied ? 'Хичээлийн дүн өмнө нь хадгалагдсан' : 'Хичээлийн дүн хадгалагдлаа',
+      data,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === 'INVALID_ACCURACY') {
+      return c.json({ error: 'Нарийвчлал буруу байна' }, 400);
+    }
+    throw error;
+  }
 });
 
 export default lessons;

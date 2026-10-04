@@ -1,53 +1,94 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import type { Chapter } from '../../lib/types';
 
-/** Сурах / нүүр — HSK хичээлийн бүлгүүдийг API-аас татаж хадгална. */
+export type LessonCatalogSource = 'authenticated' | 'public' | 'none';
+
+/**
+ * JLPT lesson tree loader.
+ *
+ * An authenticated failure may still fall back to the public catalog so the
+ * learner can keep reading, but that degraded state is surfaced to the UI.
+ * We never turn a request failure into a normal-looking empty curriculum.
+ */
 export function useLessonChapters() {
   const { token } = useAuth();
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [loading, setLoading] = useState(true);
-  /** Нэвтэрсэн GET /api/lessons-оос; catalog fallback дээр null. */
   const [advanceGateOk, setAdvanceGateOk] = useState<boolean | null>(null);
+  const [source, setSource] = useState<LessonCatalogSource>('none');
+  const [error, setError] = useState<string | null>(null);
+  const [revision, setRevision] = useState(0);
+
+  const retry = useCallback(() => setRevision((v) => v + 1), []);
 
   useEffect(() => {
     let cancelled = false;
+
     void (async () => {
-      try {
-        setLoading(true);
-        let next: Chapter[] = [];
-        let gate: boolean | null = null;
-        if (token) {
-          try {
-            const res = await api.lessons.list(token);
-            next = res.data ?? [];
-            if (typeof res.advance_gate_ok === 'boolean') gate = res.advance_gate_ok;
-          } catch {
-            next = [];
+      setLoading(true);
+      setError(null);
+
+      let next: Chapter[] = [];
+      let gate: boolean | null = null;
+      let nextSource: LessonCatalogSource = 'none';
+      let authenticatedError: string | null = null;
+
+      if (token) {
+        try {
+          const res = await api.lessons.list(token);
+          next = res.data ?? [];
+          gate = typeof res.advance_gate_ok === 'boolean' ? res.advance_gate_ok : null;
+          nextSource = 'authenticated';
+        } catch (e) {
+          authenticatedError =
+            e instanceof Error ? e.message : 'Нэвтэрсэн хичээлийн явцыг ачаалж чадсангүй';
+        }
+      }
+
+      // Public fallback is useful for reading, but it is explicitly degraded:
+      // it has no personal completion state and cannot prove unlock status.
+      if (nextSource === 'none') {
+        try {
+          const pub = await api.lessons.catalog();
+          next = pub.data ?? [];
+          gate = null;
+          nextSource = 'public';
+        } catch (e) {
+          const publicError = e instanceof Error ? e.message : 'Хичээлийн жагсаалтыг ачаалж чадсангүй';
+          if (!cancelled) {
+            setChapters([]);
+            setAdvanceGateOk(null);
+            setSource('none');
+            setError(authenticatedError ? `${authenticatedError}. ${publicError}` : publicError);
+            setLoading(false);
           }
+          return;
         }
-        if (!cancelled && next.length === 0) {
-          try {
-            const pub = await api.lessons.catalog();
-            next = pub.data ?? [];
-            gate = null;
-          } catch {
-            next = [];
-          }
-        }
-        if (!cancelled) {
-          setChapters(next);
-          setAdvanceGateOk(gate);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
+      }
+
+      if (!cancelled) {
+        setChapters(next);
+        setAdvanceGateOk(gate);
+        setSource(nextSource);
+        setError(authenticatedError);
+        setLoading(false);
       }
     })();
+
     return () => {
       cancelled = true;
     };
-  }, [token]);
+  }, [token, revision]);
 
-  return { chapters, loading, advanceGateOk };
+  return {
+    chapters,
+    loading,
+    advanceGateOk,
+    source,
+    error,
+    degraded: source === 'public' && Boolean(token),
+    retry,
+  };
 }

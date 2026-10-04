@@ -2,6 +2,7 @@ import type { Hono } from 'hono';
 import type { Env, Variables } from '../../types';
 import { fetchLessonDetailForAdminPreview } from '../../lib/lessonDetail';
 import { jsonBodyInvalid, readJsonBody } from '../../lib/requestJson';
+import { validateLessonForPublish } from '../../lib/lessonContentValidation';
 
 export function registerLessonRoutes(admin: Hono<{ Bindings: Env; Variables: Variables }>) {
   admin.get('/lessons/:id/preview', async (c) => {
@@ -41,6 +42,9 @@ export function registerLessonRoutes(admin: Hono<{ Bindings: Env; Variables: Var
     const chId = Number(body.chapter_id);
     const title = typeof body.title_mn === 'string' ? body.title_mn.trim() : '';
     if (!Number.isFinite(chId) || !title) return c.json({ error: 'chapter_id, title_mn шаардлагатай' }, 400);
+    if (body.is_published) {
+      return c.json({ error: 'Шинэ хичээлийг эхлээд draft-аар үүсгээд, агуулгаа нэмсний дараа нийтэлнэ үү.' }, 400);
+    }
     const row = await c.env.DB.prepare(
       `INSERT INTO lessons (chapter_id, title_mn, subtitle_mn, icon, order_num, is_published)
        VALUES (?, ?, ?, ?, ?, ?) RETURNING id`
@@ -51,7 +55,7 @@ export function registerLessonRoutes(admin: Hono<{ Bindings: Env; Variables: Var
         body.subtitle_mn ?? '',
         body.icon ?? 'book',
         Number(body.order_num ?? 0),
-        body.is_published === undefined ? 1 : body.is_published ? 1 : 0
+        0
       )
       .first<{ id: number }>();
     return c.json({ data: { id: row?.id } }, 201);
@@ -69,6 +73,20 @@ export function registerLessonRoutes(admin: Hono<{ Bindings: Env; Variables: Var
       is_published?: number;
     }>(c);
     if (!body) return jsonBodyInvalid(c);
+    if (body.is_published) {
+      const validation = await validateLessonForPublish(c.env.DB, id, {
+        title_mn: body.title_mn,
+        chapter_id: body.chapter_id,
+      });
+      if (validation.errors.length) {
+        return c.json({
+          error: 'Хичээлийг нийтлэхэд бэлэн биш байна',
+          code: 'LESSON_PUBLISH_VALIDATION',
+          details: validation.errors,
+          warnings: validation.warnings,
+        }, 400);
+      }
+    }
     await c.env.DB.prepare(
       `UPDATE lessons SET
          chapter_id = COALESCE(?, chapter_id),

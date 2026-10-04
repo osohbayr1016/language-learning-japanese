@@ -1,6 +1,6 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { ToneColoredText, PinyinRow } from "../../../components/hanzi";
+import { JapaneseText, RomajiRow } from "../../../components/japanese";
 import { PronounceButton } from "../../../components/audio/PronounceButton";
 import { colors, spacing, typography } from "../../../theme";
 import { useDisplayPrefs } from "../../../context/DisplayPrefsContext";
@@ -9,17 +9,17 @@ import type { WordWithProgress } from "../../../lib/types";
 type Props = { word: WordWithProgress };
 
 export function CardBack({ word }: Props) {
-  const { showPinyin } = useDisplayPrefs();
+  const { showRomaji } = useDisplayPrefs();
 
   return (
     <View style={styles.wrap}>
-      <ToneColoredText hanzi={word.kanji} tones={undefined} size="lg" />
-      {showPinyin ? <PinyinRow pinyin={word.romaji} size="lg" /> : null}
+      <JapaneseText text={word.kanji} size="lg" />
+      {showRomaji ? <RomajiRow romaji={word.romaji} size="lg" /> : null}
       <Text style={styles.meaning}>{word.meaning_mn}</Text>
       {word.example_jp ? (
         <View style={styles.example}>
           <Text style={styles.exampleJp}>{word.example_jp}</Text>
-          {showPinyin && word.example_romaji ? (
+          {showRomaji && word.example_romaji ? (
             <Text style={styles.exampleRomaji}>{word.example_romaji}</Text>
           ) : null}
           {word.example_mn ? (

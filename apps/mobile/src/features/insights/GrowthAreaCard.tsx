@@ -6,7 +6,7 @@ import type { InsightsSkills, SkillKey } from '../../lib/types';
 import { SectionCard } from './SectionCard';
 import { SkillGauge } from './SkillGauge';
 
-const ORDER: SkillKey[] = ['listening', 'pronunciation', 'tones', 'recall', 'reading', 'stroke'];
+const ORDER: SkillKey[] = ['listening', 'pronunciation', 'pitch', 'recall', 'reading', 'stroke'];
 
 type Props = { skills: InsightsSkills | null };
 

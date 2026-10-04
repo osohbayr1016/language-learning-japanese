@@ -3,7 +3,7 @@ import type { Exercise, ExerciseResult } from './types';
 export type SkillKey =
   | 'listening'
   | 'pronunciation'
-  | 'tones'
+  | 'pitch'
   | 'recall'
   | 'reading'
   | 'stroke';
@@ -11,12 +11,12 @@ export type SkillKey =
 const KIND_TO_SKILLS: Record<Exercise['kind'], SkillKey[]> = {
   memorize: ['recall', 'reading'],
   'choose-word': ['recall', 'reading'],
-  'listen-mcq': ['listening', 'tones'],
+  'listen-mcq': ['listening', 'pitch'],
   'match-pairs': ['recall', 'reading'],
   'arrange-words': ['reading', 'recall'],
   'fill-blank': ['recall', 'reading'],
   'true-false': ['recall'],
-  'say-sentence': ['pronunciation', 'tones', 'listening'],
+  'say-sentence': ['pronunciation', 'pitch', 'listening'],
   'imported-section': ['reading'],
   'imported-workbook': ['reading', 'recall'],
 };
@@ -31,7 +31,7 @@ export function computeSkillCounts(
   const totals: SkillCounts = {
     listening: { hits: 0, total: 0 },
     pronunciation: { hits: 0, total: 0 },
-    tones: { hits: 0, total: 0 },
+    pitch: { hits: 0, total: 0 },
     recall: { hits: 0, total: 0 },
     reading: { hits: 0, total: 0 },
     stroke: { hits: 0, total: 0 },
@@ -59,7 +59,7 @@ export function computeSkills(
 ): SkillScores {
   const counts = computeSkillCounts(exercises, results);
   const out: SkillScores = {
-    listening: 0, pronunciation: 0, tones: 0, recall: 0, reading: 0, stroke: 0,
+    listening: 0, pronunciation: 0, pitch: 0, recall: 0, reading: 0, stroke: 0,
   };
   for (const k of Object.keys(counts) as SkillKey[]) {
     const t = counts[k];

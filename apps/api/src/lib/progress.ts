@@ -46,42 +46,60 @@ export function buildProgressStatements(db: D1Database, userId: number, results:
   );
 }
 
+function dailyXpStatement(db: D1Database, userId: number, xp: number) {
+  return db
+    .prepare(
+      `INSERT INTO user_daily_activity (user_id, activity_date, xp_earned)
+       VALUES (?, date('now'), ?)
+       ON CONFLICT(user_id, activity_date) DO UPDATE SET
+         xp_earned = user_daily_activity.xp_earned + excluded.xp_earned,
+         updated_at = CURRENT_TIMESTAMP`
+    )
+    .bind(userId, Math.max(0, Math.floor(xp)));
+}
+
 export async function bumpStats(
   db: D1Database,
   userId: number,
   xp: number,
   reviewCount: number
 ): Promise<void> {
-  await db
-    .prepare(
-      `INSERT INTO user_stats (user_id, total_xp, total_reviews, words_learned, words_mastered)
-       VALUES (
-         ?,
-         ?,
-         ?,
-         (SELECT COUNT(DISTINCT word_id) FROM user_word_progress
-          WHERE user_id = ? AND repetitions >= 1),
-         (SELECT COUNT(DISTINCT word_id) FROM user_word_progress
-          WHERE user_id = ? AND repetitions >= 2)
-       )
-       ON CONFLICT(user_id) DO UPDATE SET
-         total_xp = user_stats.total_xp + excluded.total_xp,
-         total_reviews = user_stats.total_reviews + excluded.total_reviews,
-         words_learned = excluded.words_learned,
-         words_mastered = excluded.words_mastered`
-    )
-    .bind(userId, xp, reviewCount, userId, userId)
-    .run();
+  const safeXp = Math.max(0, Math.floor(xp));
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO user_stats (user_id, total_xp, total_reviews, words_learned, words_mastered)
+         VALUES (
+           ?,
+           ?,
+           ?,
+           (SELECT COUNT(DISTINCT word_id) FROM user_word_progress
+            WHERE user_id = ? AND repetitions >= 1),
+           (SELECT COUNT(DISTINCT word_id) FROM user_word_progress
+            WHERE user_id = ? AND repetitions >= 2)
+         )
+         ON CONFLICT(user_id) DO UPDATE SET
+           total_xp = user_stats.total_xp + excluded.total_xp,
+           total_reviews = user_stats.total_reviews + excluded.total_reviews,
+           words_learned = excluded.words_learned,
+           words_mastered = excluded.words_mastered`
+      )
+      .bind(userId, safeXp, reviewCount, userId, userId),
+    dailyXpStatement(db, userId, safeXp),
+  ]);
 }
 
 /** Game / misc XP: ensures a user_stats row exists (plain UPDATE can no-op if missing). */
 export async function addXpToUserStats(db: D1Database, userId: number, xp: number): Promise<void> {
-  if (xp <= 0) return;
-  await db
-    .prepare(
-      `INSERT INTO user_stats (user_id, total_xp) VALUES (?, ?)
-       ON CONFLICT(user_id) DO UPDATE SET total_xp = user_stats.total_xp + excluded.total_xp`
-    )
-    .bind(userId, xp)
-    .run();
+  const safeXp = Math.max(0, Math.floor(xp));
+  if (safeXp <= 0) return;
+  await db.batch([
+    db
+      .prepare(
+        `INSERT INTO user_stats (user_id, total_xp) VALUES (?, ?)
+         ON CONFLICT(user_id) DO UPDATE SET total_xp = user_stats.total_xp + excluded.total_xp`
+      )
+      .bind(userId, safeXp),
+    dailyXpStatement(db, userId, safeXp),
+  ]);
 }

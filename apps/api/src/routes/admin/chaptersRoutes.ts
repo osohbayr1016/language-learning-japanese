@@ -35,7 +35,7 @@ export function registerChapterRoutes(admin: Hono<{ Bindings: Env; Variables: Va
         body.color ?? '#58CC02',
         Math.min(5, Math.max(1, Number(body.jlpt_level ?? 1))),
         Number(body.order_num ?? 0),
-        body.is_published === undefined ? 1 : body.is_published ? 1 : 0,
+        body.is_published === undefined ? 0 : body.is_published ? 1 : 0,
         Math.min(365, Math.max(0, Math.floor(Number(body.flashcard_delay_days ?? 3))))
       )
       .first<{ id: number }>();

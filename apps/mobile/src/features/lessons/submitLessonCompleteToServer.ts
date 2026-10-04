@@ -11,17 +11,26 @@ export async function submitLessonCompleteToServer(opts: {
   exercises: Exercise[];
   results: ExerciseResult[];
   detail: LessonDetail | null;
+  completionId: string;
+  accuracyOverride?: number | null;
   xpEarned: number;
   durationSec: number;
   addLocalXp: (n: number) => void;
   refreshGam: () => void;
-}): Promise<void> {
+}): Promise<{
+  xp_earned: number;
+  mastered: boolean;
+  mastery_required: number;
+  already_applied: boolean;
+}> {
   const {
     token,
     lessonId,
     exercises,
     results,
     detail,
+    completionId,
+    accuracyOverride,
     xpEarned,
     durationSec,
     addLocalXp,
@@ -30,7 +39,8 @@ export async function submitLessonCompleteToServer(opts: {
 
   const totalCount = results.length;
   const correctCount = results.filter((r) => r.correct).length;
-  const accuracy = totalCount > 0 ? correctCount / totalCount : 0;
+  const measuredAccuracy = totalCount > 0 ? correctCount / totalCount : 0;
+  const accuracy = accuracyOverride == null ? measuredAccuracy : Math.max(0, Math.min(1, accuracyOverride));
   const wordsById = new Map<number, WordWithProgress>();
   for (const w of detail?.words ?? []) wordsById.set(w.id, w);
 
@@ -91,13 +101,15 @@ export async function submitLessonCompleteToServer(opts: {
 
   const skill_results = computeSkillCounts(exercises, results);
 
-  await api.lessons.complete(token, lessonId, {
+  const response = await api.lessons.complete(token, lessonId, {
+    completion_id: completionId,
     accuracy,
     xp_earned: xpEarned,
     duration_seconds: durationSec,
     results: progressPayload,
     skill_results,
   });
-  addLocalXp(xpEarned);
+  if (!response.data.already_applied) addLocalXp(response.data.xp_earned);
   void refreshGam();
+  return response.data;
 }

@@ -49,6 +49,7 @@ export const routes: RouteObject[] = [
   { path: 'study', Component: lazy(() => import('@src/features/study/StudyHubScreen')) },
   { path: 'kanji', Component: lazy(() => import('@src/features/kanji/KanjiScreen')) },
   { path: 'kana', Component: lazy(() => import('@src/features/kana/KanaHubScreen')) },
+  { path: 'kana/checkpoint', Component: lazy(() => import('@src/features/kana/KanaCheckpointScreen')) },
   { path: 'games', Component: lazy(() => import('@src/features/games/GamesHubScreen')) },
   { path: 'profile', Component: lazy(() => import('@src/features/profile/ProfileScreen')) },
 

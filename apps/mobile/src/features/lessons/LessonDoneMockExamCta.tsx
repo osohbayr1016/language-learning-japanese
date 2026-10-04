@@ -4,18 +4,18 @@ import { useRouter } from 'expo-router';
 import { Button } from '../../primitives';
 import { mn } from '../../i18n/mn';
 import { colors, spacing, typography } from '../../theme';
-import type { HskLevel, ImportedLessonContent } from '../../lib/types';
+import type { JlptLevel, ImportedLessonContent } from '../../lib/types';
 import { useLessonDoneMockExam } from './useLessonDoneMockExam';
 
 type Props = {
   token: string | null | undefined;
   imported: ImportedLessonContent | null | undefined;
-  chapterHskLevel: HskLevel | undefined;
+  chapterJlptLevel: JlptLevel | undefined;
 };
 
-export function LessonDoneMockExamCta({ token, imported, chapterHskLevel }: Props) {
+export function LessonDoneMockExamCta({ token, imported, chapterJlptLevel }: Props) {
   const router = useRouter();
-  const mock = useLessonDoneMockExam(token, imported, chapterHskLevel);
+  const mock = useLessonDoneMockExam(token, imported, chapterJlptLevel);
 
   if (mock.loading || mock.templateId == null) return null;
 
@@ -27,9 +27,9 @@ export function LessonDoneMockExamCta({ token, imported, chapterHskLevel }: Prop
         onPress={() => router.push(`/study/mock-exam?templateId=${mock.templateId}` as never)}
         accessibilityLabel={mn.lesson.doneMockExam}
       />
-      {mock.usedHskMaxIdFallback ? (
+      {mock.usedJlptMaxIdFallback ? (
         <Text style={styles.hint} accessibilityRole="text">
-          {mn.lesson.doneMockExamHskFallbackHint}
+          {mn.lesson.doneMockExamJlptFallbackHint}
         </Text>
       ) : null}
     </View>

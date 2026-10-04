@@ -148,10 +148,15 @@ export function LessonScreen({ lessonId, variant = 'learn' }: Props) {
         durationSec={state.durationSec}
         xpEarned={state.xpEarned}
         accuracy={accuracy}
+        mastered={state.mastered}
+        masteryRequired={state.masteryRequired}
+        finalizing={state.finalizing}
+        finalizeError={state.finalizeError}
+        onRetryFinalize={() => void finalize()}
         chapterId={state.detail?.chapter_id}
         currentOrderNum={state.detail?.order_num}
         importedContent={state.detail?.imported_content}
-        chapterHskLevel={state.detail?.chapter_jlpt_level}
+        chapterJlptLevel={state.detail?.chapter_jlpt_level}
         enablePostLessonNav={!isPreview}
         minimalComplete={isImportedLearnFlow(state.exercises) || isPreview}
         onContinue={exitLesson}

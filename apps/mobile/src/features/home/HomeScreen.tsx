@@ -15,7 +15,7 @@ import { ExploreRow } from './ExploreRow';
 import { LeaderboardPreview } from './LeaderboardPreview';
 
 export default function HomeScreen() {
-  const { stats, streak, dueToday, dailyGoal, refresh } = useGamification();
+  const { stats, streak, dueToday, todayXp, dailyGoal, refresh } = useGamification();
   const { token } = useAuth();
   const router = useRouter();
   const [name, setName] = useState('Сурагч');
@@ -41,7 +41,7 @@ export default function HomeScreen() {
           then move on to new material. */}
       <SectionHeading title="Өнөөдөр" subtitle="Эхлээд давталтаа дуусга" />
       <DueTodayCard dueCount={dueToday} />
-      <DailyGoalCard totalXp={stats?.total_xp ?? 0} goal={dailyGoal} />
+      <DailyGoalCard todayXp={todayXp} totalXp={stats?.total_xp ?? 0} goal={dailyGoal} />
 
       <LearnedWordsSection />
 

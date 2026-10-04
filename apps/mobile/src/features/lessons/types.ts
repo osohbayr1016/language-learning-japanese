@@ -81,13 +81,13 @@ export function isImportedLearnFlow(exercises: Exercise[]): boolean {
 }
 
 const IMPORTED_SECTION_TITLES: Record<ImportedLearnSection, string> = {
-  summary: 'Summary',
-  kanjis: 'New Kanjis',
-  phrases: 'Phrases',
-  'easy-texts': 'Easy texts',
-  dialogue: 'Dialogue',
-  grammar: 'Grammar',
-  slang: 'Slang',
+  summary: 'Товч агуулга',
+  kanjis: 'Шинэ канжи',
+  phrases: 'Хэллэгүүд',
+  'easy-texts': 'Хялбар уншлага',
+  dialogue: 'Харилцан яриа',
+  grammar: 'Дүрэм',
+  slang: 'Ярианы хэллэг',
 };
 
 export const EXERCISE_TITLES: Record<Exclude<ExerciseKind, 'imported-section'>, string> = {
@@ -99,7 +99,7 @@ export const EXERCISE_TITLES: Record<Exclude<ExerciseKind, 'imported-section'>, 
   'fill-blank': 'Дутууг бөглө',
   'true-false': 'Үнэн худал',
   'say-sentence': 'Хэлж сонсго',
-  'imported-workbook': 'Workbook',
+  'imported-workbook': 'Дасгал',
   'in-lesson-games-hub': 'Тоглоом',
 };
 

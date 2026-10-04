@@ -43,7 +43,7 @@ export const insights = {
   skills: {
     listening: 'Сонсох',
     pronunciation: 'Дуудлага',
-    tones: 'Өнгө',
+    pitch: 'Аялга',
     recall: 'Цээж',
     reading: 'Унших',
     stroke: 'Зураас',

@@ -9,7 +9,7 @@ const insights = new Hono<{ Bindings: Env; Variables: Variables }>();
 insights.use('*', authMiddleware);
 
 const SKILL_KEYS: SkillKey[] = [
-  'listening', 'pronunciation', 'tones', 'recall', 'reading', 'stroke',
+  'listening', 'pronunciation', 'pitch', 'recall', 'reading', 'stroke',
 ];
 
 async function safe<T>(p: Promise<T>, fallback: T): Promise<T> {
@@ -69,25 +69,29 @@ insights.get('/skills', async (c) => {
   const rows = await safe(
     c.env.DB.prepare(
       'SELECT skill, hits, total FROM user_skill_stats WHERE user_id = ?'
-    ).bind(sub).all<{ skill: SkillKey; hits: number; total: number }>(),
-    { results: [] as { skill: SkillKey; hits: number; total: number }[] } as never
+    ).bind(sub).all<{ skill: string; hits: number; total: number }>(),
+    { results: [] as { skill: string; hits: number; total: number }[] } as never
   );
 
   const data: Record<SkillKey, { hits: number; total: number; ratio: number }> = {
     listening: { hits: 0, total: 0, ratio: 0 },
     pronunciation: { hits: 0, total: 0, ratio: 0 },
-    tones: { hits: 0, total: 0, ratio: 0 },
+    pitch: { hits: 0, total: 0, ratio: 0 },
     recall: { hits: 0, total: 0, ratio: 0 },
     reading: { hits: 0, total: 0, ratio: 0 },
     stroke: { hits: 0, total: 0, ratio: 0 },
   };
 
   for (const row of rows.results ?? []) {
-    if (!SKILL_KEYS.includes(row.skill)) continue;
-    data[row.skill] = {
-      hits: row.hits,
-      total: row.total,
-      ratio: row.total > 0 ? row.hits / row.total : 0,
+    const normalized = row.skill === 'tones' ? 'pitch' : row.skill;
+    if (!SKILL_KEYS.includes(normalized as SkillKey)) continue;
+    const key = normalized as SkillKey;
+    const hits = data[key].hits + Number(row.hits ?? 0);
+    const total = data[key].total + Number(row.total ?? 0);
+    data[key] = {
+      hits,
+      total,
+      ratio: total > 0 ? hits / total : 0,
     };
   }
 

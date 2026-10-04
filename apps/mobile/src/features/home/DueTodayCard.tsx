@@ -38,9 +38,9 @@ export function DueTodayCard({ dueCount }: Props) {
         ) : null}
       </View>
       <Button
-        label={has ? mn.home.continueStudy : mn.study.flashcard}
+        label={has ? mn.home.continueStudy : 'Дараагийн хичээлээ эхлэх'}
         variant={has ? 'primary' : 'secondary'}
-        onPress={() => router.push('/study/flashcard')}
+        onPress={() => router.push(has ? '/study/flashcard' : '/study')}
         rightIcon={
           <Ionicons
             name="arrow-forward"

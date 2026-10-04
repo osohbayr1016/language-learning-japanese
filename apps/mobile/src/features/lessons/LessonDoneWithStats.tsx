@@ -8,7 +8,7 @@ import { MetricRing } from './MetricRing';
 import { LessonDoneMockExamCta } from './LessonDoneMockExamCta';
 import type { SkillScores } from './skills';
 import type { Streak } from '../../lib/api/user';
-import type { HskLevel, ImportedLessonContent } from '../../lib/types';
+import type { JlptLevel, ImportedLessonContent } from '../../lib/types';
 
 function formatDuration(sec: number): string {
   const m = Math.floor(sec / 60);
@@ -20,12 +20,17 @@ type Props = {
   durationSec: number;
   xpEarned: number;
   accuracy: number;
+  mastered: boolean | null;
+  masteryRequired: number;
+  finalizing: boolean;
+  finalizeError: string | null;
+  onRetryFinalize: () => void;
   skills: SkillScores;
   streak: Streak;
   enablePostLessonNav: boolean;
   token: string | null;
   importedContent?: ImportedLessonContent | null;
-  chapterHskLevel?: HskLevel;
+  chapterJlptLevel?: JlptLevel;
   nextLesson: { id: number; title_mn: string } | null;
   goNext: () => void;
   onContinue: () => void;
@@ -35,12 +40,17 @@ export function LessonDoneWithStats({
   durationSec,
   xpEarned,
   accuracy,
+  mastered,
+  masteryRequired,
+  finalizing,
+  finalizeError,
+  onRetryFinalize,
   skills,
   streak,
   enablePostLessonNav,
   token,
   importedContent,
-  chapterHskLevel,
+  chapterJlptLevel,
   nextLesson,
   goNext,
   onContinue,
@@ -48,9 +58,26 @@ export function LessonDoneWithStats({
   return (
     <Screen scroll>
       <View style={styles.hero}>
-        <Ionicons name="trophy" size={64} color={colors.warning} />
-        <Text style={styles.title}>Хичээл дууслаа!</Text>
-        <Text style={styles.sub}>+{xpEarned} XP цуглуулсан</Text>
+        <Ionicons
+          name={finalizeError ? 'alert-circle' : mastered === false ? 'refresh-circle' : 'trophy'}
+          size={64}
+          color={finalizeError ? colors.error : mastered === false ? colors.brand.primary : colors.warning}
+        />
+        <Text style={styles.title}>
+          {finalizing
+            ? 'Дүнг хадгалж байна…'
+            : finalizeError
+              ? 'Дүнг хадгалж чадсангүй'
+              : mastered === false
+                ? 'Энэ оролдлого хараахан эзэмшсэнд тооцогдохгүй'
+                : 'Хичээл эзэмшлээ!'}
+        </Text>
+        <Text style={styles.sub}>
+          {mastered === false
+            ? `${Math.round(masteryRequired * 100)}% шаардлагатай · Одоогоор ${Math.round(accuracy * 100)}%`
+            : `+${xpEarned} XP цуглуулсан`}
+        </Text>
+        {finalizeError ? <Text style={styles.error}>{finalizeError}</Text> : null}
       </View>
 
       <View style={styles.pillRow}>
@@ -72,21 +99,22 @@ export function LessonDoneWithStats({
       <View style={styles.grid}>
         <MetricRing label="Сонсох" value={skills.listening} icon="ear" color={colors.brand.secondary} />
         <MetricRing label="Дуудлага" value={skills.pronunciation} icon="mic" color={colors.error} />
-        <MetricRing label="Өнгө" value={skills.tones} icon="musical-notes" color={colors.warning} />
+        <MetricRing label="Аялга" value={skills.pitch} icon="musical-notes" color={colors.warning} />
         <MetricRing label="Цээж" value={skills.recall} icon="bulb" color={colors.brand.primary} />
         <MetricRing label="Унших" value={skills.reading} icon="book" color={colors.accent.purple} />
         <MetricRing label="Зураас" value={skills.stroke} icon="brush" color={colors.accent.pink} />
       </View>
 
       <View style={styles.btns}>
-        {enablePostLessonNav ? (
+        {finalizeError ? <Button label="Дүн хадгалахыг дахин оролдох" onPress={onRetryFinalize} /> : null}
+        {enablePostLessonNav && mastered === true ? (
           <LessonDoneMockExamCta
             token={token}
             imported={importedContent}
-            chapterHskLevel={chapterHskLevel}
+            chapterJlptLevel={chapterJlptLevel}
           />
         ) : null}
-        {enablePostLessonNav && nextLesson ? (
+        {enablePostLessonNav && mastered === true && nextLesson ? (
           <Button
             label={`${mn.lesson.continueNextPrefix} ${nextLesson.title_mn}`}
             onPress={goNext}
@@ -95,10 +123,15 @@ export function LessonDoneWithStats({
         ) : null}
         <Button
           label={
-            enablePostLessonNav ? (nextLesson ? mn.lesson.backToStudy : 'ҮРГЭЛЖЛҮҮЛЭХ') : mn.admin.lessonPreviewDone
+            enablePostLessonNav
+              ? mastered === false
+                ? 'Суралцах хэсэг рүү буцах'
+                : (nextLesson ? mn.lesson.backToStudy : 'ҮРГЭЛЖЛҮҮЛЭХ')
+              : mn.admin.lessonPreviewDone
           }
           variant={enablePostLessonNav && nextLesson ? 'secondary' : 'primary'}
           onPress={onContinue}
+          disabled={finalizing}
         />
       </View>
     </Screen>
@@ -108,7 +141,8 @@ export function LessonDoneWithStats({
 const styles = StyleSheet.create({
   hero: { alignItems: 'center', paddingVertical: spacing.lg },
   title: { ...typography.heading.xl, color: colors.text.primary, marginTop: spacing.sm },
-  sub: { ...typography.heading.md, color: colors.brand.primary, marginTop: 4 },
+  sub: { ...typography.heading.md, color: colors.brand.primary, marginTop: 4, textAlign: 'center' },
+  error: { ...typography.body.md, color: colors.error, marginTop: spacing.sm, textAlign: 'center' },
   pillRow: { flexDirection: 'row', justifyContent: 'space-around', marginVertical: spacing.md },
   pill: {
     flexDirection: 'row',

@@ -1,7 +1,7 @@
 export type SkillKey =
   | 'listening'
   | 'pronunciation'
-  | 'tones'
+  | 'pitch'
   | 'recall'
   | 'reading'
   | 'stroke';

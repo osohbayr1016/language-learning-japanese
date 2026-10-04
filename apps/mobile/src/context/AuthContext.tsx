@@ -35,7 +35,8 @@ function migrateStoredLevel(raw: string | null): JlptSelfLevel | null {
 }
 
 const ONBOARDING_KEY = 'has_seen_onboarding';
-const LEVEL_KEY = 'chinese_level';
+const LEVEL_KEY = 'jlpt_self_level';
+const LEGACY_LEVEL_KEY = 'chinese_level';
 const REASON_KEY = 'learning_reason';
 
 interface AuthState {
@@ -44,6 +45,8 @@ interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   hasSeenOnboarding: boolean;
+  jlptLevel: JlptSelfLevel | null;
+  /** @deprecated compatibility alias; new code must use jlptLevel. */
   chineseLevel: JlptSelfLevel | null;
   reason: LearningReason | null;
 }
@@ -65,6 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isLoading: true,
     isAuthenticated: false,
     hasSeenOnboarding: false,
+    jlptLevel: null,
     chineseLevel: null,
     reason: null,
   });
@@ -95,14 +99,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function bootstrap() {
       let token: string | null = null;
       let hasSeenOnboarding = false;
-      let chineseLevel: JlptSelfLevel | null = null;
+      let jlptLevel: JlptSelfLevel | null = null;
       let reason: LearningReason | null = null;
       try {
         token = await restoreStoredAccessToken();
         const flag = await getItem(ONBOARDING_KEY);
         hasSeenOnboarding = flag === 'true';
-        chineseLevel = migrateStoredLevel(await getItem(LEVEL_KEY));
+        const localLevel = (await getItem(LEVEL_KEY)) ?? (await getItem(LEGACY_LEVEL_KEY));
+        jlptLevel = migrateStoredLevel(localLevel);
         reason = (await getItem(REASON_KEY)) as LearningReason | null;
+        if (jlptLevel) {
+          await setItem(LEVEL_KEY, jlptLevel);
+          await removeItem(LEGACY_LEVEL_KEY);
+        }
+        if (token) {
+          try {
+            const remote = await api.user.preferences(token);
+            jlptLevel = (remote.data.self_level as JlptSelfLevel | null) ?? jlptLevel;
+            reason = (remote.data.learning_reason as LearningReason | null) ?? reason;
+            if (jlptLevel) await setItem(LEVEL_KEY, jlptLevel);
+            if (reason) await setItem(REASON_KEY, reason);
+          } catch {
+            // Older deployments may not have the preferences migration yet; local values remain usable.
+          }
+        }
       } catch (e) {
         console.error('Auth bootstrap failed', e);
       }
@@ -113,7 +133,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading: false,
         isAuthenticated: !!token,
         hasSeenOnboarding,
-        chineseLevel,
+        jlptLevel,
+        chineseLevel: jlptLevel,
         reason,
       });
     }
@@ -122,11 +143,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (tokens: { access_token: string; refresh_token: string }) => {
     await persistSession(tokens.access_token, tokens.refresh_token);
     const isAdmin = await syncAdminFromServer(tokens.access_token);
+    let jlptLevel = state.jlptLevel;
+    let reason = state.reason;
+    try {
+      const remote = await api.user.preferences(tokens.access_token);
+      jlptLevel = (remote.data.self_level as JlptSelfLevel | null) ?? jlptLevel;
+      reason = (remote.data.learning_reason as LearningReason | null) ?? reason;
+    } catch {
+      // Keep local preferences if the server preference endpoint is unavailable.
+    }
     setState((s) => ({
       ...s,
       token: tokens.access_token,
       isAuthenticated: true,
       isAdmin,
+      jlptLevel,
+      chineseLevel: jlptLevel,
+      reason,
     }));
   };
 
@@ -148,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const saveSetup = async (level: JlptSelfLevel, reason: LearningReason) => {
     await setItem(LEVEL_KEY, level);
     await setItem(REASON_KEY, reason);
-    setState((s) => ({ ...s, chineseLevel: level, reason }));
+    setState((s) => ({ ...s, jlptLevel: level, chineseLevel: level, reason }));
   };
 
   const refreshAdminRole = useCallback(async () => {

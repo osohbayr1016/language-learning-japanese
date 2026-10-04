@@ -4,6 +4,8 @@ import { MascotBubble } from './MascotBubble';
 import { OptionCard } from './OptionCard';
 import { mn } from '../../i18n/mn';
 import type { JlptSelfLevel } from './types';
+import { PlacementCheckCard } from './PlacementCheckCard';
+import type { PlacementLevel } from './placement';
 
 type Item = { id: JlptSelfLevel; title: string; subtitle: string };
 
@@ -18,10 +20,17 @@ const ITEMS: Item[] = [
 
 type Props = {
   value: JlptSelfLevel | null;
+  placementLevel: PlacementLevel | null;
   onChange: (v: JlptSelfLevel) => void;
+  onPlacementComplete: (v: PlacementLevel) => void;
 };
 
-export function LevelStep({ value, onChange }: Props) {
+export function LevelStep({
+  value,
+  placementLevel,
+  onChange,
+  onPlacementComplete,
+}: Props) {
   return (
     <View>
       <MascotBubble message={mn.setup.levelTitle} />
@@ -34,6 +43,9 @@ export function LevelStep({ value, onChange }: Props) {
           onPress={() => onChange(it.id)}
         />
       ))}
+      {value && value !== 'none' && value !== 'n5' ? (
+        <PlacementCheckCard result={placementLevel} onComplete={onPlacementComplete} />
+      ) : null}
     </View>
   );
 }

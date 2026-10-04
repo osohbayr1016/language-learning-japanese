@@ -82,8 +82,11 @@ export const study = {
   weakReviewSubtitle: "SRS — бага итгэлтэй, бага давталтын эгнээ",
   weakReviewDesc: "Ой тогтоолт сул байгаа үгсийг эхлүүл",
   weakReviewEmpty: "Одоогоор энэ жагсаалт хоосон — эхлээд сурах болон картын давталт хийнэ үү.",
-  pinyinOn: "Romaji: нээх",
-  pinyinOff: "Romaji: хаах",
+  romajiOn: "Romaji: нээлттэй",
+  romajiOff: "Romaji: хаалттай",
+  /** @deprecated compatibility keys. */
+  pinyinOn: "Romaji: нээлттэй",
+  pinyinOff: "Romaji: хаалттай",
   webKeysFlashcard: "Вэб: Space = эргүүлэх · 1–4 = дахин/хүнд/сайн/хялбар",
   webKeysMock: "Вэб: 1–9 сонголт (эхний хэд рүү) · ← болон → алхам · Enter (сүүлд) илгээх",
   mockExamScoreBreakdown: "Сонсох: {l}/100 · Унших: {r}/100",

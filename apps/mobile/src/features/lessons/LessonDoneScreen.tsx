@@ -8,7 +8,7 @@ import { pickNextLessonInChapter } from './pickNextLessonInChapter';
 import { LessonDoneMinimal } from './LessonDoneMinimal';
 import { LessonDoneWithStats } from './LessonDoneWithStats';
 import type { Exercise, ExerciseResult } from './types';
-import type { HskLevel, ImportedLessonContent } from '../../lib/types';
+import type { JlptLevel, ImportedLessonContent } from '../../lib/types';
 
 type Props = {
   exercises: Exercise[];
@@ -16,11 +16,16 @@ type Props = {
   durationSec: number;
   xpEarned: number;
   accuracy: number;
+  mastered: boolean | null;
+  masteryRequired: number;
+  finalizing: boolean;
+  finalizeError: string | null;
+  onRetryFinalize: () => void;
   onContinue: () => void;
   chapterId?: number;
   currentOrderNum?: number;
   importedContent?: ImportedLessonContent | null;
-  chapterHskLevel?: HskLevel;
+  chapterJlptLevel?: JlptLevel;
   /** false = админ урьдчилан харах (дараагийн хичээл, mock шалгалт нууна) */
   enablePostLessonNav?: boolean;
   /** Импорт/урьдчилан харах: XP, цаг, чадварын дугуйг харуулахгүй */
@@ -33,11 +38,16 @@ export function LessonDoneScreen({
   durationSec,
   xpEarned,
   accuracy,
+  mastered,
+  masteryRequired,
+  finalizing,
+  finalizeError,
+  onRetryFinalize,
   onContinue,
   chapterId,
   currentOrderNum,
   importedContent,
-  chapterHskLevel,
+  chapterJlptLevel,
   enablePostLessonNav = true,
   minimalComplete = false,
 }: Props) {
@@ -48,7 +58,10 @@ export function LessonDoneScreen({
   const [nextLesson, setNextLesson] = useState<{ id: number; title_mn: string } | null>(null);
 
   useEffect(() => {
-    if (!enablePostLessonNav) return;
+    if (!enablePostLessonNav || mastered !== true) {
+      setNextLesson(null);
+      return;
+    }
     if (!token || chapterId == null || currentOrderNum == null) return;
     let cancelled = false;
     void api.lessons
@@ -64,7 +77,7 @@ export function LessonDoneScreen({
     return () => {
       cancelled = true;
     };
-  }, [token, chapterId, currentOrderNum, enablePostLessonNav]);
+  }, [token, chapterId, currentOrderNum, enablePostLessonNav, mastered]);
 
   const goNext = () => {
     if (!nextLesson) return;
@@ -79,7 +92,12 @@ export function LessonDoneScreen({
         goNext={goNext}
         onContinue={onContinue}
         importedContent={importedContent}
-        chapterHskLevel={chapterHskLevel}
+        chapterJlptLevel={chapterJlptLevel}
+        mastered={mastered}
+        masteryRequired={masteryRequired}
+        finalizing={finalizing}
+        finalizeError={finalizeError}
+        onRetryFinalize={onRetryFinalize}
       />
     );
   }
@@ -89,12 +107,17 @@ export function LessonDoneScreen({
       durationSec={durationSec}
       xpEarned={xpEarned}
       accuracy={accuracy}
+      mastered={mastered}
+      masteryRequired={masteryRequired}
+      finalizing={finalizing}
+      finalizeError={finalizeError}
+      onRetryFinalize={onRetryFinalize}
       skills={skills}
       streak={streak}
       enablePostLessonNav={enablePostLessonNav}
       token={token}
       importedContent={importedContent}
-      chapterHskLevel={chapterHskLevel}
+      chapterJlptLevel={chapterJlptLevel}
       nextLesson={nextLesson}
       goNext={goNext}
       onContinue={onContinue}

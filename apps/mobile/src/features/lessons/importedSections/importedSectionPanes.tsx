@@ -5,7 +5,7 @@ import { colors, radius, spacing, typography } from '../../../theme';
 import { mn } from '../../../i18n/mn';
 
 const styles = StyleSheet.create({
-  cn: { ...typography.heading.md, color: colors.text.primary },
+  jp: { ...typography.heading.md, color: colors.text.primary },
   mnTitle: { ...typography.body.md, color: colors.text.secondary, fontWeight: '700' },
   p: { ...typography.body.sm, color: colors.text.secondary, lineHeight: 21 },
   block: {
@@ -18,7 +18,7 @@ const styles = StyleSheet.create({
   h: { ...typography.body.md, color: colors.text.primary, fontWeight: '800' },
   line: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.xs },
   speaker: { ...typography.body.sm, color: colors.brand.primary, fontWeight: '800' },
-  cnLine: { ...typography.body.md, color: colors.text.primary, fontWeight: '700', lineHeight: 24 },
+  jpLine: { ...typography.body.md, color: colors.text.primary, fontWeight: '700', lineHeight: 24 },
 });
 
 export function SummaryPane({ content }: { content: ImportedLessonContent }) {
@@ -35,15 +35,15 @@ export function DialoguePane({ content }: { content: ImportedLessonContent }) {
   }
   return (
     <>
-      <Text style={styles.cn}>{content.title_cn}</Text>
+      <Text style={styles.jp}>{content.title_jp}</Text>
       <Text style={styles.mnTitle}>{content.title_mn}</Text>
       {blocks.map((d) => (
         <View key={`${d.no}-${d.title}`} style={styles.block}>
           <Text style={styles.h}>{d.title}</Text>
           {d.lines!.map((l, i) => (
-            <View key={`${l.cn}-${i}`} style={styles.line}>
+            <View key={`${l.jp}-${i}`} style={styles.line}>
               {l.speaker ? <Text style={styles.speaker}>{l.speaker}</Text> : null}
-              <Text style={styles.cnLine}>{l.cn}</Text>
+              <Text style={styles.jpLine}>{l.jp}</Text>
               <Text style={styles.p}>{l.mn}</Text>
             </View>
           ))}
@@ -54,7 +54,7 @@ export function DialoguePane({ content }: { content: ImportedLessonContent }) {
 }
 
 export function EasyTextsPane({ content }: { content: ImportedLessonContent }) {
-  const blocks = content.dialogues.filter((d) => Boolean(d.text_cn?.trim()));
+  const blocks = content.dialogues.filter((d) => Boolean(d.text_jp?.trim()));
   if (!blocks.length) {
     return <Text style={styles.p}>{mn.lesson.importedEmptyEasyTexts}</Text>;
   }
@@ -63,7 +63,7 @@ export function EasyTextsPane({ content }: { content: ImportedLessonContent }) {
       {blocks.map((d) => (
         <View key={`ez-${d.no}-${d.title}`} style={styles.block}>
           <Text style={styles.h}>{d.title}</Text>
-          <Text style={styles.cnLine}>{d.text_cn}</Text>
+          <Text style={styles.jpLine}>{d.text_jp}</Text>
           {d.text_mn ? <Text style={styles.p}>{d.text_mn}</Text> : null}
         </View>
       ))}

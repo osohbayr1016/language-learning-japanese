@@ -18,4 +18,5 @@ export interface JWTPayload {
 
 export type Variables = {
   user: JWTPayload;
+  requestId: string;
 };
