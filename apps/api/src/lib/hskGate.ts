@@ -1,5 +1,3 @@
-import { safeAll } from './lessonCatalog';
-
 export const LESSON_MASTERY_ACCURACY = 0.8;
 
 /** Unlock JLPT N4+ when all published N5 lessons are mastered OR any published N5 mock is passed. */
