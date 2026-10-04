@@ -51,13 +51,17 @@ user.get('/stats', async (c) => {
 user.get('/dashboard', async (c) => {
   const { sub } = c.get('user');
   await syncUserStatsAggregates(c.env.DB, sub);
-  const [profile, streakRaw, statsRaw, dueToday] = await Promise.all([
+  const [profile, streakRaw, statsRaw, dueToday, todayActivity] = await Promise.all([
     c.env.DB.prepare(
       'SELECT id, email, display_name, avatar_url FROM users WHERE id = ?'
     ).bind(sub).first(),
     c.env.DB.prepare('SELECT * FROM user_streaks WHERE user_id = ?').bind(sub).first(),
     c.env.DB.prepare('SELECT * FROM user_stats WHERE user_id = ?').bind(sub).first(),
     studyQueueCount(c.env.DB, sub),
+    c.env.DB
+      .prepare(`SELECT xp_earned FROM user_daily_activity WHERE user_id = ? AND activity_date = date('now')`)
+      .bind(sub)
+      .first(),
   ]);
 
   const streak = streakRaw
@@ -84,7 +88,13 @@ user.get('/dashboard', async (c) => {
       };
 
   return c.json({
-    data: { user: profile, streak, stats, due_today: dueToday },
+    data: {
+      user: profile,
+      streak,
+      stats,
+      due_today: dueToday,
+      today_xp: Number(todayActivity?.xp_earned ?? 0),
+    },
   });
 });
 
