@@ -12,7 +12,7 @@ import {
 import { publishedLessonTree, safeAll } from '../lib/lessonCatalog';
 import { fetchPublishedLessonDetail } from '../lib/lessonDetail';
 import { computeLessonFlashcardEligibleAt } from '../lib/lessonFlashcardDelay';
-import { lessonChapterHskLevel, passesHsk1AdvanceGate } from '../lib/hskGate';
+import { lessonChapterJlptLevel, passesJlptN5AdvanceGate } from '../lib/hskGate';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
 
 const lessons = new Hono<{ Bindings: Env; Variables: Variables }>();
@@ -23,7 +23,7 @@ lessons.get('/catalog', async (c) => {
   return c.json({ data });
 });
 
-// Public lesson body — нэвтрээгүй хэрэглэгч ч HSK замаар суралцах боломжтой.
+// Public lesson body — нэвтрээгүй хэрэглэгч ч JLPT замаар суралцах боломжтой.
 lessons.get('/public/:id', async (c) => {
   const id = Number(c.req.param('id'));
   if (!Number.isFinite(id)) return c.json({ error: 'Буруу id' }, 400);
@@ -61,7 +61,7 @@ lessons.get('/', async (c) => {
     });
   }
   const dataRaw = await publishedLessonTree(c.env.DB, progress);
-  const gateOk = await passesHsk1AdvanceGate(c.env.DB, sub);
+  const gateOk = await passesJlptN5AdvanceGate(c.env.DB, sub);
   const data = (dataRaw as { jlpt_level?: number; lessons?: unknown[] }[]).map((ch) => ({
     ...ch,
     locked_below_advance_gate:
@@ -75,9 +75,9 @@ lessons.get('/:id', async (c) => {
   const { sub } = c.get('user');
   const id = Number(c.req.param('id'));
   if (!Number.isFinite(id)) return c.json({ error: 'Буруу id' }, 400);
-  const hsk = await lessonChapterHskLevel(c.env.DB, id);
-  if (hsk !== null && hsk >= 2) {
-    const gateOk = await passesHsk1AdvanceGate(c.env.DB, sub);
+  const jlptLevel = await lessonChapterJlptLevel(c.env.DB, id);
+  if (jlptLevel !== null && jlptLevel >= 2) {
+    const gateOk = await passesJlptN5AdvanceGate(c.env.DB, sub);
     if (!gateOk) {
       return c.json(
         {
@@ -99,9 +99,9 @@ lessons.post('/:id/complete', async (c) => {
   const lessonId = Number(c.req.param('id'));
   if (!Number.isFinite(lessonId)) return c.json({ error: 'Буруу id' }, 400);
 
-  const hsk = await lessonChapterHskLevel(c.env.DB, lessonId);
-  if (hsk !== null && hsk >= 2) {
-    const gateOk = await passesHsk1AdvanceGate(c.env.DB, sub);
+  const jlptLevel = await lessonChapterJlptLevel(c.env.DB, lessonId);
+  if (jlptLevel !== null && jlptLevel >= 2) {
+    const gateOk = await passesJlptN5AdvanceGate(c.env.DB, sub);
     if (!gateOk) {
       return c.json(
         {
