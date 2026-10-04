@@ -83,6 +83,7 @@ export function LessonDoneMinimal({
           }
           variant={enablePostLessonNav && nextLesson ? 'secondary' : 'primary'}
           onPress={onContinue}
+          disabled={finalizing}
         />
       </View>
     </Screen>
