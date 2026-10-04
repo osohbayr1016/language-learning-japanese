@@ -43,7 +43,15 @@ export default function SetupScreen() {
         ctaLoading={f.submitting}
       >
         {f.step === 0 ? (
-          <LevelStep value={f.answers.level} onChange={(v) => f.update('level', v)} />
+          <LevelStep
+            value={f.answers.level}
+            placementLevel={f.answers.placementLevel}
+            onChange={(v) => {
+              f.update('level', v);
+              f.update('placementLevel', null);
+            }}
+            onPlacementComplete={(v) => f.update('placementLevel', v)}
+          />
         ) : null}
         {f.step === 1 ? (
           <ReasonStep value={f.answers.reason} onChange={(v) => f.update('reason', v)} />
