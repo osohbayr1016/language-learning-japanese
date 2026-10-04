@@ -409,6 +409,9 @@ test('kana checkpoint can be completed with keyboard only', async ({ page }) => 
   });
 
   await page.goto('/kana/checkpoint');
+  await expect(page.getByText(/^1\/12/)).toBeVisible();
+  await expect(page.getByText('Вэб: 1–4 = сонгох · Enter = дараах')).toBeVisible();
+
   const keys = ['1', '2', '2', '3', '3', '3', '1', '1', '2', '4', '4', '2'];
   for (let i = 0; i < keys.length; i += 1) {
     await page.keyboard.press(keys[i]);
