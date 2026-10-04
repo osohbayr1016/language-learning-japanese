@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
 import type { StudyNextAction } from '../../lib/api/user';
 
-export function useStudyNextAction(refreshKey: unknown) {
+export function useStudyNextAction() {
   const { token } = useAuth();
   const [action, setAction] = useState<StudyNextAction | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +46,7 @@ export function useStudyNextAction(refreshKey: unknown) {
     return () => {
       alive = false;
     };
-  }, [token, refreshKey, revision]);
+  }, [token, revision]);
 
   return { action, loading, error, retry };
 }
