@@ -3,7 +3,7 @@ import type { Exercise, ExerciseResult } from './types';
 export type SkillKey =
   | 'listening'
   | 'pronunciation'
-  | 'tones'
+  | 'pitch'
   | 'recall'
   | 'reading'
   | 'stroke';
@@ -11,12 +11,12 @@ export type SkillKey =
 const KIND_TO_SKILLS: Record<Exercise['kind'], SkillKey[]> = {
   memorize: ['recall', 'reading'],
   'choose-word': ['recall', 'reading'],
-  'listen-mcq': ['listening', 'tones'],
+  'listen-mcq': ['listening', 'pitch'],
   'match-pairs': ['recall', 'reading'],
   'arrange-words': ['reading', 'recall'],
   'fill-blank': ['recall', 'reading'],
   'true-false': ['recall'],
-  'say-sentence': ['pronunciation', 'tones', 'listening'],
+  'say-sentence': ['pronunciation', 'pitch', 'listening'],
   'imported-section': ['reading'],
   'imported-workbook': ['reading', 'recall'],
 };
