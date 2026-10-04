@@ -1,6 +1,8 @@
 import { safeAll } from './lessonCatalog';
 
-/** Unlock JLPT N4+ chapters when user finished all N5 lessons OR passed any N5 published mock exam. */
+export const LESSON_MASTERY_ACCURACY = 0.8;
+
+/** Unlock JLPT N4+ when all published N5 lessons are mastered OR any published N5 mock is passed. */
 export async function passesJlptN5AdvanceGate(db: D1Database, userId: number): Promise<boolean> {
   const mockPassRow = await db
     .prepare(
@@ -14,43 +16,38 @@ export async function passesJlptN5AdvanceGate(db: D1Database, userId: number): P
     .first();
   if (mockPassRow) return true;
 
-  const chap1 = await safeAll(
-    db
-      .prepare(
-        `SELECT id FROM chapters WHERE is_published = 1 AND jlpt_level = 1 ORDER BY order_num ASC LIMIT 1`
-      )
-      .all()
-  );
-  const n5chapterId = (chap1.results[0] as { id: number } | undefined)?.id;
-  if (!n5chapterId) return false;
-
-  const ls = await safeAll(
-    db.prepare(`SELECT id FROM lessons WHERE chapter_id = ? AND is_published = 1`).bind(n5chapterId).all()
-  );
-  const lessonIds = ((ls.results ?? []) as { id: number }[]).map((r) => r.id);
-  if (!lessonIds.length) return false;
-
-  const ph = lessonIds.map(() => '?').join(',');
-  const prog = await safeAll(
-    db
-      .prepare(
-        `SELECT lesson_id FROM user_lesson_progress
-         WHERE user_id = ? AND completed_at IS NOT NULL
-           AND lesson_id IN (${ph})`
-      )
-      .bind(userId, ...lessonIds)
-      .all()
-  );
-
-  const doneSet = new Set(
-    (((prog.results ?? []) as { lesson_id?: number }[]) ?? []).map((r) => Number(r.lesson_id)).filter(
-      Number.isFinite
+  const required = await db
+    .prepare(
+      `SELECT COUNT(*) AS n
+       FROM lessons l
+       JOIN chapters c ON c.id = l.chapter_id
+       WHERE l.is_published = 1 AND c.is_published = 1 AND c.jlpt_level = 1`
     )
-  );
-  return lessonIds.every((lid) => doneSet.has(lid));
+    .first<{ n?: number }>();
+
+  const requiredCount = Number(required?.n ?? 0);
+  if (requiredCount <= 0) return false;
+
+  const mastered = await db
+    .prepare(
+      `SELECT COUNT(DISTINCT l.id) AS n
+       FROM lessons l
+       JOIN chapters c ON c.id = l.chapter_id
+       JOIN user_lesson_progress p ON p.lesson_id = l.id
+       WHERE p.user_id = ?
+         AND l.is_published = 1
+         AND c.is_published = 1
+         AND c.jlpt_level = 1
+         AND p.completed_at IS NOT NULL
+         AND p.best_accuracy >= ?`
+    )
+    .bind(userId, LESSON_MASTERY_ACCURACY)
+    .first<{ n?: number }>();
+
+  return Number(mastered?.n ?? 0) >= requiredCount;
 }
 
-// Legacy alias for code that still uses old name
+// Legacy alias for code that still uses old name.
 export const passesHsk1AdvanceGate = passesJlptN5AdvanceGate;
 
 export async function lessonChapterJlptLevel(
@@ -59,17 +56,14 @@ export async function lessonChapterJlptLevel(
 ): Promise<number | null> {
   const r = await db
     .prepare(
-      `SELECT c.jlpt_level AS h FROM lessons l
+      `SELECT c.jlpt_level AS level FROM lessons l
        JOIN chapters c ON c.id = l.chapter_id
        WHERE l.id = ?`
     )
     .bind(lessonId)
-    .first();
-  const row = r as { h?: number } | null;
-  const h = row?.h ?? null;
-  if (h === null || h === undefined) return null;
-  return Number(h);
+    .first<{ level?: number }>();
+  return r?.level == null ? null : Number(r.level);
 }
 
-// Legacy alias
+// Legacy alias; remove after all old imports are migrated.
 export const lessonChapterHskLevel = lessonChapterJlptLevel;
