@@ -44,11 +44,11 @@ export type LearningPreferences = {
 
 export type LearningPreferencesPatch = Partial<Pick<
   LearningPreferences,
-  'self_level' | 'learning_reason' | 'daily_xp_goal' | 'kana_foundation_completed'
+  'self_level' | 'learning_reason' | 'daily_xp_goal' | 'kana_foundation_completed' | 'placement_level'
 >>;
 
 export type StudyNextAction = {
-  kind: 'review' | 'foundation' | 'lesson' | 'weak_skill' | 'explore';
+  kind: 'review' | 'foundation' | 'checkpoint' | 'lesson' | 'weak_skill' | 'explore';
   title: string;
   subtitle: string;
   href: string;
