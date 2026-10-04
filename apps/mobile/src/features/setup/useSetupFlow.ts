@@ -14,7 +14,7 @@ export function useSetupFlow() {
 
   const [step, setStep] = useState<StepIndex>(0);
   const [answers, setAnswers] = useState<SetupAnswers>({
-    level: null, reason: null, name: '', email: '', password: '',
+    level: null, placementLevel: null, reason: null, name: '', email: '', password: '',
   });
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -48,6 +48,7 @@ export function useSetupFlow() {
         await api.user.updatePreferences(res.data.access_token, {
           self_level: answers.level,
           learning_reason: answers.reason,
+          placement_level: answers.placementLevel,
         });
         await saveSetup(answers.level, answers.reason);
       }
