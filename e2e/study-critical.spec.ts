@@ -262,7 +262,7 @@ test('zero learner is directed to kana foundation', async ({ page }) => {
 
   await page.goto('/study');
   await expect(page.getByText('Эхлээд кана сууриа тавья')).toBeVisible();
-  await page.getByRole('button', { name: 'Эхлэх' }).click();
+  await page.getByRole('button', { name: /Эхлээд кана сууриа тавья/ }).click();
   await expect(page).toHaveURL(/\/kana$/);
   await expect(page.getByText('Кана сууриа шалгах')).toBeVisible();
 });
@@ -484,5 +484,5 @@ test('mic permission denial produces a learner-visible result instead of hanging
   await page.goto('/study/speak');
   await expect(page.getByRole('button', { name: 'Микрофон' })).toBeVisible();
   await page.getByRole('button', { name: 'Микрофон' }).click();
-  await expect(page.getByText(/0\/100|permission|зөвшөөр/i)).toBeVisible();
+  await expect(page.getByText(/Зөвшөөрөл аваагүй/).first()).toBeVisible();
 });
