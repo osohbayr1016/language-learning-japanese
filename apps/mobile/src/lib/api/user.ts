@@ -32,6 +32,17 @@ export type Dashboard = {
   today_xp: number;
 };
 
+export type StudyNextAction = {
+  kind: 'review' | 'lesson' | 'weak_skill' | 'explore';
+  title: string;
+  subtitle: string;
+  href: string;
+  reason: string;
+  lesson_id?: number;
+  due_count?: number;
+  weak_skill?: string;
+};
+
 export type ProgressResult = {
   word_id: number;
   ease_factor: number;
@@ -71,6 +82,8 @@ export const user = {
     request<{ data: Streak }>('/api/user/streak', { token }),
   stats: (token: string) =>
     request<{ data: Stats }>('/api/user/stats', { token }),
+  nextAction: (token: string) =>
+    request<{ data: StudyNextAction }>('/api/user/next-action', { token }),
   dueWords: (token: string, limit = 20) =>
     request<{ data: WordWithProgress[] }>(
       `/api/user/due-words${buildQuery({ limit })}`,
