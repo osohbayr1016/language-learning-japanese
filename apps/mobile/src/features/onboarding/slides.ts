@@ -17,22 +17,22 @@ export type OnboardingSlide = {
 export const slides: OnboardingSlide[] = [
   {
     id: 's1',
-    japanese: 'アニメを見る',
-    romaji: 'anime o miru',
+    japanese: 'こんにちは',
+    romaji: 'konnichiwa',
     copyKey: 's1',
     image: onboarding1,
   },
   {
     id: 's2',
-    japanese: 'ゲームで覚える',
-    romaji: 'gēmu de oboeru',
+    japanese: '少しずつ',
+    romaji: 'sukoshi zutsu',
     copyKey: 's2',
     image: onboarding2,
   },
   {
     id: 's3',
-    japanese: '毎日続ける',
-    romaji: 'mainichi tsuzukeru',
+    japanese: 'できる！',
+    romaji: 'dekiru!',
     copyKey: 's3',
     image: onboarding3,
   },
