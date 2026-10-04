@@ -45,6 +45,7 @@ export function PronounceButton({
 }: Props) {
   const { playWord, playPhrase } = useAudio();
   const [active, setActive] = useState<'idle' | 'tap' | 'hold' | 'doubleTap'>('idle');
+  const [audioError, setAudioError] = useState<string | null>(null);
   const tapTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const heldRef = useRef(false);
 
@@ -63,17 +64,17 @@ export function PronounceButton({
 
   const handle = async (kind: GestureKind) => {
     setActive(kind);
+    setAudioError(null);
     const a = gestureToAction(kind);
     const opts =
       a.kind === 'doubleTap' ? { speed: a.speed, repeat: a.repeat } : { speed: a.speed };
     try {
-      if (useFullPhrase) {
-        await playPhrase(displayText!.trim(), opts);
-      } else if (a.kind === 'doubleTap') {
-        await playWord(wordId, { speed: a.speed, repeat: a.repeat });
-      } else {
-        await playWord(wordId, { speed: a.speed });
-      }
+      const ok = useFullPhrase
+        ? await playPhrase(displayText!.trim(), opts)
+        : a.kind === 'doubleTap'
+          ? await playWord(wordId, { speed: a.speed, repeat: a.repeat })
+          : await playWord(wordId, { speed: a.speed });
+      if (!ok) setAudioError('Дууг тоглуулж чадсангүй. Дахин оролдоно уу.');
     } finally {
       setActive('idle');
     }
@@ -133,7 +134,13 @@ export function PronounceButton({
           {active === 'hold' ? <Text style={styles.badge}>удаан</Text> : null}
         </Pressable>
       </View>
-      {showHints ? <Text style={styles.hint}>тап · удаан барих · 2 дарах</Text> : null}
+      {audioError ? (
+        <Text accessibilityRole="alert" style={[styles.hint, { color: colors.error }]}>
+          {audioError}
+        </Text>
+      ) : showHints ? (
+        <Text style={styles.hint}>тап · удаан барих · 2 дарах</Text>
+      ) : null}
     </View>
   );
 }
