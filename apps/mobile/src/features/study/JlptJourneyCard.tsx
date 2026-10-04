@@ -10,9 +10,15 @@ type Props = {
   chapters: Chapter[];
   loading: boolean;
   advanceGateOk: boolean | null;
+  dataReliable?: boolean;
 };
 
-export function JlptJourneyCard({ chapters, loading, advanceGateOk }: Props) {
+export function JlptJourneyCard({
+  chapters,
+  loading,
+  advanceGateOk,
+  dataReliable = true,
+}: Props) {
   const router = useRouter();
 
   const journey = useMemo(() => {
@@ -64,19 +70,23 @@ export function JlptJourneyCard({ chapters, loading, advanceGateOk }: Props) {
           <Text style={styles.eyebrow}>ОДОО СУРАХ</Text>
           <Text style={styles.title}>JLPT N{6 - journey.currentLevel} суралцах зам</Text>
           <Text style={styles.muted}>
-            {journey.completed}/{journey.total} хичээл · {pct}% дууссан
+            {dataReliable
+              ? `${journey.completed}/${journey.total} хичээл · ${pct}% дууссан`
+              : `${journey.total} нийтлэгдсэн хичээл · хувийн явц түр харагдахгүй`}
           </Text>
         </View>
       </View>
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${pct}%` }]} />
-      </View>
+      {dataReliable ? (
+        <View style={styles.progressTrack}>
+          <View style={[styles.progressFill, { width: `${pct}%` }]} />
+        </View>
+      ) : null}
       <Button
         label="Дараагийн хичээл"
         onPress={() => router.push(`/lessons/${journey.next!.id}` as never)}
         rightIcon={<Ionicons name="arrow-forward" size={17} color={colors.text.inverse} />}
       />
-      {advanceGateOk === false && journey.currentLevel === 1 ? (
+      {dataReliable && advanceGateOk === false && journey.currentLevel === 1 ? (
         <Text style={styles.gate}>N5-аа дуусгах эсвэл N5 mock шалгалтад тэнцвэл N4 нээгдэнэ.</Text>
       ) : null}
     </Card>
