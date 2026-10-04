@@ -21,8 +21,8 @@ const EXACT: Record<string, string> = {
   '/onboarding': 'Танилцуулга',
   '/setup': 'Бүртгэл үүсгэх',
 
-  '/home': mn.tabs.home,
-  '/study': mn.tabs.study,
+  '/home': 'Сурах',
+  '/study': 'Дадлага',
   '/kanji': mn.tabs.kanji,
   '/kana': mn.tabs.kana,
   '/games': games.hub,
@@ -49,7 +49,7 @@ const EXACT: Record<string, string> = {
   '/games/missing-word': games.sentence,
   '/games/missing-stroke': games.stroke,
 
-  '/profile/insights': insights.title,
+  '/profile/insights': 'Явц',
   '/profile/settings': 'Тохиргоо',
   '/profile/vocabulary': 'Миний үгс',
   '/profile/avatar': 'Профайл зураг',
