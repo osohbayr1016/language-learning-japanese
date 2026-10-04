@@ -1,64 +1,111 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Ionicons } from '@expo/vector-icons';
 
 import { colors, radius, spacing, typography } from '@src/theme';
-import { mn } from '@src/i18n/mn';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
-type Tab = { path: string; label: string; icon: IconName; activeIcon: IconName; hint: string };
+type Tab = {
+  path: string;
+  label: string;
+  icon: IconName;
+  activeIcon: IconName;
+  hint: string;
+  matches: (pathname: string) => boolean;
+};
 
 const TABS: Tab[] = [
-  { path: '/home', label: mn.tabs.home, icon: 'home-outline', activeIcon: 'home', hint: 'Өнөөдрийн зорилго, давталт' },
-  { path: '/study', label: mn.tabs.study, icon: 'book-outline', activeIcon: 'book', hint: 'Хичээл ба дасгалууд' },
-  { path: '/kana', label: mn.tabs.kana, icon: 'apps-outline', activeIcon: 'apps', hint: 'Хирагана ба катакана' },
-  { path: '/kanji', label: mn.tabs.kanji, icon: 'language-outline', activeIcon: 'language', hint: 'Ханз тэмдэгт' },
-  { path: '/profile', label: mn.tabs.profile, icon: 'person-outline', activeIcon: 'person', hint: 'Профайл ба тохиргоо' },
+  {
+    path: '/home',
+    label: 'Сурах',
+    icon: 'home-outline',
+    activeIcon: 'home',
+    hint: 'Өнөөдрийн хичээл ба JLPT зам',
+    matches: (p) => p === '/home' || p.startsWith('/lessons/'),
+  },
+  {
+    path: '/study',
+    label: 'Дадлага',
+    icon: 'barbell-outline',
+    activeIcon: 'barbell',
+    hint: 'Давталт, кана, канжи, ярих, бичих',
+    matches: (p) =>
+      p === '/study' ||
+      p.startsWith('/study/') ||
+      p === '/kana' ||
+      p.startsWith('/kana/') ||
+      p === '/kanji' ||
+      p.startsWith('/kanji/') ||
+      p === '/games' ||
+      p.startsWith('/games/'),
+  },
+  {
+    path: '/profile/insights',
+    label: 'Явц',
+    icon: 'stats-chart-outline',
+    activeIcon: 'stats-chart',
+    hint: 'XP, streak, ур чадварын өсөлт',
+    matches: (p) => p === '/profile/insights',
+  },
+  {
+    path: '/profile',
+    label: 'Профайл',
+    icon: 'person-circle-outline',
+    activeIcon: 'person-circle',
+    hint: 'Профайл ба тохиргоо',
+    matches: (p) => p === '/profile' || (p.startsWith('/profile/') && p !== '/profile/insights'),
+  },
 ];
 
 export const TAB_PATHS = new Set(TABS.map((t) => t.path));
+export const TAB_BAR_PATHS = new Set([
+  ...TAB_PATHS,
+  '/kana',
+  '/kanji',
+  '/games',
+]);
 
-/** Hub pages that keep the tab bar even though they are not a tab themselves. */
-export const TAB_BAR_PATHS = new Set([...TAB_PATHS, '/games']);
-
-/**
- * The section switcher, as real anchors.
- *
- * It was a native tab navigator; now each tab is an <a> with an href, so the
- * browser gives back middle-click, open-in-new-tab, and a URL worth sharing.
- * Styling lives in index.html next to the rest of the site CSS rather than in
- * a StyleSheet, because this is chrome the page owns.
- */
 export function TabBar() {
+  const { pathname } = useLocation();
+
   return (
     <nav className="tabbar" aria-label="Үндсэн цэс">
-      {TABS.map((tab) => (
-        <NavLink
-          key={tab.path}
-          to={tab.path}
-          className={({ isActive }) => `tabbar__item${isActive ? ' is-active' : ''}`}
-          aria-label={`${tab.label}. ${tab.hint}`}
-        >
-          {({ isActive }) => (
-            <>
+      <Link to="/home" className="tabbar__brand" aria-label="Япон хэл сурах — нүүр">
+        <span className="tabbar__brand-mark">日</span>
+        <span className="tabbar__brand-copy">
+          <strong>Nihongo</strong>
+          <small>Монгол хэлээр япон хэл</small>
+        </span>
+      </Link>
+
+      <div className="tabbar__items">
+        {TABS.map((tab) => {
+          const active = tab.matches(pathname);
+          return (
+            <Link
+              key={tab.path}
+              to={tab.path}
+              className={`tabbar__item${active ? ' is-active' : ''}`}
+              aria-current={active ? 'page' : undefined}
+              aria-label={`${tab.label}. ${tab.hint}`}
+            >
               <span className="tabbar__pill">
                 <Ionicons
-                  name={isActive ? tab.activeIcon : tab.icon}
-                  size={22}
-                  color={isActive ? colors.brand.primary : colors.text.muted}
+                  name={active ? tab.activeIcon : tab.icon}
+                  size={23}
+                  color={active ? colors.brand.primary : colors.text.muted}
                 />
               </span>
               <span className="tabbar__label">{tab.label}</span>
-            </>
-          )}
-        </NavLink>
-      ))}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }
 
-/** Exported so the stylesheet and this file cannot drift apart silently. */
 export const tabBarTokens = {
   height: 74,
   radius: radius.md,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ToneColoredText } from '../../../components/hanzi';
+import { JapaneseText } from '../../../components/japanese';
 import { Touchable } from '../../../primitives';
 import { colors, motion, radius, spacing, tint, typography } from '../../../theme';
 import type { WordWithProgress } from '../../../lib/types';
@@ -12,10 +12,11 @@ type Props = {
   word: WordWithProgress;
   show: 'jp' | 'mn';
   state: State;
+  disabled?: boolean;
   onPress: () => void;
 };
 
-export function AnswerOption({ word, show, state, onPress }: Props) {
+export function AnswerOption({ word, show, state, disabled = false, onPress }: Props) {
   const stateStyles: Record<State, object> = {
     idle: styles.idle,
     correct: styles.correct,
@@ -24,7 +25,7 @@ export function AnswerOption({ word, show, state, onPress }: Props) {
   };
 
   const label = show === 'jp' ? word.kanji : word.meaning_mn;
-  const locked = state !== 'idle';
+  const locked = disabled || state !== 'idle';
 
   return (
     <Touchable
@@ -38,14 +39,14 @@ export function AnswerOption({ word, show, state, onPress }: Props) {
       scaleTo={motion.scale.press}
       hoverLift={locked ? 0 : 2}
       hoverShadow={!locked}
-      style={[styles.btn, stateStyles[state]]}
+      style={[styles.btn, stateStyles[state], disabled && state === 'idle' ? styles.disabled : null]}
       hoveredStyle={!locked ? styles.hovered : undefined}
       pressedStyle={!locked ? styles.pressed : undefined}
     >
       <View style={styles.row}>
         <View style={styles.body}>
           {show === 'jp' ? (
-            <ToneColoredText hanzi={word.kanji} size="sm" align="left" />
+            <JapaneseText text={word.kanji || word.kana || ''} size="sm" align="left" />
           ) : (
             <Text style={styles.text}>{word.meaning_mn}</Text>
           )}
@@ -79,5 +80,6 @@ const styles = StyleSheet.create({
   correct: { backgroundColor: tint(colors.success, 0.14), borderColor: colors.success },
   wrong: { backgroundColor: tint(colors.error, 0.12), borderColor: colors.error },
   reveal: { backgroundColor: tint(colors.success, 0.08), borderColor: colors.success },
+  disabled: { opacity: 0.48 },
   text: { ...typography.heading.sm, color: colors.text.primary },
 });

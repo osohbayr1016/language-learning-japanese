@@ -17,6 +17,7 @@ export default function KanaHubScreen() {
   return (
     <Screen scroll scrollBottomInset={70}>
       <View style={styles.header}>
+        <Text style={styles.eyebrow}>КАНА СУУРЬ</Text>
         <Text style={styles.title}>{mn.kana.hubTitle}</Text>
         <Text style={styles.subtitle}>{mn.kana.hubSub}</Text>
       </View>
@@ -43,17 +44,17 @@ export default function KanaHubScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.soft.teal,
-    borderRadius: radius.lg,
-    marginBottom: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.brand.secondary + '40',
+    paddingTop: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  eyebrow: {
+    ...typography.overline,
+    color: colors.brand.primary,
+    marginBottom: spacing.xs,
   },
   title: {
-    ...typography.heading.lg,
-    color: colors.brand.secondary,
+    ...typography.heading.xl,
+    color: colors.text.primary,
     marginBottom: 6,
   },
   subtitle: { ...typography.body.md, color: colors.text.secondary },

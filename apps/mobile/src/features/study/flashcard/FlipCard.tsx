@@ -31,7 +31,7 @@ export function FlipCard({ flipped, onPress, front, back, style }: Props) {
   useEffect(() => {
     Animated.timing(rotation, {
       toValue: flipped ? 180 : 0,
-      duration: 420,
+      duration: 240,
       useNativeDriver: true,
     }).start();
   }, [flipped, rotation]);

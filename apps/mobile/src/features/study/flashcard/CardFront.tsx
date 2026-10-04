@@ -14,7 +14,7 @@ export function CardFront({ word }: Props) {
 
   return (
     <View style={styles.wrap}>
-      <JapaneseText text={word.kanji} size="xl" />
+      <JapaneseText text={word.kanji || word.kana || ''} size="xl" />
       {showRomaji && word.romaji ? <RomajiRow romaji={word.romaji} size="md" /> : null}
       <View style={styles.listenBlock}>
         <PronounceButton wordId={word.id} meaningMn={word.meaning_mn} size="lg" />

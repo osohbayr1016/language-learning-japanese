@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { colors, radius, spacing, typography } from '../../theme';
+import { colors, spacing, typography } from '../../theme';
 import { MascotBubble } from './MascotBubble';
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 
 export function ExerciseCard({ title, prompt, children }: Props) {
   return (
-    <View style={styles.card}>
+    <View style={styles.shell}>
       <Text style={styles.title}>{title}</Text>
       {prompt ? <MascotBubble message={prompt} /> : null}
       <View style={styles.body}>{children}</View>
@@ -20,20 +20,19 @@ export function ExerciseCard({ title, prompt, children }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: {
+  shell: {
     flex: 1,
-    backgroundColor: colors.bg.card,
-    borderRadius: radius.xl,
-    padding: spacing.lg,
-    borderWidth: 2,
-    borderColor: colors.border,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
   },
   title: {
-    ...typography.heading.md,
-    color: colors.text.muted,
-    textTransform: 'uppercase',
-    letterSpacing: 1.5,
-    marginBottom: spacing.sm,
+    ...typography.overline,
+    color: colors.brand.primary,
+    marginBottom: spacing.md,
   },
-  body: { flex: 1, minHeight: 0, marginTop: spacing.sm },
+  body: {
+    flex: 1,
+    minHeight: 0,
+    marginTop: spacing.md,
+  },
 });
