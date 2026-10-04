@@ -12,6 +12,7 @@ type GamCtx = {
   stats: Stats;
   streak: Streak;
   dueToday: number;
+  todayXp: number;
   dailyGoal: number;
   setDailyGoal: (v: number) => Promise<void>;
   refresh: () => Promise<void>;
@@ -25,6 +26,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
   const [stats, setStats] = useState<Stats>(null);
   const [streak, setStreak] = useState<Streak>(null);
   const [dueToday, setDueToday] = useState(0);
+  const [todayXp, setTodayXp] = useState(0);
   const [dailyGoal, setDailyGoalState] = useState<number>(DEFAULT_GOAL);
 
   const refresh = useCallback(async () => {
@@ -34,6 +36,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
       setStats(d.data.stats);
       setStreak(d.data.streak);
       setDueToday(d.data.due_today ?? 0);
+      setTodayXp(d.data.today_xp ?? 0);
     } catch (e) {
       console.warn('dashboard refresh failed', e);
     }
@@ -46,7 +49,16 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     })();
   }, []);
 
-  useEffect(() => { if (isAuthenticated) void refresh(); }, [isAuthenticated, refresh]);
+  useEffect(() => {
+    if (isAuthenticated) {
+      void refresh();
+      return;
+    }
+    setStats(null);
+    setStreak(null);
+    setDueToday(0);
+    setTodayXp(0);
+  }, [isAuthenticated, refresh]);
 
   const setDailyGoal = async (v: number) => {
     setDailyGoalState(v);
@@ -54,11 +66,14 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
   };
 
   const addLocalXp = (xp: number) => {
-    setStats((s) => (s ? { ...s, total_xp: s.total_xp + xp } : s));
+    const safeXp = Math.max(0, Math.floor(xp));
+    if (safeXp === 0) return;
+    setStats((s) => (s ? { ...s, total_xp: s.total_xp + safeXp } : s));
+    setTodayXp((current) => current + safeXp);
   };
 
   return (
-    <Ctx.Provider value={{ stats, streak, dueToday, dailyGoal, setDailyGoal, refresh, addLocalXp }}>
+    <Ctx.Provider value={{ stats, streak, dueToday, todayXp, dailyGoal, setDailyGoal, refresh, addLocalXp }}>
       {children}
     </Ctx.Provider>
   );
