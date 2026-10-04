@@ -67,12 +67,13 @@ Vite can build while TypeScript errors exist. The active mobile type file refere
 
 **Implemented:**
 - Canonical JLPT level declaration added.
-- New PR workflow runs:
-  - workspace install
-  - website TypeScript check
-  - API TypeScript check
-  - production Vite build
-  - artifact sanity check
+- New PR workflow runs website TypeScript/build validation using the same `npm ci` path as production deploys, plus a separate API TypeScript job.
+
+### 6. Package-manager lockfiles disagree
+
+`package-lock.json` matches the current root `package.json` and is already used by the production deploy workflow. `pnpm-lock.yaml` is stale and rejects `--frozen-lockfile` because several root dependencies were added after it was generated.
+
+This PR does **not** hand-edit a generated lockfile. API CI temporarily installs the workspace with `pnpm install --no-frozen-lockfile` so API type errors are still caught. A dedicated package-manager cleanup should choose/reconcile the canonical workspace install and regenerate the lockfile with the real package manager.
 
 ## P0 work still required
 
