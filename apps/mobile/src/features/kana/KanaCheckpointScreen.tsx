@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Button, Card, Screen } from '../../primitives';
 import { useAuth } from '../../context/AuthContext';
@@ -43,16 +43,16 @@ export default function KanaCheckpointScreen() {
 
   const question = questions[index];
 
-  const reset = () => {
+  const reset = useCallback(() => {
     setIndex(0);
     setSelected(null);
     setCorrect(0);
     setFinished(false);
     setPassed(false);
     setSaveError(null);
-  };
+  }, []);
 
-  const advance = async () => {
+  const advance = useCallback(async () => {
     if (!selected || !question) return;
     const nextCorrect = correct + (selected === question.answer ? 1 : 0);
 
@@ -79,7 +79,26 @@ export default function KanaCheckpointScreen() {
         setSaving(false);
       }
     }
-  };
+  }, [correct, index, question, questions.length, selected, token]);
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' || finished) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const optionIndex = Number(event.key) - 1;
+      if (Number.isInteger(optionIndex) && optionIndex >= 0 && optionIndex < question.options.length) {
+        event.preventDefault();
+        setSelected(question.options[optionIndex]);
+        return;
+      }
+      if (event.key === 'Enter' && selected) {
+        event.preventDefault();
+        void advance();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [advance, finished, question.options, selected]);
 
   if (finished) {
     return (
@@ -130,12 +149,14 @@ export default function KanaCheckpointScreen() {
         <Text style={styles.prompt}>Энэ кана хэрхэн уншигдах вэ?</Text>
 
         <View style={styles.options}>
-          {question.options.map((option) => {
+          {question.options.map((option, optionIndex) => {
             const active = selected === option;
             return (
               <Pressable
                 key={option}
                 accessibilityRole="button"
+                accessibilityLabel={`${optionIndex + 1}. ${option}`}
+                accessibilityHint="Сонгохын тулд дарна уу. Вэб дээр тоон товч ашиглаж болно."
                 accessibilityState={{ selected: active }}
                 onPress={() => setSelected(option)}
                 style={[styles.option, active && styles.optionActive]}
@@ -145,6 +166,10 @@ export default function KanaCheckpointScreen() {
             );
           })}
         </View>
+
+        {Platform.OS === 'web' ? (
+          <Text style={styles.keyboardHint}>Вэб: 1–4 = сонгох · Enter = дараах</Text>
+        ) : null}
 
         <Button
           label={index === questions.length - 1 ? 'Дүнгээ харах' : 'Дараах'}
@@ -192,6 +217,7 @@ const styles = StyleSheet.create({
   },
   optionText: { ...typography.heading.sm, color: colors.text.primary },
   optionTextActive: { color: colors.brand.primary },
+  keyboardHint: { ...typography.body.xs, color: colors.text.muted, marginTop: spacing.md, textAlign: 'center' },
   button: { marginTop: spacing.md },
   resultTitle: { ...typography.heading.lg, color: colors.text.primary, marginTop: spacing.sm },
   resultScore: {
