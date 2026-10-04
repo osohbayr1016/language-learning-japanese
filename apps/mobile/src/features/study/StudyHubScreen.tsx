@@ -26,7 +26,7 @@ export default function StudyHubScreen() {
     loading: actionLoading,
     error: actionError,
     retry: retryAction,
-  } = useStudyNextAction(chapters);
+  } = useStudyNextAction();
 
   return (
     <Screen scroll scrollBottomInset={70}>
