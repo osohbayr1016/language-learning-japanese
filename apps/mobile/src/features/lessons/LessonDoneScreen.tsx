@@ -8,7 +8,7 @@ import { pickNextLessonInChapter } from './pickNextLessonInChapter';
 import { LessonDoneMinimal } from './LessonDoneMinimal';
 import { LessonDoneWithStats } from './LessonDoneWithStats';
 import type { Exercise, ExerciseResult } from './types';
-import type { HskLevel, ImportedLessonContent } from '../../lib/types';
+import type { JlptLevel, ImportedLessonContent } from '../../lib/types';
 
 type Props = {
   exercises: Exercise[];
@@ -25,7 +25,7 @@ type Props = {
   chapterId?: number;
   currentOrderNum?: number;
   importedContent?: ImportedLessonContent | null;
-  chapterHskLevel?: HskLevel;
+  chapterJlptLevel?: JlptLevel;
   /** false = админ урьдчилан харах (дараагийн хичээл, mock шалгалт нууна) */
   enablePostLessonNav?: boolean;
   /** Импорт/урьдчилан харах: XP, цаг, чадварын дугуйг харуулахгүй */
@@ -47,7 +47,7 @@ export function LessonDoneScreen({
   chapterId,
   currentOrderNum,
   importedContent,
-  chapterHskLevel,
+  chapterJlptLevel,
   enablePostLessonNav = true,
   minimalComplete = false,
 }: Props) {
@@ -92,7 +92,7 @@ export function LessonDoneScreen({
         goNext={goNext}
         onContinue={onContinue}
         importedContent={importedContent}
-        chapterHskLevel={chapterHskLevel}
+        chapterJlptLevel={chapterJlptLevel}
         mastered={mastered}
         masteryRequired={masteryRequired}
         finalizing={finalizing}
@@ -117,7 +117,7 @@ export function LessonDoneScreen({
       enablePostLessonNav={enablePostLessonNav}
       token={token}
       importedContent={importedContent}
-      chapterHskLevel={chapterHskLevel}
+      chapterJlptLevel={chapterJlptLevel}
       nextLesson={nextLesson}
       goNext={goNext}
       onContinue={onContinue}
