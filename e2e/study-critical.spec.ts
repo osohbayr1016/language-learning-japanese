@@ -437,9 +437,9 @@ test('practice hub keeps tools out of the main learning path', async ({ page }) 
 
   await page.goto('/study');
   await expect(page.getByText('Сул чадвараа хүчтэй болго')).toBeVisible();
-  await expect(page.getByText('Кана')).toBeVisible();
-  await expect(page.getByText('Канжи')).toBeVisible();
-  await expect(page.getByText('Ярих')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Кана' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Канжи' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Ярих' })).toBeVisible();
   await expect(page.getByText('JLPT checkpoint')).toBeVisible();
 });
 
