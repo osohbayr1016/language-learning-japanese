@@ -4,7 +4,7 @@ import type { Env, Variables } from '../types';
 import { publishedLessonTree, safeAll } from '../lib/lessonCatalog';
 import { fetchPublishedLessonDetail } from '../lib/lessonDetail';
 import { computeLessonFlashcardEligibleAt } from '../lib/lessonFlashcardDelay';
-import { lessonChapterJlptLevel, passesJlptN5AdvanceGate } from '../lib/hskGate';
+import { lessonChapterJlptLevel, passesJlptN5AdvanceGate } from '../lib/jlptGate';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
 import { applyLessonCompletion, type LessonCompletionBody } from '../lib/lessonCompletion';
 
