@@ -1,7 +1,8 @@
 import { passesJlptN5AdvanceGate } from './hskGate';
 import { studyQueueCount } from './studyQueue';
+import { getLearningPreferences, type LearningReason } from './learningPreferences';
 
-export type StudyActionKind = 'review' | 'lesson' | 'weak_skill' | 'explore';
+export type StudyActionKind = 'review' | 'foundation' | 'lesson' | 'weak_skill' | 'explore';
 
 export type StudyNextAction = {
   kind: StudyActionKind;
@@ -16,8 +17,10 @@ export type StudyNextAction = {
 
 export type StudyRecommendationInput = {
   dueCount: number;
+  needsKanaFoundation?: boolean;
   nextLessonId: number | null;
   weakSkill: string | null;
+  learningReason?: LearningReason | null;
 };
 
 const SKILL_ROUTES: Record<string, { href: string; title: string; subtitle: string }> = {
@@ -70,6 +73,16 @@ export function selectStudyAction(input: StudyRecommendationInput): StudyNextAct
     };
   }
 
+  if (input.needsKanaFoundation) {
+    return {
+      kind: 'foundation',
+      title: 'Эхлээд кана сууриа тавья',
+      subtitle: 'Хирагана, катаканагаа сурч богино шалгалтаар баталгаажуулаарай',
+      href: '/kana',
+      reason: 'beginner_kana_foundation',
+    };
+  }
+
   if (input.nextLessonId != null) {
     return {
       kind: 'lesson',
@@ -90,6 +103,36 @@ export function selectStudyAction(input: StudyRecommendationInput): StudyNextAct
       href: skill.href,
       reason: 'weakest_measured_skill',
       weak_skill: input.weakSkill,
+    };
+  }
+
+  if (input.learningReason === 'travel') {
+    return {
+      kind: 'explore',
+      title: 'Аяллын ярианы чадвараа ахиулах',
+      subtitle: 'Сонсож, дагаж хэлэх богино ярианы дасгал хийгээрэй',
+      href: '/study/speak',
+      reason: 'travel_emphasis',
+    };
+  }
+
+  if (input.learningReason === 'university' || input.learningReason === 'career') {
+    return {
+      kind: 'explore',
+      title: 'Унших, дүрмийн чадвараа ахиулах',
+      subtitle: 'Өгүүлбэрийн бүтэц, дүрмийн дасгалаа үргэлжлүүлээрэй',
+      href: '/study/grammar',
+      reason: 'reading_formal_emphasis',
+    };
+  }
+
+  if (input.learningReason === 'culture' || input.learningReason === 'fun') {
+    return {
+      kind: 'explore',
+      title: 'Сурсан үгээрээ япон текст унших',
+      subtitle: 'AI уншлагаар мэддэг үгээ бодит өгүүлбэрт бататгаарай',
+      href: '/study/ai-reading',
+      reason: 'culture_media_emphasis',
     };
   }
 
@@ -144,15 +187,46 @@ export async function getStudyNextAction(
   userId: number
 ): Promise<StudyNextAction> {
   const dueCount = await studyQueueCount(db, userId);
+  const preferences = await getLearningPreferences(db, userId);
   if (dueCount > 0) {
-    return selectStudyAction({ dueCount, nextLessonId: null, weakSkill: null });
+    return selectStudyAction({
+      dueCount,
+      needsKanaFoundation: false,
+      nextLessonId: null,
+      weakSkill: null,
+      learningReason: preferences.learning_reason,
+    });
+  }
+
+  const needsKanaFoundation =
+    preferences.self_level === 'none' && !preferences.kana_foundation_completed;
+  if (needsKanaFoundation) {
+    return selectStudyAction({
+      dueCount: 0,
+      needsKanaFoundation: true,
+      nextLessonId: null,
+      weakSkill: null,
+      learningReason: preferences.learning_reason,
+    });
   }
 
   const nextLessonId = await findNextLessonId(db, userId);
   if (nextLessonId != null) {
-    return selectStudyAction({ dueCount: 0, nextLessonId, weakSkill: null });
+    return selectStudyAction({
+      dueCount: 0,
+      needsKanaFoundation: false,
+      nextLessonId,
+      weakSkill: null,
+      learningReason: preferences.learning_reason,
+    });
   }
 
   const weakSkill = await findWeakestSkill(db, userId);
-  return selectStudyAction({ dueCount: 0, nextLessonId: null, weakSkill });
+  return selectStudyAction({
+    dueCount: 0,
+    needsKanaFoundation: false,
+    nextLessonId: null,
+    weakSkill,
+    learningReason: preferences.learning_reason,
+  });
 }
