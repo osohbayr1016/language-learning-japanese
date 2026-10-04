@@ -37,6 +37,11 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
       setStreak(d.data.streak);
       setDueToday(d.data.due_today ?? 0);
       setTodayXp(d.data.today_xp ?? 0);
+      const serverGoal = Number(d.data.daily_xp_goal ?? 0);
+      if (serverGoal >= 10 && serverGoal <= 200) {
+        setDailyGoalState(serverGoal);
+        await setItem(DAILY_GOAL_KEY, String(serverGoal));
+      }
     } catch (e) {
       console.warn('dashboard refresh failed', e);
     }
@@ -61,8 +66,16 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
   }, [isAuthenticated, refresh]);
 
   const setDailyGoal = async (v: number) => {
-    setDailyGoalState(v);
-    await setItem(DAILY_GOAL_KEY, String(v));
+    const safe = Math.max(10, Math.min(200, Math.round(v)));
+    setDailyGoalState(safe);
+    await setItem(DAILY_GOAL_KEY, String(safe));
+    if (token) {
+      try {
+        await api.user.updatePreferences(token, { daily_xp_goal: safe });
+      } catch (e) {
+        console.warn('daily goal sync failed', e);
+      }
+    }
   };
 
   const addLocalXp = (xp: number) => {
