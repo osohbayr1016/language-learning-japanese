@@ -262,7 +262,7 @@ test('zero learner is directed to kana foundation', async ({ page }) => {
 
   await page.goto('/home');
   await expect(page.getByText('Эхлээд кана сууриа тавья')).toBeVisible();
-  await page.getByRole('button', { name: /Эхлээд кана сууриа тавья/ }).click();
+  await page.getByRole('button', { name: 'ЭХЛЭХ' }).click();
   await expect(page).toHaveURL(/\/kana$/);
   await expect(page.getByText('Кана сууриа шалгах')).toBeVisible();
 });
