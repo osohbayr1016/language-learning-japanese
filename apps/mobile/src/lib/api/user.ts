@@ -48,7 +48,7 @@ export type LearningPreferencesPatch = Partial<Pick<
 >>;
 
 export type StudyNextAction = {
-  kind: 'review' | 'lesson' | 'weak_skill' | 'explore';
+  kind: 'review' | 'foundation' | 'lesson' | 'weak_skill' | 'explore';
   title: string;
   subtitle: string;
   href: string;
