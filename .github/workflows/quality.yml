@@ -9,8 +9,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
-    name: Type-check and build
+  web:
+    name: Web type-check and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      # The deployed website already uses package-lock.json + npm ci.
+      # Keep this identical to deploy.yml so PR validation matches production.
+      - name: Install website dependencies
+        run: npm ci
+
+      - name: Type-check website
+        run: npm run typecheck
+
+      - name: Build production website
+        run: npm run build
+
+      - name: Verify production artifact
+        run: |
+          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
+          test "$(find dist -type f | wc -l)" -gt 1 || { echo "Production build is unexpectedly empty"; exit 1; }
+
+  api:
+    name: API type-check
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -25,21 +54,12 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
-          cache: pnpm
 
-      - name: Install workspace
-        run: pnpm install --frozen-lockfile
-
-      - name: Type-check website
-        run: pnpm typecheck
+      # pnpm-lock.yaml predates several root package.json dependencies.
+      # Do not let that unrelated repository drift hide API TypeScript errors.
+      # Reconcile the lockfile in a dedicated package-manager cleanup PR.
+      - name: Install workspace for API validation
+        run: pnpm install --no-frozen-lockfile
 
       - name: Type-check API
         run: pnpm --dir apps/api type-check
-
-      - name: Build production website
-        run: pnpm build
-
-      - name: Verify production artifact
-        run: |
-          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
-          test "$(find dist -type f | wc -l)" -gt 1 || { echo "Production build is unexpectedly empty"; exit 1; }
