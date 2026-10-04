@@ -69,6 +69,20 @@ Vite can build while TypeScript errors exist. The active mobile type file refere
 - Canonical JLPT level declaration added.
 - New PR workflow runs website TypeScript/build validation using the same `npm ci` path as production deploys, plus a separate API TypeScript job.
 
+### 6. Web TypeScript baseline is already red
+
+The first real CI run exposed **407 existing TypeScript errors** in the web typecheck. The largest class is type-resolution plumbing: **240 TS7016 errors** come from the Vite runtime alias `react-native -> react-native-web` not having an equivalent usable declaration setup in `tsconfig.web.json`. Missing Expo/native module type aliases then cascade into implicit-any errors.
+
+There are also genuine migration errors mixed into that noise, including stale `hsk_level` fields in Japanese admin code.
+
+For this foundation PR:
+- production Vite build is a blocking web gate,
+- API TypeScript is a blocking gate,
+- web/mobile TypeScript audits remain visible in CI but are temporarily non-blocking,
+- a dedicated type-infrastructure cleanup must make both TypeScript audits green before the project can honestly claim full type safety.
+
+Do **not** solve this by globally disabling strictness or declaring the whole application as `any`.
+
 ### 6. Package-manager lockfiles disagree
 
 `package-lock.json` matches the current root `package.json` and is already used by the production deploy workflow. `pnpm-lock.yaml` is stale and rejects `--frozen-lockfile` because several root dependencies were added after it was generated.
