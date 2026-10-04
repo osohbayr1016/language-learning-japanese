@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ToneColoredText } from '../../../components/hanzi';
+import { JapaneseText } from '../../../components/japanese';
 import { Touchable } from '../../../primitives';
 import { colors, motion, radius, spacing, tint, typography } from '../../../theme';
 import type { WordWithProgress } from '../../../lib/types';
@@ -45,7 +45,7 @@ export function AnswerOption({ word, show, state, onPress }: Props) {
       <View style={styles.row}>
         <View style={styles.body}>
           {show === 'jp' ? (
-            <ToneColoredText hanzi={word.kanji} size="sm" align="left" />
+            <JapaneseText text={word.kanji || word.kana || ''} size="sm" align="left" />
           ) : (
             <Text style={styles.text}>{word.meaning_mn}</Text>
           )}
