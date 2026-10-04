@@ -8,7 +8,7 @@ import { MetricRing } from './MetricRing';
 import { LessonDoneMockExamCta } from './LessonDoneMockExamCta';
 import type { SkillScores } from './skills';
 import type { Streak } from '../../lib/api/user';
-import type { HskLevel, ImportedLessonContent } from '../../lib/types';
+import type { JlptLevel, ImportedLessonContent } from '../../lib/types';
 
 function formatDuration(sec: number): string {
   const m = Math.floor(sec / 60);
@@ -30,7 +30,7 @@ type Props = {
   enablePostLessonNav: boolean;
   token: string | null;
   importedContent?: ImportedLessonContent | null;
-  chapterHskLevel?: HskLevel;
+  chapterJlptLevel?: JlptLevel;
   nextLesson: { id: number; title_mn: string } | null;
   goNext: () => void;
   onContinue: () => void;
@@ -50,7 +50,7 @@ export function LessonDoneWithStats({
   enablePostLessonNav,
   token,
   importedContent,
-  chapterHskLevel,
+  chapterJlptLevel,
   nextLesson,
   goNext,
   onContinue,
@@ -111,7 +111,7 @@ export function LessonDoneWithStats({
           <LessonDoneMockExamCta
             token={token}
             imported={importedContent}
-            chapterHskLevel={chapterHskLevel}
+            chapterJlptLevel={chapterJlptLevel}
           />
         ) : null}
         {enablePostLessonNav && mastered === true && nextLesson ? (
