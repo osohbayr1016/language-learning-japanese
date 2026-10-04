@@ -7,6 +7,7 @@ import { buildProgressStatements, bumpStats, type ProgressResult } from '../lib/
 import { studyQueueCount } from '../lib/studyQueue';
 import userVocabularyRoutes from './userVocabulary';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
+import { getStudyNextAction } from '../lib/studyRecommendation';
 
 const user = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -96,6 +97,12 @@ user.get('/dashboard', async (c) => {
       today_xp: Number(todayActivity?.xp_earned ?? 0),
     },
   });
+});
+
+user.get('/next-action', async (c) => {
+  const { sub } = c.get('user');
+  const data = await getStudyNextAction(c.env.DB, sub);
+  return c.json({ data });
 });
 
 user.get('/due-words', async (c) => {
