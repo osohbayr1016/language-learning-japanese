@@ -1,0 +1,46 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { selectStudyAction } from '../src/lib/studyRecommendation';
+
+test('due reviews always win over lessons and weak skills', () => {
+  const action = selectStudyAction({
+    dueCount: 7,
+    nextLessonId: 42,
+    weakSkill: 'reading',
+  });
+  assert.equal(action.kind, 'review');
+  assert.equal(action.href, '/study/flashcard');
+  assert.equal(action.due_count, 7);
+});
+
+test('next unfinished lesson is selected when review queue is clear', () => {
+  const action = selectStudyAction({
+    dueCount: 0,
+    nextLessonId: 42,
+    weakSkill: 'reading',
+  });
+  assert.equal(action.kind, 'lesson');
+  assert.equal(action.href, '/lessons/42');
+  assert.equal(action.lesson_id, 42);
+});
+
+test('weakest measured skill is selected when there is no due review or lesson', () => {
+  const action = selectStudyAction({
+    dueCount: 0,
+    nextLessonId: null,
+    weakSkill: 'stroke',
+  });
+  assert.equal(action.kind, 'weak_skill');
+  assert.equal(action.href, '/study/writer');
+  assert.equal(action.weak_skill, 'stroke');
+});
+
+test('safe kana exploration is used when the learner has nothing else queued', () => {
+  const action = selectStudyAction({
+    dueCount: 0,
+    nextLessonId: null,
+    weakSkill: null,
+  });
+  assert.equal(action.kind, 'explore');
+  assert.equal(action.href, '/kana');
+});
