@@ -7,6 +7,7 @@ import type {
   LessonHtmlPreview,
 } from './lessonImportTypes';
 import { vocabQuizMismatchWarnings } from './lessonImportQuizWarnings';
+import { rejectLegacyChineseLessonFields, validateImportedLessonContent } from './lessonContentValidation';
 
 function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
@@ -38,7 +39,7 @@ function vocab(rows: unknown): ImportedVocab[] {
 function line(raw: unknown) {
   if (Array.isArray(raw)) return { speaker: str(raw[0]), jp: str(raw[1]), mn: str(raw[2]) };
   const r = (raw ?? {}) as Record<string, unknown>;
-  return { speaker: str(r.speaker), jp: str(r.jp ?? r.cn), mn: str(r.mn) };
+  return { speaker: str(r.speaker), jp: str(r.jp), mn: str(r.mn) };
 }
 
 function dialogues(rows: unknown): ImportedDialogue[] {
@@ -50,7 +51,7 @@ function dialogues(rows: unknown): ImportedDialogue[] {
       no: Number(r.no ?? i + 1),
       title: str(r.title),
       lines,
-      text_jp: str(r.text_jp ?? r.text_cn),
+      text_jp: str(r.text_jp),
       text_mn: str(r.text_mn),
     };
   });
@@ -92,12 +93,13 @@ function optionalPositiveInt(v: unknown): number | undefined {
 }
 
 export function normalizeLessonImport(raw: unknown): ImportedLessonContent {
+  rejectLegacyChineseLessonFields(raw);
   const root = (raw ?? {}) as Record<string, unknown>;
   const lesson = (root.lesson ?? {}) as Record<string, unknown>;
   const mockExamId = optionalPositiveInt(lesson.mock_exam_template_id) ?? optionalPositiveInt(root.mock_exam_template_id);
   const content: ImportedLessonContent = {
     external_lesson_id: str(lesson.id),
-    title_jp: str(lesson.title_jp ?? lesson.title_cn),
+    title_jp: str(lesson.title_jp),
     title_mn: str(lesson.title_mn),
     source: str(lesson.source) || 'HTML lesson import',
     summary: str(lesson.summary),
@@ -112,6 +114,8 @@ export function normalizeLessonImport(raw: unknown): ImportedLessonContent {
   if (!content.external_lesson_id) throw new Error('lesson.id хоосон байна');
   if (!content.title_mn && !content.title_jp) throw new Error('Хичээлийн гарчиг хоосон байна');
   if (!content.vocab.length) throw new Error('Үгийн сан хоосон байна');
+  const validation = validateImportedLessonContent(content);
+  if (validation.errors.length) throw new Error(validation.errors.join(' '));
   return content;
 }
 
