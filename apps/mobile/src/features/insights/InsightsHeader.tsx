@@ -1,43 +1,37 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { type Href, useRouter } from 'expo-router';
-import { colors, radius, spacing, typography } from '../../theme';
-import { mn } from '../../i18n/mn';
+import { StyleSheet, Text, View } from 'react-native';
+import { colors, spacing, typography } from '../../theme';
 
 export function InsightsHeader() {
-  const router = useRouter();
   return (
-    <View style={styles.row}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => router.replace('/(tabs)/profile' as Href)}
-        style={({ pressed }) => [styles.back, pressed && styles.pressed]}
-      >
-        <Ionicons name="chevron-back" size={22} color={colors.text.primary} />
-      </Pressable>
-      <Text style={styles.title}>{mn.insights.title}</Text>
-      <View style={styles.back} />
+    <View style={styles.wrap}>
+      <Text style={styles.eyebrow}>ЯВЦ</Text>
+      <Text style={styles.title}>Таны өсөлт</Text>
+      <Text style={styles.subtitle}>
+        Streak-аас илүү чухал нь аль чадвар чинь бодитоор сайжирч байгааг харах.
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.md,
+  wrap: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
   },
-  back: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.full,
-    backgroundColor: colors.bg.secondary,
-    alignItems: 'center',
-    justifyContent: 'center',
+  eyebrow: {
+    ...typography.overline,
+    color: colors.brand.primary,
+    marginBottom: spacing.xs,
   },
-  pressed: { opacity: 0.7 },
-  title: { ...typography.heading.lg, color: colors.text.primary },
+  title: {
+    ...typography.heading.xl,
+    color: colors.text.primary,
+  },
+  subtitle: {
+    ...typography.body.md,
+    color: colors.text.secondary,
+    marginTop: spacing.xs,
+    maxWidth: 460,
+  },
 });
