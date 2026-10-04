@@ -6,9 +6,9 @@ import { api } from '../lib/api';
 type PlayOpts = { speed?: 'normal' | 'slow'; repeat?: number };
 
 type AudioCtx = {
-  playWord: (wordId: number, opts?: PlayOpts) => Promise<void>;
+  playWord: (wordId: number, opts?: PlayOpts) => Promise<boolean>;
   /** Бүтэн япон өгүүлбэр (жишээ өгүүлбэр) — API TTS */
-  playPhrase: (text: string, opts?: PlayOpts) => Promise<void>;
+  playPhrase: (text: string, opts?: PlayOpts) => Promise<boolean>;
   /** Монгол орчуулга — төхөөрөмжийн TTS (expo-speech) */
   playMeaningMn: (text: string) => Promise<void>;
   stop: () => Promise<void>;
@@ -41,14 +41,24 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   const playOnceFromUri = async (uri: string) => {
     await stop();
-    const { sound } = await Audio.Sound.createAsync({ uri }, { shouldPlay: true });
+    const { sound } = await Audio.Sound.createAsync({ uri }, { shouldPlay: false });
     soundRef.current = sound;
-    await new Promise<void>((resolve) => {
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const finished = new Promise<void>((resolve, reject) => {
+      timer = setTimeout(() => reject(new Error('AUDIO_PLAYBACK_TIMEOUT')), 30_000);
       sound.setOnPlaybackStatusUpdate((status) => {
         if (!status.isLoaded) return;
         if (status.didJustFinish) resolve();
       });
     });
+
+    try {
+      await sound.playAsync();
+      await finished;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   };
 
   const playWord: AudioCtx['playWord'] = async (wordId, opts) => {
@@ -60,9 +70,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         await playOnceFromUri(uri);
       } catch (e) {
         console.warn('Audio playback failed', e);
-        return;
+        return false;
       }
     }
+    return true;
   };
 
   const playPhrase: AudioCtx['playPhrase'] = async (text, opts) => {
@@ -74,9 +85,10 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         await playOnceFromUri(uri);
       } catch (e) {
         console.warn('Phrase audio failed', e);
-        return;
+        return false;
       }
     }
+    return true;
   };
 
   const playMeaningMn: AudioCtx['playMeaningMn'] = async (text) => {
