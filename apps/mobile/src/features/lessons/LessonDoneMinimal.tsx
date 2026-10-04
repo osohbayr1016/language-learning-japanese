@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { colors, spacing, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 import { LessonDoneMockExamCta } from './LessonDoneMockExamCta';
-import type { HskLevel, ImportedLessonContent } from '../../lib/types';
+import type { JlptLevel, ImportedLessonContent } from '../../lib/types';
 
 type Props = {
   enablePostLessonNav: boolean;
@@ -14,7 +14,7 @@ type Props = {
   goNext: () => void;
   onContinue: () => void;
   importedContent?: ImportedLessonContent | null;
-  chapterHskLevel?: HskLevel;
+  chapterJlptLevel?: JlptLevel;
   mastered: boolean | null;
   masteryRequired: number;
   finalizing: boolean;
@@ -28,7 +28,7 @@ export function LessonDoneMinimal({
   goNext,
   onContinue,
   importedContent,
-  chapterHskLevel,
+  chapterJlptLevel,
   mastered,
   masteryRequired,
   finalizing,
@@ -63,7 +63,7 @@ export function LessonDoneMinimal({
           <LessonDoneMockExamCta
             token={token}
             imported={importedContent}
-            chapterHskLevel={chapterHskLevel}
+            chapterJlptLevel={chapterJlptLevel}
           />
         ) : null}
         {enablePostLessonNav && mastered === true && nextLesson ? (
