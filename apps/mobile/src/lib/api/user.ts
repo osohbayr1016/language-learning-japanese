@@ -30,7 +30,22 @@ export type Dashboard = {
   stats: Stats;
   due_today: number;
   today_xp: number;
+  daily_xp_goal: number;
 };
+
+export type LearningPreferences = {
+  self_level: 'none' | 'n5' | 'n4' | 'n3' | 'n2' | 'n1' | null;
+  learning_reason: 'university' | 'career' | 'travel' | 'culture' | 'fun' | null;
+  daily_xp_goal: number;
+  kana_foundation_completed: boolean;
+  placement_level: 'n5' | 'n4' | 'n3' | 'n2' | 'n1' | null;
+  placement_completed_at: string | null;
+};
+
+export type LearningPreferencesPatch = Partial<Pick<
+  LearningPreferences,
+  'self_level' | 'learning_reason' | 'daily_xp_goal' | 'kana_foundation_completed'
+>>;
 
 export type StudyNextAction = {
   kind: 'review' | 'lesson' | 'weak_skill' | 'explore';
@@ -82,6 +97,14 @@ export const user = {
     request<{ data: Streak }>('/api/user/streak', { token }),
   stats: (token: string) =>
     request<{ data: Stats }>('/api/user/stats', { token }),
+  preferences: (token: string) =>
+    request<{ data: LearningPreferences }>('/api/user/preferences', { token }),
+  updatePreferences: (token: string, body: LearningPreferencesPatch) =>
+    request<{ message: string; data: LearningPreferences }>('/api/user/preferences', {
+      method: 'PUT',
+      token,
+      body: JSON.stringify(body),
+    }),
   nextAction: (token: string) =>
     request<{ data: StudyNextAction }>('/api/user/next-action', { token }),
   dueWords: (token: string, limit = 20) =>
