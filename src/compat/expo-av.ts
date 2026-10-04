@@ -9,19 +9,26 @@ class WebSound {
   private el: HTMLAudioElement;
   private onStatus: StatusCb | null = null;
 
+  private ended = false;
+
   constructor(uri: string, shouldPlay: boolean) {
     this.el = new Audio(uri);
     this.el.preload = 'auto';
-    this.el.addEventListener('ended', () =>
-      this.onStatus?.({ isLoaded: true, didJustFinish: true, isPlaying: false })
-    );
-    if (shouldPlay) void this.el.play().catch(() => undefined);
+    this.el.addEventListener('ended', () => {
+      this.ended = true;
+      this.onStatus?.({ isLoaded: true, didJustFinish: true, isPlaying: false });
+    });
+    if (shouldPlay) void this.playAsync();
   }
   setOnPlaybackStatusUpdate(cb: StatusCb | null) {
     this.onStatus = cb;
+    if (cb && this.ended) {
+      cb({ isLoaded: true, didJustFinish: true, isPlaying: false });
+    }
   }
   async playAsync() {
-    await this.el.play().catch(() => undefined);
+    this.ended = false;
+    await this.el.play();
   }
   async stopAsync() {
     this.el.pause();
@@ -43,7 +50,8 @@ export const Audio = {
       source: { uri: string },
       initial?: { shouldPlay?: boolean }
     ): Promise<{ sound: WebSound; status: Status }> => {
-      const sound = new WebSound(source.uri, initial?.shouldPlay ?? false);
+      const sound = new WebSound(source.uri, false);
+      if (initial?.shouldPlay) await sound.playAsync();
       return { sound, status: { isLoaded: true } };
     },
   },
