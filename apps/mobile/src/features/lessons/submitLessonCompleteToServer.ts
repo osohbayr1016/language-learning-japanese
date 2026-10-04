@@ -11,17 +11,24 @@ export async function submitLessonCompleteToServer(opts: {
   exercises: Exercise[];
   results: ExerciseResult[];
   detail: LessonDetail | null;
+  completionId: string;
   xpEarned: number;
   durationSec: number;
   addLocalXp: (n: number) => void;
   refreshGam: () => void;
-}): Promise<void> {
+}): Promise<{
+  xp_earned: number;
+  mastered: boolean;
+  mastery_required: number;
+  already_applied: boolean;
+}> {
   const {
     token,
     lessonId,
     exercises,
     results,
     detail,
+    completionId,
     xpEarned,
     durationSec,
     addLocalXp,
@@ -91,13 +98,15 @@ export async function submitLessonCompleteToServer(opts: {
 
   const skill_results = computeSkillCounts(exercises, results);
 
-  await api.lessons.complete(token, lessonId, {
+  const response = await api.lessons.complete(token, lessonId, {
+    completion_id: completionId,
     accuracy,
     xp_earned: xpEarned,
     duration_seconds: durationSec,
     results: progressPayload,
     skill_results,
   });
-  addLocalXp(xpEarned);
+  if (!response.data.already_applied) addLocalXp(response.data.xp_earned);
   void refreshGam();
+  return response.data;
 }
