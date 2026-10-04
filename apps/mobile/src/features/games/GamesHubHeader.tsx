@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   title: { ...typography.heading.xl, color: colors.text.primary },
   levelBadge: {
-    backgroundColor: colors.accent.purple,
+    backgroundColor: colors.brand.primary,
     paddingHorizontal: spacing.sm,
     paddingVertical: 4,
     borderRadius: radius.full,
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: '100%',
-    backgroundColor: colors.accent.purple,
+    backgroundColor: colors.brand.primary,
     borderRadius: radius.full,
   },
   progressText: {
