@@ -204,7 +204,7 @@ export const mn = {
     statsLoadError: 'Статистик ачаалахад алдаа',
     tileLessonWordLinks: 'Хичээл-тэй холбогдсон үгийн слот',
     tileDistinctHanzi: 'Өөр өөр ханз',
-    hskBreakdownTitle: 'HSK задаргаа',
+    hskBreakdownTitle: 'JLPT задаргаа',
     hskColWords: 'Үг',
     hskColChapters: 'Бүлэг',
     hskColLessons: 'Хичээл',
