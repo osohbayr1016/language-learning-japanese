@@ -45,6 +45,10 @@ export function useSetupFlow() {
         display_name: answers.name.trim(),
       });
       if (answers.level && answers.reason) {
+        await api.user.updatePreferences(res.data.access_token, {
+          self_level: answers.level,
+          learning_reason: answers.reason,
+        });
         await saveSetup(answers.level, answers.reason);
       }
       await signIn(res.data);
