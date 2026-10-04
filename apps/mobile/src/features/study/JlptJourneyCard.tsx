@@ -4,11 +4,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Button, Card } from '../../primitives';
 import { colors, radius, spacing, typography } from '../../theme';
-import { useLessonChapters } from '../lessons/useLessonChapters';
+import type { Chapter } from '../../lib/types';
 
-export function JlptJourneyCard() {
+type Props = {
+  chapters: Chapter[];
+  loading: boolean;
+  advanceGateOk: boolean | null;
+};
+
+export function JlptJourneyCard({ chapters, loading, advanceGateOk }: Props) {
   const router = useRouter();
-  const { chapters, loading, advanceGateOk } = useLessonChapters();
 
   const journey = useMemo(() => {
     const orderedChapters = [...chapters].sort(
