@@ -1,5 +1,5 @@
 import { buildProgressStatements, type ProgressResult } from './progress';
-import { LESSON_MASTERY_ACCURACY } from './hskGate';
+import { LESSON_MASTERY_ACCURACY } from './jlptGate';
 import type { SkillKey, SkillResults } from './activity';
 
 export type LessonCompletionBody = {
