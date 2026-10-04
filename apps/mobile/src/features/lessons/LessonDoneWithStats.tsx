@@ -131,6 +131,7 @@ export function LessonDoneWithStats({
           }
           variant={enablePostLessonNav && nextLesson ? 'secondary' : 'primary'}
           onPress={onContinue}
+          disabled={finalizing}
         />
       </View>
     </Screen>
