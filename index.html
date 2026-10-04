@@ -97,10 +97,26 @@
         min-height: 100vh;
       }
 
+      .web-shell--tabs {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
       .web-shell__main {
         min-width: 0;
         min-height: 100vh;
         background: #fff;
+      }
+
+      .web-shell--tabs .web-shell__main {
+        order: 1;
+        min-height: calc(100vh - var(--tabbar-h));
+        flex: 1 0 auto;
+      }
+
+      .web-shell--tabs .tabbar {
+        order: 2;
       }
 
       .route-stage {
@@ -222,6 +238,11 @@
           align-items: start;
           justify-content: center;
           padding: 24px 18px 48px;
+        }
+
+        .web-shell--tabs .tabbar,
+        .web-shell--tabs .web-shell__main {
+          order: initial;
         }
 
         .web-shell--tabs .web-shell__main {
