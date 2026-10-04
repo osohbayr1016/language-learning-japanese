@@ -199,6 +199,7 @@ export function LearnScreen({ source = 'due' }: Props) {
                     word={option}
                     show={promptType === 'jp-to-mn' ? 'mn' : 'jp'}
                     state={state}
+                    disabled={Boolean(answer) && state === 'idle'}
                     onPress={() => handleSelect(option)}
                   />
                 </View>
