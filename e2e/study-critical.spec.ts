@@ -150,7 +150,7 @@ async function mockApi(
 ) {
   let failNext = Boolean(opts.failNextActionOnce);
 
-  await page.route('http://localhost:8787/**', async (route) => {
+  await page.route('**/api/**', async (route) => {
     const req = route.request();
     const url = new URL(req.url());
 
@@ -332,7 +332,7 @@ test('expired session returns the learner to login', async ({ page }) => {
     localStorage.setItem('refresh_token', 'expired-refresh');
   });
 
-  await page.route('http://localhost:8787/**', async (route) => {
+  await page.route('**/api/**', async (route) => {
     const req = route.request();
     const headers = {
       'Access-Control-Allow-Origin': 'http://127.0.0.1:4173',
