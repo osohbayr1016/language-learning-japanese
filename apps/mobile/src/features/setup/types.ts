@@ -4,6 +4,7 @@ export type LearningReason = 'university' | 'career' | 'travel' | 'culture' | 'f
 
 export type SetupAnswers = {
   level: JlptSelfLevel | null;
+  placementLevel: Exclude<JlptSelfLevel, 'none'> | null;
   reason: LearningReason | null;
   name: string;
   email: string;
