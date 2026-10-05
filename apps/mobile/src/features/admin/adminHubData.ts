@@ -11,6 +11,12 @@ export const ADMIN_HUB_SECTIONS: AdminHubSectionDef[] = [
     titleKey: 'hubSectionCourses',
     items: [
       {
+        title: 'JLPT хичээлүүд',
+        icon: 'school',
+        color: colors.brand.primary,
+        href: '/admin/jlpt-lessons',
+      },
+      {
         title: 'Суралцах зам',
         icon: 'git-branch',
         color: colors.jlpt[2],
