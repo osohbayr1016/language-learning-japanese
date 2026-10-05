@@ -26,9 +26,6 @@ jobs:
       - name: Install website dependencies
         run: npm ci
 
-      - name: Type-check website
-        run: npm run typecheck
-
       - name: Build production website
         run: npm run build
 
@@ -71,6 +68,9 @@ jobs:
       # Reconcile it in a package-manager cleanup; do not let that hide API errors.
       - name: Install workspace for validation
         run: pnpm install --no-frozen-lockfile
+
+      - name: Type-check shared website source
+        run: pnpm exec tsc --noEmit -p tsconfig.web.json
 
       - name: Type-check API
         run: pnpm --dir apps/api type-check
