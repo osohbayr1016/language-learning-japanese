@@ -1,25 +1,35 @@
 import type { AdminChapter } from '../../lib/api/admin';
 
-const HSK_LEVELS = [1, 2, 3, 4, 5, 6] as const;
+const JLPT_BANDS = [1, 2, 3, 4, 5] as const;
 
 export type ChapterPickRow =
   | { type: 'chapter'; chapter: AdminChapter }
-  | { type: 'missing'; hsk: number };
+  | { type: 'missing'; jlptBand: number };
 
-/** One row per HSK 1–6: real chapter chips or a placeholder when no chapter exists for that level. */
+/** One row per persisted JLPT band: 1=N5 through 5=N1. */
 export function buildChapterPickRows(chapters: AdminChapter[]): ChapterPickRow[] {
-  return HSK_LEVELS.flatMap((hsk) => {
+  const rows: ChapterPickRow[] = [];
+
+  for (const jlptBand of JLPT_BANDS) {
     const list = chapters
-      .filter((c) => c.hsk_level === hsk)
+      .filter((c) => c.jlpt_level === jlptBand)
       .slice()
       .sort((a, b) => a.order_num - b.order_num || a.id - b.id);
-    if (!list.length) return [{ type: 'missing' as const, hsk }];
-    return list.map((chapter) => ({ type: 'chapter' as const, chapter }));
-  });
+
+    if (!list.length) {
+      rows.push({ type: 'missing', jlptBand });
+      continue;
+    }
+
+    for (const chapter of list) rows.push({ type: 'chapter', chapter });
+  }
+
+  return rows;
 }
 
 export function firstSelectableChapterId(chapters: AdminChapter[]): number | null {
-  const rows = buildChapterPickRows(chapters);
-  const first = rows.find((r): r is Extract<ChapterPickRow, { type: 'chapter' }> => r.type === 'chapter');
+  const first = buildChapterPickRows(chapters).find(
+    (row): row is Extract<ChapterPickRow, { type: 'chapter' }> => row.type === 'chapter'
+  );
   return first?.chapter.id ?? null;
 }
