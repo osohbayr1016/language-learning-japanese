@@ -26,12 +26,7 @@ jobs:
       - name: Install website dependencies
         run: npm ci
 
-      # The current web tsconfig does not mirror Vite's RN/Expo aliases and
-      # currently reports hundreds of baseline errors. Keep the debt visible
-      # without hiding whether the actual production bundle still builds.
-      - name: Audit existing web TypeScript debt
-        id: web_typecheck
-        continue-on-error: true
+      - name: Type-check website
         run: npm run typecheck
 
       - name: Build production website
@@ -40,7 +35,9 @@ jobs:
       - name: Verify production artifact
         run: |
           test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
-          test "$(find dist -type f | wc -l)" -gt 1 || { echo "Production build is unexpectedly empty"; exit 1; }
+          test -f dist/manifest.webmanifest || { echo "dist/manifest.webmanifest missing"; exit 1; }
+          test -f dist/sw.js || { echo "dist/sw.js missing"; exit 1; }
+          test "$(find dist -type f | wc -l)" -gt 3 || { echo "Production build is unexpectedly empty"; exit 1; }
 
       - name: Guard web JavaScript chunk size
         run: |
@@ -52,10 +49,6 @@ jobs:
             echo "::error::Largest web JS chunk exceeds 600 KB raw budget: $file ($bytes bytes)"
             exit 1
           }
-
-      - name: Report web typecheck debt
-        if: always() && steps.web_typecheck.outcome == 'failure'
-        run: echo "::warning::Web TypeScript baseline is still red; see docs/JAPANESE-LEARNING-AUDIT.md."
 
   workspace:
     name: API and mobile validation
@@ -88,14 +81,8 @@ jobs:
       - name: Test mobile pure domains
         run: pnpm dlx tsx@4.21.0 --test apps/mobile/tests/*.test.ts
 
-      - name: Audit mobile TypeScript debt
-        id: mobile_typecheck
-        continue-on-error: true
+      - name: Type-check mobile
         run: pnpm --dir apps/mobile type-check
-
-      - name: Report mobile typecheck debt
-        if: always() && steps.mobile_typecheck.outcome == 'failure'
-        run: echo "::warning::Mobile TypeScript baseline is red; inspect this job before merging."
 
 
   e2e:
