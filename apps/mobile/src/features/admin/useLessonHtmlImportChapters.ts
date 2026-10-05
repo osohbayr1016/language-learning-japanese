@@ -5,10 +5,16 @@ import { colors } from '../../theme';
 import { adminNotify } from './adminNotify';
 import { firstSelectableChapterId } from './adminLessonHtmlChapterRows';
 
+type JlptBand = 1 | 2 | 3 | 4 | 5;
+
+function jlptLabel(band: JlptBand): string {
+  return `JLPT N${6 - band}`;
+}
+
 export function useLessonHtmlImportChapters(token: string | null) {
   const [chapters, setChapters] = useState<AdminChapter[]>([]);
   const [chapterId, setChapterId] = useState<number | null>(null);
-  const [creatingHsk, setCreatingHsk] = useState<number | null>(null);
+  const [creatingJlptBand, setCreatingJlptBand] = useState<number | null>(null);
 
   const loadTree = useCallback(
     async (opts?: { selectId?: number }) => {
@@ -26,25 +32,25 @@ export function useLessonHtmlImportChapters(token: string | null) {
     [token]
   );
 
-  const ensureChapterForHsk = useCallback(
-    async (hsk: number) => {
+  const ensureChapterForJlptBand = useCallback(
+    async (requestedBand: number) => {
       if (!token) return;
-      setCreatingHsk(hsk);
+      const band = Math.min(5, Math.max(1, requestedBand)) as JlptBand;
+      setCreatingJlptBand(band);
       try {
         const maxOrder = chapters.reduce((m, c) => Math.max(m, c.order_num), 0);
-        const k = Math.min(6, Math.max(1, hsk)) as 1 | 2 | 3 | 4 | 5 | 6;
         const res = await api.admin.createChapter(token, {
-          title_mn: `HSK ${hsk}`,
+          title_mn: jlptLabel(band),
           subtitle_mn: 'HTML импорт',
-          hsk_level: hsk,
-          color: colors.jlpt[k],
+          jlpt_level: band,
+          color: colors.jlpt[band],
           order_num: maxOrder + 1,
         });
         await loadTree({ selectId: res.data.id });
       } catch (e) {
         adminNotify('Бүлэг үүсгэх', (e as Error).message);
       } finally {
-        setCreatingHsk(null);
+        setCreatingJlptBand(null);
       }
     },
     [token, chapters, loadTree]
@@ -54,8 +60,8 @@ export function useLessonHtmlImportChapters(token: string | null) {
     chapters,
     chapterId,
     setChapterId,
-    creatingHsk,
+    creatingJlptBand,
     loadTree,
-    ensureChapterForHsk,
+    ensureChapterForJlptBand,
   };
 }
