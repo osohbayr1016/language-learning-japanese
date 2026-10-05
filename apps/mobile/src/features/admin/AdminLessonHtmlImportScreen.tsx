@@ -46,8 +46,14 @@ export function AdminLessonHtmlImportScreen() {
   const [result, setResult] = useState<LessonHtmlImportResult | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const { chapters, chapterId, setChapterId, creatingHsk, loadTree, ensureChapterForHsk } =
-    useLessonHtmlImportChapters(token ?? null);
+  const {
+    chapters,
+    chapterId,
+    setChapterId,
+    creatingJlptBand,
+    loadTree,
+    ensureChapterForJlptBand,
+  } = useLessonHtmlImportChapters(token ?? null);
 
   useEffect(() => {
     void loadTree().catch((e) => adminNotify('Алдаа', (e as Error).message));
@@ -121,9 +127,9 @@ export function AdminLessonHtmlImportScreen() {
         token={token ?? null}
         chapters={chapters}
         chapterId={chapterId}
-        creatingHsk={creatingHsk}
+        creatingJlptBand={creatingJlptBand}
         onSelectChapter={setChapterId}
-        onCreateChapterForHsk={(hsk) => void ensureChapterForHsk(hsk)}
+        onCreateChapterForJlptBand={(band) => void ensureChapterForJlptBand(band)}
       />
       <TextInput style={styles.textarea} value={html} onChangeText={setHtml} multiline textAlignVertical="top" placeholder="HTML paste..." />
       {preview ? <PreviewCard p={preview} /> : null}
