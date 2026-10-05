@@ -86,8 +86,8 @@ export function AdminExamPdfImportScreen() {
 
       <View style={styles.row}>
         <View style={styles.cell}>
-          <Text style={styles.label}>HSK</Text>
-          <TextInput value={w.hsk} onChangeText={w.setHsk} keyboardType="number-pad" style={styles.inpSm} />
+          <Text style={styles.label}>JLPT (1=N5 … 5=N1)</Text>
+          <TextInput value={w.jlptBand} onChangeText={w.setJlptBand} keyboardType="number-pad" style={styles.inpSm} />
         </View>
         <View style={styles.cell}>
           <Text style={styles.label}>{a.examPdfImportDuration}</Text>
