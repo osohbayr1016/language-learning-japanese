@@ -19,6 +19,7 @@ const KIND_TO_SKILLS: Record<Exercise['kind'], SkillKey[]> = {
   'say-sentence': ['pronunciation', 'pitch', 'listening'],
   'imported-section': ['reading'],
   'imported-workbook': ['reading', 'recall'],
+  'in-lesson-games-hub': [],
 };
 
 export type SkillScores = Record<SkillKey, number>;
