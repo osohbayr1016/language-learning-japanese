@@ -6,7 +6,7 @@ import type { AdminChapter } from '../../lib/api/admin';
 import { useAuth } from '../../context/AuthContext';
 import { mn } from '../../i18n/mn';
 import { adminNotify } from './adminNotify';
-import { groupLessonTreeByHsk } from './adminLessonTreeSections';
+import { groupLessonTreeByJlpt } from './adminLessonTreeSections';
 import { AdminLearningPathChapterBlock } from './AdminLearningPathChapterBlock';
 import { learningPathStyles as styles } from './AdminLearningPathStyles';
 
@@ -34,7 +34,7 @@ export function AdminLearningPathScreen() {
     void load();
   }, [load]);
 
-  const sections = useMemo(() => groupLessonTreeByHsk(tree), [tree]);
+  const sections = useMemo(() => groupLessonTreeByJlpt(tree), [tree]);
 
   const saveDelay = async (ch: AdminChapter, raw: string) => {
     if (!token) return;
