@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing, typography, shadows } from '../../../theme';
 import type { CasualStudyWord } from './types';
 import { PronounceButton } from '../../../components/audio/PronounceButton';
-import { useAudio } from '../../../context/AudioContext';
 import { HanziWriterView } from '../../../components/writing/HanziWriterView';
 
 type WordIntroScreenProps = {
@@ -14,26 +13,10 @@ type WordIntroScreenProps = {
 
 export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
   const [idx, setIdx] = useState(0);
-  const { playWord } = useAudio();
   const { width } = useWindowDimensions();
 
   const current = words[idx];
   const isLast = idx === words.length - 1;
-
-  // Auto-play audio after 2 seconds
-  useEffect(() => {
-    if (!current) return;
-    
-    // Some mock words have string IDs, but playWord expects a number usually.
-    // If it's a mock word, it might fail or we might not have audio.
-    // The existing code handles it gracefully if the ID doesn't exist.
-    const timer = setTimeout(() => {
-      // In a real app, ensure word.id is numeric or supported by the audio engine
-      // Local casual words do not have server audio IDs; browser/native TTS button remains available.
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [current, playWord]);
 
   if (!current) return null;
 
@@ -67,7 +50,7 @@ export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
           <Text style={styles.meaning}>{current.meaning_mn}</Text>
           
           <View style={styles.audioWrapper}>
-             <PronounceButton text={current.kanji || current.kana} meaningMn={current.meaning_mn} size="lg" />
+             <PronounceButton phraseText={current.kanji || current.kana} meaningMn={current.meaning_mn} size="lg" />
           </View>
         </View>
 
