@@ -49,6 +49,8 @@ export function ExerciseRenderer({ exercise, lessonWords, disabled, onAnswer }: 
       );
     case 'imported-workbook':
       return <ImportedWorkbookCard exercise={exercise} disabled={disabled} onAnswer={onAnswer} />;
+    case 'in-lesson-games-hub':
+      return null;
   }
 }
 
@@ -74,6 +76,8 @@ export function exercisePromptFor(exercise: Exercise): string {
       return mn.lesson.importedSectionPrompt[exercise.section];
     case 'imported-workbook':
       return exercise.sectionTitle;
+    case 'in-lesson-games-hub':
+      return 'Хичээлээ тоглоомоор бататгах';
   }
 }
 
@@ -97,5 +101,7 @@ export function exerciseCorrectAnswer(exercise: Exercise): string {
       return 'Үзсэн';
     case 'imported-workbook':
       return exercise.item.answer == null ? 'Дасгал уншсан' : String(exercise.item.answer);
+    case 'in-lesson-games-hub':
+      return 'Тоглоом дууссан';
   }
 }
