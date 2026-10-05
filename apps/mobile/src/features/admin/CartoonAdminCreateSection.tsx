@@ -24,7 +24,7 @@ type Props = {
 export function CartoonAdminCreateSection({ token, busy, setBusy, onCreated }: Props) {
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
-  const [hsk, setHsk] = useState('1');
+  const [jlptBand, setJlptBand] = useState('1');
   const [duration, setDuration] = useState('60');
   const [status, setStatus] = useState('');
 
@@ -47,13 +47,15 @@ export function CartoonAdminCreateSection({ token, busy, setBusy, onCreated }: P
       } catch {
         thumbKey = undefined;
       }
+
+      const band = Math.min(5, Math.max(1, Number(jlptBand) || 1));
       setStatus('Хадгалж байна…');
       const c = await cartoonsAdmin.create(token, {
         title_mn: t,
         description_mn: desc.trim(),
         video_key: v.key,
         thumbnail_key: thumbKey,
-        hsk_level: Number(hsk) || 1,
+        jlpt_level: band,
         duration_s: Number(duration) || 0,
         is_published: true,
       });
@@ -79,8 +81,8 @@ export function CartoonAdminCreateSection({ token, busy, setBusy, onCreated }: P
         <TextInput style={styles.inp} value={title} onChangeText={setTitle} />
         <Text style={styles.lbl}>Тайлбар</Text>
         <TextInput style={[styles.inp, styles.ta]} value={desc} onChangeText={setDesc} multiline />
-        <Text style={styles.lbl}>HSK (1–6)</Text>
-        <TextInput style={styles.inp} value={hsk} onChangeText={setHsk} keyboardType="number-pad" />
+        <Text style={styles.lbl}>JLPT түвшин (1=N5, 2=N4, 3=N3, 4=N2, 5=N1)</Text>
+        <TextInput style={styles.inp} value={jlptBand} onChangeText={setJlptBand} keyboardType="number-pad" />
         <Text style={styles.lbl}>Үргэлжлэх (сек)</Text>
         <TextInput style={styles.inp} value={duration} onChangeText={setDuration} keyboardType="number-pad" />
         <Text style={styles.hint}>Эхлээд видео, дараа нь thumbnail сонгоно.</Text>
