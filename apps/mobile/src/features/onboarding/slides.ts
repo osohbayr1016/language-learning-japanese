@@ -15,26 +15,29 @@ export type OnboardingSlide = {
   image: ImageSourcePropType;
 };
 
+const asSource = (asset: unknown): ImageSourcePropType =>
+  (typeof asset === 'string' ? { uri: asset } : asset) as ImageSourcePropType;
+
 export const slides: OnboardingSlide[] = [
   {
     id: 's1',
     japanese: 'こんにちは',
     romaji: 'konnichiwa',
     copyKey: 's1',
-    image: onboarding1,
+    image: asSource(onboarding1),
   },
   {
     id: 's2',
     japanese: '少しずつ',
     romaji: 'sukoshi zutsu',
     copyKey: 's2',
-    image: onboarding2,
+    image: asSource(onboarding2),
   },
   {
     id: 's3',
     japanese: 'できる！',
     romaji: 'dekiru!',
     copyKey: 's3',
-    image: onboarding3,
+    image: asSource(onboarding3),
   },
 ];
