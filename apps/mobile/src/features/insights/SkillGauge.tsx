@@ -11,7 +11,7 @@ const THICKNESS = 8;
 const ICONS: Record<SkillKey, keyof typeof Ionicons.glyphMap> = {
   listening: 'headset',
   pronunciation: 'mic',
-  tones: 'musical-notes',
+  pitch: 'musical-notes',
   recall: 'bulb',
   reading: 'book',
   stroke: 'create',
@@ -20,7 +20,7 @@ const ICONS: Record<SkillKey, keyof typeof Ionicons.glyphMap> = {
 const TINTS: Record<SkillKey, string> = {
   listening: colors.info,
   pronunciation: colors.accent.pink,
-  tones: colors.warning,
+  pitch: colors.warning,
   recall: colors.accent.purple,
   reading: colors.brand.secondary,
   stroke: colors.brand.primary,
