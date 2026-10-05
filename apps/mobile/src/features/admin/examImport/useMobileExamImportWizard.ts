@@ -7,8 +7,8 @@ import { uploadListeningPicksToDrafts } from './uploadListeningPicks';
 import { examImportAdmin } from '../../../lib/api/examImportAdmin';
 
 export function useMobileExamImportWizard(token: string | null | undefined) {
-  const [title, setTitle] = useState('HSK 2 PDF импорт');
-  const [hsk, setHsk] = useState('2');
+  const [title, setTitle] = useState('JLPT PDF импорт');
+  const [jlptBand, setJlptBand] = useState('1');
   const [dur, setDur] = useState('55');
   const [publish, setPublish] = useState(true);
   const [examPick, setExamPick] = useState<PickedDoc | null>(null);
@@ -70,11 +70,11 @@ export function useMobileExamImportWizard(token: string | null | undefined) {
     setBusy(true);
     setErr('');
     try {
-      const h = Math.min(6, Math.max(1, Number(hsk) || 2));
+      const band = Math.min(5, Math.max(1, Number(jlptBand) || 1));
       const dMin = Math.max(1, Number(dur) || 55);
       await examImportAdmin.importExam(token, {
-        title: title.trim() || `HSK импорт ${new Date().toISOString().slice(0, 10)}`,
-        hsk_level: h,
+        title: title.trim() || `JLPT импорт ${new Date().toISOString().slice(0, 10)}`,
+        jlpt_level: band,
         duration_minutes: dMin,
         max_score: 200,
         passing_score: 120,
@@ -108,8 +108,8 @@ export function useMobileExamImportWizard(token: string | null | undefined) {
   return {
     title,
     setTitle,
-    hsk,
-    setHsk,
+    jlptBand,
+    setJlptBand,
     dur,
     setDur,
     publish,
