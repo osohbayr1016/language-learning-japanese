@@ -1,0 +1,25 @@
+{
+  "name": "Япон хэл сурах",
+  "short_name": "Япон хэл",
+  "description": "Монгол хэлээр япон хэл сурах — JLPT зам, давталт, кана, канжи, дүрэм, яриа.",
+  "lang": "mn",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f5f7f8",
+  "theme_color": "#2E8B57",
+  "categories": ["education", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    { "name": "Сурах", "short_name": "Сурах", "url": "/home" },
+    { "name": "Дадлага", "short_name": "Дадлага", "url": "/study" },
+    { "name": "Кана", "short_name": "Кана", "url": "/kana" }
+  ]
+}
