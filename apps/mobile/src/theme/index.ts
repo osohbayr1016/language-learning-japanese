@@ -14,6 +14,8 @@ const F = sansFontFamily ? ({ fontFamily: sansFontFamily } as const) : {};
 export const colors = {
   bg: {
     primary: '#FFFFFF',
+    /** @deprecated Use `primary`. Kept while older learning screens migrate. */
+    default: '#FFFFFF',
     /** Page/backdrop behind the app column. */
     secondary: '#F5F7F8',
     card: '#FFFFFF',
