@@ -144,7 +144,7 @@ function InlineWriteActivity({ kanji, onComplete }: { kanji: string; onComplete:
           strokeColor={colors.brand.primaryDark}
           outlineColor={colors.border}
           onEvent={(e) => {
-            if (e.type === 'quizComplete') {
+            if (e.type === 'complete') {
               setQuizSuccess(true);
             }
           }}
