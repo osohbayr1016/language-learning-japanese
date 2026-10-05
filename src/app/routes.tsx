@@ -100,6 +100,7 @@ export const routes: RouteObject[] = [
     children: [
       { path: 'admin', Component: lazy(() => import('@screens/admin/index')) },
       { path: 'admin/dashboard', Component: lazy(() => import('@screens/admin/dashboard')) },
+      { path: 'admin/jlpt-lessons', Component: lazy(() => import('@screens/admin/jlpt-lessons')) },
       { path: 'admin/cartoons', Component: lazy(() => import('@screens/admin/cartoons')) },
       { path: 'admin/exam-import', Component: lazy(() => import('@screens/admin/exam-import')) },
       { path: 'admin/hsk1-lessons', Component: lazy(() => import('@screens/admin/hsk1-lessons')) },
