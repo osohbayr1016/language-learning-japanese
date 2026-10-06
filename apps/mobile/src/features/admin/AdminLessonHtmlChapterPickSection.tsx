@@ -5,53 +5,62 @@ import { colors } from '../../theme';
 import { buildChapterPickRows } from './adminLessonHtmlChapterRows';
 import { lessonHtmlImportStyles as styles } from './AdminLessonHtmlImportStyles';
 
+function jlptName(band: number): string {
+  const safe = Math.min(5, Math.max(1, Number(band) || 1));
+  return `JLPT N${6 - safe}`;
+}
+
 function chapterLabel(ch: AdminChapter) {
-  return `HSK ${ch.jlpt_level} · ${ch.title_mn}`;
+  return `${jlptName(ch.jlpt_level)} · ${ch.title_mn}`;
 }
 
 type Props = {
   token: string | null;
   chapters: AdminChapter[];
   chapterId: number | null;
-  creatingHsk: number | null;
+  creatingJlptBand: number | null;
   onSelectChapter: (id: number) => void;
-  onCreateChapterForHsk: (hsk: number) => void;
+  onCreateChapterForJlptBand: (band: number) => void;
 };
 
 export function AdminLessonHtmlChapterPickSection({
   token,
   chapters,
   chapterId,
-  creatingHsk,
+  creatingJlptBand,
   onSelectChapter,
-  onCreateChapterForHsk,
+  onCreateChapterForJlptBand,
 }: Props) {
   const chapterRows = useMemo(() => buildChapterPickRows(chapters), [chapters]);
 
   return (
     <View style={styles.card}>
-      <Text style={styles.label}>Бүлэг сонгох (HSK 1–6)</Text>
-      <Text style={styles.hint}>Дараагийн HSK-д бүлэг байхгүй бол «Бүлэг үүсгэх» чип дээр дарна уу — бүлэг серверт нэмэгдэнэ.</Text>
+      <Text style={styles.label}>Бүлэг сонгох (JLPT N5–N1)</Text>
+      <Text style={styles.hint}>
+        Тухайн JLPT түвшинд бүлэг байхгүй бол «Бүлэг үүсгэх» дээр дарна уу.
+      </Text>
       <View style={styles.row}>
         {chapterRows.map((row) =>
           row.type === 'missing' ? (
             <Pressable
-              key={`missing-${row.hsk}`}
+              key={`missing-${row.jlptBand}`}
               accessibilityRole="button"
-              accessibilityLabel={`HSK ${row.hsk} бүлэг үүсгэх`}
-              disabled={!token || creatingHsk != null}
+              accessibilityLabel={`${jlptName(row.jlptBand)} бүлэг үүсгэх`}
+              disabled={!token || creatingJlptBand != null}
               style={[
                 styles.chip,
                 styles.chipCreate,
-                (!token || creatingHsk != null) && styles.btnDis,
-                creatingHsk === row.hsk && styles.chipOn,
+                (!token || creatingJlptBand != null) && styles.btnDis,
+                creatingJlptBand === row.jlptBand && styles.chipOn,
               ]}
-              onPress={() => onCreateChapterForHsk(row.hsk)}
+              onPress={() => onCreateChapterForJlptBand(row.jlptBand)}
             >
-              {creatingHsk === row.hsk ? (
+              {creatingJlptBand === row.jlptBand ? (
                 <ActivityIndicator color={colors.brand.primary} />
               ) : (
-                <Text style={styles.chipText}>HSK {row.hsk} · Бүлэг үүсгэх</Text>
+                <Text style={styles.chipText}>
+                  {jlptName(row.jlptBand)} · Бүлэг үүсгэх
+                </Text>
               )}
             </Pressable>
           ) : (

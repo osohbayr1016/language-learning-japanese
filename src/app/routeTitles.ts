@@ -60,6 +60,7 @@ const EXACT: Record<string, string> = {
   '/lessons': 'Хичээлүүд',
   '/cartoons': 'Хүүхэлдэйн кино',
   '/admin': 'Админ',
+  '/admin/jlpt-lessons': 'JLPT хичээлүүд',
 };
 
 /** Longest-prefix fallbacks, for the routes that carry an `:id`. */

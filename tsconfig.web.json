@@ -17,9 +17,10 @@
     "paths": {
       "@src/*": ["apps/mobile/src/*"],
       "@screens/*": ["apps/mobile/app/*"],
-      "react-native": ["node_modules/react-native-web"],
-      "expo-router": ["src/compat/expo-router.tsx"]
+      "@japanese-learning/types": ["packages/types/src/index.ts"],
+      "@japanese-learning/srs": ["packages/srs/src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": ["src/app", "src/main.tsx", "src/pwa", "apps/mobile/app", "apps/mobile/src", "packages/srs/src", "packages/types/src"],
+  "exclude": ["src/compat", "node_modules"]
 }

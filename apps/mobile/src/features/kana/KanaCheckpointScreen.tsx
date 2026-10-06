@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Button, Card, Screen } from '../../primitives';
 import { useAuth } from '../../context/AuthContext';
 import { api } from '../../lib/api';
+import { getWebKeyboardTarget, type WebKeyboardEvent } from '../../lib/webKeyboard';
 import { colors, radius, spacing, typography } from '../../theme';
 
 type Question = {
@@ -92,7 +93,7 @@ export default function KanaCheckpointScreen() {
 
   useEffect(() => {
     if (Platform.OS !== 'web' || finished) return;
-    const onKey = (event: KeyboardEvent) => {
+    const onKey = (event: WebKeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
       const optionIndex = Number(event.key) - 1;
       if (Number.isInteger(optionIndex) && optionIndex >= 0 && optionIndex < question.options.length) {
@@ -105,8 +106,10 @@ export default function KanaCheckpointScreen() {
         void advance();
       }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const keyboard = getWebKeyboardTarget();
+    if (!keyboard) return;
+    keyboard.addEventListener('keydown', onKey);
+    return () => keyboard.removeEventListener('keydown', onKey);
   }, [advance, choose, finished, question.options]);
 
   if (finished) {

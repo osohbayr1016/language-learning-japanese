@@ -1,39 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing, typography, shadows } from '../../../theme';
-import type { Word } from '@japanese-learning/db';
+import type { CasualStudyWord } from './types';
 import { PronounceButton } from '../../../components/audio/PronounceButton';
-import { useAudio } from '../../../context/AudioContext';
 import { HanziWriterView } from '../../../components/writing/HanziWriterView';
 
 type WordIntroScreenProps = {
-  words: Word[];
-  onFinish: (words: Word[]) => void;
+  words: CasualStudyWord[];
+  onFinish: (words: CasualStudyWord[]) => void;
 };
 
 export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
   const [idx, setIdx] = useState(0);
-  const { playWord } = useAudio();
   const { width } = useWindowDimensions();
 
   const current = words[idx];
   const isLast = idx === words.length - 1;
-
-  // Auto-play audio after 2 seconds
-  useEffect(() => {
-    if (!current) return;
-    
-    // Some mock words have string IDs, but playWord expects a number usually.
-    // If it's a mock word, it might fail or we might not have audio.
-    // The existing code handles it gracefully if the ID doesn't exist.
-    const timer = setTimeout(() => {
-      // In a real app, ensure word.id is numeric or supported by the audio engine
-      playWord(current.id as any, { speed: 1.0 }).catch(() => {});
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [current, playWord]);
 
   if (!current) return null;
 
@@ -45,7 +28,7 @@ export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
     }
   };
 
-  const firstChar = current.kanji ? Array.from(current.kanji)[0] : Array.from(current.kana)[0];
+  const firstChar = Array.from(current.kanji || current.kana)[0] ?? '';
 
   return (
     <View style={styles.container}>
@@ -67,7 +50,7 @@ export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
           <Text style={styles.meaning}>{current.meaning_mn}</Text>
           
           <View style={styles.audioWrapper}>
-             <PronounceButton wordId={current.id as any} meaningMn={current.meaning_mn} size="lg" />
+             <PronounceButton phraseText={current.kanji || current.kana} meaningMn={current.meaning_mn} size="lg" />
           </View>
         </View>
 

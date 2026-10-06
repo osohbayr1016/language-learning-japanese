@@ -3,10 +3,10 @@ import { StyleSheet, Text, View, useWindowDimensions, Pressable } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../../../theme';
 import { HanziWriterView, type HanziWriterMode } from '../../../components/writing/HanziWriterView';
-import type { Word } from '@japanese-learning/db';
+import type { CasualStudyWord } from '../learning-loop/types';
 
 type StrokeOrderPracticeProps = {
-  words: Word[];
+  words: CasualStudyWord[];
   onFinish: () => void;
 };
 
@@ -21,7 +21,7 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
   // Prefer Kanji if available, else first kana character. 
   // For a full implementation, we might split string into chars and allow navigating them,
   // but for simplicity, we pick the first character of the kanji or kana.
-  const firstChar = current ? (current.kanji ? Array.from(current.kanji)[0] : Array.from(current.kana)[0]) : '';
+  const firstChar = current ? (Array.from(current.kanji || current.kana)[0] ?? '') : '';
 
   const handleNext = () => {
     if (idx + 1 >= words.length) {

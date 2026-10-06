@@ -18,7 +18,7 @@ import { CardBack } from './CardBack';
 import { useFlashcardWebKeys } from '../../../hooks/useFlashcardWebKeys';
 import { RomajiToggleWeb } from '../RomajiToggleWeb';
 
-import type { Word } from '@japanese-learning/db';
+import type { WordWithProgress } from '../../../lib/types';
 
 function confidenceForRating(rating: ReviewRating): 0 | 1 | 2 {
   if (rating <= 1) return 0;
@@ -30,8 +30,8 @@ export default function FlashcardScreen({
   onSessionDone,
   initialWords,
 }: {
-  onSessionDone?: (xp: number, correct: number, total: number, words: Word[]) => void;
-  initialWords?: Word[];
+  onSessionDone?: (xp: number, correct: number, total: number, words: WordWithProgress[]) => void;
+  initialWords?: WordWithProgress[];
 } = {}) {
   const { words: dueWords, loading, error } = useDueWords(15);
   const words = initialWords || dueWords;
