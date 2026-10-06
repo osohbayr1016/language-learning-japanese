@@ -1,11 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
@@ -16,29 +12,15 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": [
-      "vite/client"
-    ],
+    "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "@src/*": [
-        "apps/mobile/src/*"
-      ],
-      "@screens/*": [
-        "apps/mobile/app/*"
-      ],
-      "expo-router": [
-        "src/compat/expo-router.tsx"
-      ],
-      "@japanese-learning/types": [
-        "packages/types/src/index.ts"
-      ],
-      "@japanese-learning/srs": [
-        "packages/srs/src/index.ts"
-      ]
+      "@src/*": ["apps/mobile/src/*"],
+      "@screens/*": ["apps/mobile/app/*"],
+      "@japanese-learning/types": ["packages/types/src/index.ts"],
+      "@japanese-learning/srs": ["packages/srs/src/index.ts"]
     }
   },
-  "include": [
-    "src"
-  ]
+  "include": ["src/app", "src/main.tsx", "src/pwa", "apps/mobile/app", "apps/mobile/src", "packages/srs/src", "packages/types/src"],
+  "exclude": ["src/compat", "node_modules"]
 }
