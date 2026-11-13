@@ -7,11 +7,13 @@ import { gestureToAction, type GestureKind } from '../../lib/audio/engine';
 import { pronounceButtonStyles as styles } from './pronounceButtonStyles';
 
 type Props = {
-  wordId: number;
+  wordId?: number;
+  /** Standalone Japanese text for local content that has no server word id. */
+  phraseText?: string;
   /** Монгол орчуулгыг төхөөрөмжөөр унших */
   meaningMn?: string;
   /** Гол үгийн ханз; displayText-тэй хамт өгөгдөхөд өгүүлбэрийн дуу сонсогдоно */
-  wordKanji?: string;
+  wordHanzi?: string;
   /** Картад харуулж буй бүтэн текст (жишээ өгүүлбэр) */
   displayText?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -35,8 +37,9 @@ const HOLD_MS = 380;
  */
 export function PronounceButton({
   wordId,
+  phraseText,
   meaningMn: _meaningMn,
-  wordKanji,
+  wordHanzi,
   displayText,
   size = 'md',
   color = colors.accent.purple,
@@ -56,11 +59,12 @@ export function PronounceButton({
     []
   );
 
+  const standalonePhrase = phraseText?.trim() || '';
   const useFullPhrase =
     typeof displayText === 'string' &&
-    typeof wordKanji === 'string' &&
+    typeof wordHanzi === 'string' &&
     displayText.trim().length > 0 &&
-    displayText.trim() !== wordKanji.trim();
+    displayText.trim() !== wordHanzi.trim();
 
   const handle = async (kind: GestureKind) => {
     setActive(kind);
@@ -69,11 +73,15 @@ export function PronounceButton({
     const opts =
       a.kind === 'doubleTap' ? { speed: a.speed, repeat: a.repeat } : { speed: a.speed };
     try {
-      const ok = useFullPhrase
-        ? await playPhrase(displayText!.trim(), opts)
-        : a.kind === 'doubleTap'
-          ? await playWord(wordId, { speed: a.speed, repeat: a.repeat })
-          : await playWord(wordId, { speed: a.speed });
+      const ok = standalonePhrase
+        ? await playPhrase(standalonePhrase, opts)
+        : useFullPhrase
+          ? await playPhrase(displayText!.trim(), opts)
+          : typeof wordId === 'number'
+            ? a.kind === 'doubleTap'
+              ? await playWord(wordId, { speed: a.speed, repeat: a.repeat })
+              : await playWord(wordId, { speed: a.speed })
+            : false;
       if (!ok) setAudioError('Дууг тоглуулж чадсангүй. Дахин оролдоно уу.');
     } finally {
       setActive('idle');

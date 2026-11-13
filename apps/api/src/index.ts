@@ -102,7 +102,7 @@ app.get("/health", async (c) => {
     ).all();
     await c.env.DB.prepare("SELECT auth_version FROM users LIMIT 1").first();
     if (tables.results.length !== 4) throw Error("Pending course migration");
-    return c.json({ status: "ok", version: "1.1.0", course_schema: 4 });
+    return c.json({ status: "ok", version: "1.2.0", course_schema: 4, release:c.env.BUILD_SHA??null });
   } catch {
     return c.json({ status: "migration_required", course_schema: 0 }, 503);
   }

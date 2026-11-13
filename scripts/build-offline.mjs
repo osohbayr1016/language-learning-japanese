@@ -17,6 +17,10 @@ const buckets = new Set(
 const files = [
   "/index.html",
   "/icons.json",
+  "/favicon.svg",
+  "/manifest.webmanifest",
+  "/icons/app-192.png",
+  "/icons/app-512.png",
   ...readdirSync("dist/assets")
     .filter((f) => /\.(js|css)$/.test(f))
     .map((f) => "/assets/" + f),

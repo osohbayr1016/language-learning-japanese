@@ -278,3 +278,15 @@ test("separate open tabs keep both task drafts when settings and events are save
   await expect(second.locator(".course-quiz input").nth(1)).toBeChecked();
   await second.close();
 });
+
+test('installable app uses the guided course and browser-decodable icons',async({page})=>{
+ await page.goto('/course');
+ await expect(page.locator('link[rel="manifest"]')).toHaveAttribute('href','/manifest.webmanifest');
+ const manifest=await(await page.request.get('/manifest.webmanifest')).json();
+ expect(manifest.start_url).toBe('/course');
+ expect(manifest.shortcuts.every((item:{url:string})=>item.url.startsWith('/course'))).toBe(true);
+ const dimensions=await page.evaluate(async()=>{const response=await fetch('/icons/app-512.png');const bitmap=await createImageBitmap(await response.blob());return{width:bitmap.width,height:bitmap.height};});
+ expect(dimensions).toEqual({width:512,height:512});
+ const registrations=await page.evaluate(async()=>{await navigator.serviceWorker.ready;return(await navigator.serviceWorker.getRegistrations()).length;});
+ expect(registrations).toBe(1);
+});

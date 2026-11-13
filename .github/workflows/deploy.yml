@@ -1,73 +1,80 @@
-name: Deploy website
-
-# Pushing to main deploys the site. Nothing was watching this repo before, so a
-# push only ever produced a commit.
+name: Release Japanese production
 on:
   push:
     branches: [main]
-    # Changes that cannot affect the built site should not spend a deploy.
-    paths-ignore:
-      - "**/*.md"
-      - ".gitignore"
+    paths-ignore: ['**/*.md', '.gitignore']
   workflow_dispatch:
-
-# A second push while one is deploying supersedes it, rather than racing to
-# decide which build ends up live.
+  workflow_call:
 concurrency:
-  group: deploy-website
-  cancel-in-progress: true
-
+  group: release-japanese-production
+  cancel-in-progress: false
+permissions:
+  contents: read
 jobs:
-  deploy:
-    name: Build and deploy
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+  release:
+    name: Verify, migrate and deploy API before web
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: production
     steps:
       - uses: actions/checkout@v5
-
       - uses: actions/setup-node@v5
         with:
-          node-version: "22"
+          node-version: '22'
           cache: npm
-
-      # `npm ci` installs exactly what package-lock.json pins, and fails loudly
-      # if the lockfile has drifted from package.json.
-      - name: Install
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      # A build that produced nothing would otherwise deploy an empty site.
-      - name: Check the build produced something
-        run: |
-          test -f dist/index.html || { echo "dist/index.html missing"; exit 1; }
-          echo "dist: $(find dist -type f | wc -l) files, $(du -sh dist | cut -f1)"
-
-      # The deploy needs a Cloudflare API token in the repo's Actions secrets.
-      # Without it the build above still runs as a check, and this step
-      # explains what is missing instead of failing with a wrangler stack trace.
-      - name: Check for the Cloudflare token
-        id: token
+      - name: Require main
+        run: test "$GITHUB_REF" = refs/heads/main
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run api:typecheck
+      - run: npm run check:isolation
+      - run: npm test
+      - run: npm run build
+      - run: node scripts/check-bundle.mjs
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Verify credentials and record a D1 restore point
         env:
-          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
-        run: |
-          echo "present=$HAS_TOKEN" >> "$GITHUB_OUTPUT"
-          if [ "$HAS_TOKEN" != "true" ]; then
-            echo "::warning::CLOUDFLARE_API_TOKEN is not set, so this push was built but not deployed. Add it under Settings → Secrets and variables → Actions, or run 'npm run deploy' locally."
-          fi
-
-      - name: Verify API is ready before web rollout
-        if: steps.token.outputs.present == 'true'
-        run: node scripts/check-release-api.mjs
-
-      - name: Deploy to Cloudflare Workers
-        if: steps.token.outputs.present == 'true'
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/release-preflight.mjs
+      - name: Retain restore-point metadata (no user data or secrets)
+        uses: actions/upload-artifact@v4
+        with:
+          name: japanese-release-checkpoint-${{ github.run_id }}
+          path: release-checkpoint.json
+          retention-days: 7
+          if-no-files-found: error
+      - name: Apply Japanese database migrations
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          # Use the wrangler pinned in package.json rather than letting the
-          # action fetch its own, so CI and `npm run deploy` are the same tool.
-          wranglerVersion: "4.87.0"
+          accountId: aabe952df5d4e4b780339bf3b4217ed7
+          workingDirectory: apps/api
+          wranglerVersion: '4.87.0'
+          command: d1 migrations apply nihongo-mn-db --remote --env production
+      - name: Deploy the Japanese API
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: aabe952df5d4e4b780339bf3b4217ed7
+          workingDirectory: apps/api
+          wranglerVersion: '4.87.0'
+          command: deploy --env production --var BUILD_SHA:${{ github.sha }}
+      - name: Verify API schema and deployed commit
+        run: node scripts/smoke-production.mjs --api-only
+      - name: Deploy the website
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: aabe952df5d4e4b780339bf3b4217ed7
+          wranglerVersion: '4.87.0'
           command: deploy --env production
+      - name: Verify live course, release, offline pack and auth boundary
+        run: node scripts/smoke-production.mjs
+      - name: Retain browser diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: japanese-production-browser-results
+          path: test-results/
+          retention-days: 7

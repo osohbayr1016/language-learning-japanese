@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/build-offline.mjs",
+    "build": "vite build && node scripts/build-pwa.mjs && node scripts/build-offline.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.web.json",
     "api:dev": "npm --prefix apps/api run dev",
@@ -14,7 +14,7 @@
     "deploy:preview": "npm run build && wrangler versions upload --env production",
     "api:typecheck": "tsc --noEmit -p apps/api/tsconfig.json",
     "api:migrate": "cd apps/api && wrangler d1 migrations apply nihongo-mn-db --local",
-    "test": "node --import tsx --test packages/curriculum/tests/*.test.ts apps/api/tests/*.test.ts apps/mobile/tests/*.test.ts",
+    "test": "node --import tsx --test packages/curriculum/tests/*.test.ts apps/api/tests/*.test.ts apps/mobile/tests/*.test.ts scripts/tests/*.test.mjs",
     "test:e2e": "playwright test",
     "check:isolation": "node scripts/check-japanese-isolation.mjs"
   },

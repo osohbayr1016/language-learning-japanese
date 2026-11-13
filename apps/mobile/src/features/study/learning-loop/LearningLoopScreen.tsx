@@ -5,7 +5,7 @@ import { BookReader } from "../book/BookReader";
 import { StrokeOrderPractice } from "../writing/StrokeOrderPractice";
 import { SessionDoneScreen } from "../SessionDoneScreen";
 import { MOCK_BOOKS } from "../book/mockBooks";
-import type { Word } from "../../../lib/types";
+import type { CasualStudyWord } from "./types";
 import { CATEGORIES } from "../StudyCasualWords";
 import { useRouter } from "expo-router";
 import { addLearnedWords, markBookAsRead, isBookRead } from "../../../lib/learnedWordsStorage";
@@ -19,7 +19,7 @@ type LearningLoopScreenProps = {
 export function LearningLoopScreen({ category }: LearningLoopScreenProps) {
   const router = useRouter();
   const [phase, setPhase] = useState<Phase>("intro");
-  const [sessionWords, setSessionWords] = useState<Word[]>([]);
+  const [sessionWords, setSessionWords] = useState<CasualStudyWord[]>([]);
   const [bookAlreadyRead, setBookAlreadyRead] = useState(false);
   
   // Aggregate stats from session to show at the very end
@@ -32,7 +32,7 @@ export function LearningLoopScreen({ category }: LearningLoopScreenProps) {
     isBookRead(book.id).then((read) => setBookAlreadyRead(read)).catch(() => {});
   }, [category]);
 
-  const handleIntroDone = async (words: Word[]) => {
+  const handleIntroDone = async (words: CasualStudyWord[]) => {
     setSessionStats({ xp: 10 * words.length, correct: words.length, total: words.length });
     setSessionWords(words);
 
@@ -40,7 +40,7 @@ export function LearningLoopScreen({ category }: LearningLoopScreenProps) {
     await addLearnedWords(
       words.map((w) => ({
         id: w.id,
-        kana: w.kana ?? '',
+        kana: w.kana,
         kanji: w.kanji ?? undefined,
         romaji: w.romaji ?? undefined,
         meaning_mn: w.meaning_mn ?? undefined,
@@ -79,7 +79,7 @@ export function LearningLoopScreen({ category }: LearningLoopScreenProps) {
 
   if (phase === "intro") {
     const categoryData = CATEGORIES.find(c => c.id === category);
-    const initialWords = categoryData ? categoryData.words as unknown as Word[] : [];
+    const initialWords = categoryData ? categoryData.words as CasualStudyWord[] : [];
     return <WordIntroScreen words={initialWords} onFinish={(w) => void handleIntroDone(w)} />;
   }
 

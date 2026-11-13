@@ -7,7 +7,7 @@ self.addEventListener('fetch',event=>{
  if(event.request.mode==='navigate'){
   event.respondWith(fetch(event.request).then(async response=>{if(response.ok){const cache=await caches.open(CACHE);await cache.put('/index.html',response.clone());}return response;}).catch(async()=>await caches.match('/index.html')??new Response('Интернэтгүй хичээл бэлдээгүй байна. Холбогдсон үедээ дахин нээнэ үү.',{status:503,headers:{'Content-Type':'text/plain;charset=utf-8'}})));return;
  }
- if(!/^\/(assets|fonts|stroke-data|dictionary)\//.test(url.pathname)&&url.pathname!=='/offline-manifest.json'&&url.pathname!=='/icons.json')return;
+ if(!/^\/(assets|fonts|icons|stroke-data|dictionary)\//.test(url.pathname)&&url.pathname!=='/offline-manifest.json'&&url.pathname!=='/icons.json'&&url.pathname!=='/manifest.webmanifest'&&url.pathname!=='/favicon.svg')return;
  event.respondWith((async()=>{
   const cache=await caches.open(CACHE);const cached=await cache.match(event.request);
   if(cached&&/^\/(assets|fonts)\//.test(url.pathname))return cached;

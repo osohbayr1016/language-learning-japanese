@@ -11,6 +11,7 @@ export interface Env {
   AUTH_MAIL_API_KEY?: string;
   AUTH_MAIL_FROM?: string;
   APP_ORIGIN?: string;
+  BUILD_SHA?: string;
 }
 
 export interface JWTPayload {

@@ -244,6 +244,10 @@ export const routes: RouteObject[] = [
         Component: lazy(() => import("@screens/admin/exam-import")),
       },
       {
+        path: "admin/jlpt-lessons",
+        Component: lazy(() => import("@screens/admin/jlpt-lessons")),
+      },
+      {
         path: "admin/jlpt-n5-lessons",
         Component: lazy(() => import("@screens/admin/jlpt-n5-lessons")),
       },
