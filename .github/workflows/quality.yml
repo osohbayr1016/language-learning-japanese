@@ -24,6 +24,8 @@ jobs:
       - run: npm run build
       - name: Guard production JavaScript chunk budget
         run: node scripts/check-bundle.mjs
+      - name: Audit runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
   e2e:
     name: Chromium learner journeys
     runs-on: ubuntu-24.04

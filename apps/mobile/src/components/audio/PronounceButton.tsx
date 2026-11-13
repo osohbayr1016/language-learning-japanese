@@ -13,7 +13,7 @@ type Props = {
   /** Монгол орчуулгыг төхөөрөмжөөр унших */
   meaningMn?: string;
   /** Гол үгийн ханз; displayText-тэй хамт өгөгдөхөд өгүүлбэрийн дуу сонсогдоно */
-  wordHanzi?: string;
+  wordKanji?: string;
   /** Картад харуулж буй бүтэн текст (жишээ өгүүлбэр) */
   displayText?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -39,7 +39,7 @@ export function PronounceButton({
   wordId,
   phraseText,
   meaningMn: _meaningMn,
-  wordHanzi,
+  wordKanji,
   displayText,
   size = 'md',
   color = colors.accent.purple,
@@ -62,9 +62,9 @@ export function PronounceButton({
   const standalonePhrase = phraseText?.trim() || '';
   const useFullPhrase =
     typeof displayText === 'string' &&
-    typeof wordHanzi === 'string' &&
+    typeof wordKanji === 'string' &&
     displayText.trim().length > 0 &&
-    displayText.trim() !== wordHanzi.trim();
+    displayText.trim() !== wordKanji.trim();
 
   const handle = async (kind: GestureKind) => {
     setActive(kind);
