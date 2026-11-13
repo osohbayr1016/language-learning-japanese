@@ -66,8 +66,10 @@ Short words require an exact match; longer targets use a stricter threshold.
 Recognition checks the words transcribed, **not phoneme accuracy or pitch accent**.
 No paid speech API or AI key is required. The browser's speech provider may process
 microphone audio remotely. This application does not save raw recordings.
-Browser support and installed Japanese synthesis voices vary; unavailable audio
-and recognition have explicit recovery messages. Real microphone/device QA is
+When no Japanese voice is installed, course playback uses the dedicated Japanese
+API’s cached Japanese TTS. Browser support varies; unavailable audio/recognition
+have explicit recovery messages. Listening answers unlock only after playback
+starts. Real microphone/device QA is
 still required before release.
 
 ## API and deployment

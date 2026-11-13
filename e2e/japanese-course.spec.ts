@@ -222,6 +222,7 @@ test('unavailable Japanese voice leaves listening practice ungraded', async ({
       value: { getVoices: () => [], cancel: () => {}, speak: () => {} },
     });
   });
+  await page.route('**/api/audio/tts?**', r => r.abort());
   await page.goto('/course');
   await page
     .getByRole('button', { name: 'Сонсгол эхлэх', exact: true })
@@ -230,7 +231,7 @@ test('unavailable Japanese voice leaves listening practice ungraded', async ({
     .getByRole('button', { name: '▶ Сонсоод утгыг сонгох', exact: true })
     .click();
   await expect(page.getByRole('alert')).toContainText(
-    'Япон дуу хоолой олдсонгүй',
+    'Япон дууг тоглуулж чадсангүй',
   );
   await expect(
     page.getByRole('button', { name: 'Шалгах', exact: true }),
@@ -245,4 +246,25 @@ test('first visit opens the guided course directly with no login wall', async ({
   await expect(
     page.getByRole('heading', { name: /Япон хэлний дэвтэр/ }),
   ).toBeVisible();
+});
+
+test('Japanese server audio is used when the device has no Japanese voice', async ({page}) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, 'speechSynthesis', {configurable:true,value:{getVoices:()=>[],cancel:()=>{}}});
+    class AudioStub {
+      src:string; preload='';
+      constructor(src:string){this.src=src;(window as unknown as {playedJapanese:string}).playedJapanese=src}
+      play(){return Promise.resolve()}
+      pause(){} removeAttribute(){} load(){}
+    }
+    Object.defineProperty(window, 'Audio', {configurable:true,value:AudioStub});
+  });
+  await page.goto('/course');
+  await page.getByRole('button', {name:'Сонсгол эхлэх',exact:true}).click();
+  await expect(page.locator('.course-quiz input').first()).toBeDisabled();
+  await page.getByRole('button', {name:'▶ Сонсоод утгыг сонгох',exact:true}).click();
+  await expect(page.locator('.course-quiz input').first()).toBeEnabled();
+  const url=await page.evaluate(()=>(window as unknown as {playedJapanese:string}).playedJapanese);
+  expect(url).toContain('/api/audio/tts?');
+  expect(new URL(url).searchParams.get('text')).toBe(first.words[0].kana);
 });

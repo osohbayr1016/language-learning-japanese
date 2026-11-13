@@ -33,6 +33,7 @@ import {
 import { useCourse, type CourseStore } from './useCourse';
 import { Quiz, Speaking, StrokeTutor, speakJapanese } from './Exercises';
 import './course.css';
+import { stopJapaneseAudio } from './japaneseAudio';
 import { KanjiDictionary } from './KanjiDictionary';
 const TASK_NAMES: Record<Task, string> = {
   words: 'Шинэ үг',
@@ -134,6 +135,7 @@ function CourseWorkspace() {
     setActive({ lessonId: l.id, task: t });
     setPlacement(false);
   };
+  useEffect(() => () => stopJapaneseAudio(), [active?.lessonId, active?.task, placement, tab]);
   const chooseTab = (value: string) => {
     setParams({ tab: value });
     setActive(null);

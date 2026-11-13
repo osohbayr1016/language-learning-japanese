@@ -6,28 +6,8 @@ import {
 } from '@src/lib/audio/speech';
 import { scoreBestJapaneseUtterance } from '@src/lib/audio/speechScoring';
 import type { Question, Vocabulary } from '../../../packages/curriculum/src';
-export function speakJapanese(text: string, onError?: (s: string) => void) {
-  if (!('speechSynthesis' in window)) {
-    onError?.('Энэ хөтөч дуу тоглуулахгүй байна.');
-    return;
-  }
-  const voices = speechSynthesis
-    .getVoices()
-    .filter((v) => v.lang.toLowerCase().startsWith('ja'));
-  if (!voices.length) {
-    onError?.(
-      'Япон дуу хоолой олдсонгүй. Төхөөрөмжийн хэлний тохиргоонд япон дуу нэмнэ үү.',
-    );
-    return;
-  }
-  speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'ja-JP';
-  u.voice = voices[0];
-  u.rate = 0.8;
-  u.onerror = () => onError?.('Дуу тоглуулж чадсангүй.');
-  speechSynthesis.speak(u);
-}
+export { speakJapanese } from './japaneseAudio';
+import { speakJapanese, stopJapaneseAudio } from './japaneseAudio';
 export function Quiz({
   questions,
   onPass,
@@ -41,6 +21,7 @@ export function Quiz({
   audio?: boolean;
   minAccuracy?: number;
 }) {
+  const [audioReady,setAudioReady] = useState(false);
   const [index, setIndex] = useState(0),
     [answers, setAnswers] = useState<number[]>([]),
     [selected, setSelected] = useState<number | null>(null),
@@ -66,7 +47,7 @@ export function Quiz({
             setAnswers([]);
             setSelected(null);
             setChecked(false);
-            setFinished(false);
+            setFinished(false); setAudioReady(false); setAudioError('');
           }}
         >
           Дахин хийх
@@ -82,8 +63,8 @@ export function Quiz({
         <>
           <button
             onClick={() => {
-              setAudioError('');
-              speakJapanese(q.prompt, setAudioError);
+              setAudioError(''); setAudioReady(false);
+              speakJapanese(q.prompt, message => {setAudioError(message);setAudioReady(false)}, () => setAudioReady(true));
             }}
           >
             ▶ Сонсоод утгыг сонгох
@@ -105,7 +86,7 @@ export function Quiz({
           {q.prompt}
         </h3>
       )}
-      <fieldset disabled={checked || (audio && !!audioError)}>
+      <fieldset disabled={checked || (audio && (!audioReady || !!audioError))}>
         <legend className="course-sr">Хариултаа сонгох</legend>
         {q.options.map((o, i) => (
           <label
@@ -130,7 +111,7 @@ export function Quiz({
       )}
       <button
         className="course-primary"
-        disabled={selected === null || (audio && !!audioError)}
+        disabled={selected === null || (audio && (!audioReady || !!audioError))}
         onClick={() => {
           if (!checked) {
             setChecked(true);
@@ -150,7 +131,7 @@ export function Quiz({
             setIndex(index + 1);
             setSelected(null);
             setChecked(false);
-            setAudioError('');
+            setAudioError(''); setAudioReady(false);
           }
         }}
       >
@@ -297,7 +278,7 @@ export function Speaking({
                 session.stop();
                 return;
               }
-              session.reset();
+              stopJapaneseAudio(); session.reset();
               if (await ensureSpeechPermission()) session.start();
               else
                 setMessage(
