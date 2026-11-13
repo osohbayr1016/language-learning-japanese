@@ -22,7 +22,7 @@ export function useNativeContinuousBindings(
   useNativeSpeechEvent('end', () => {
     clearAutoStop();
     const buf = buffer.current;
-    const transcript = buf.committed.trim() || buf.preview.trim();
+    const transcript = buf.committed.trim();
     const alternatives = buf.alternatives.filter((a) => a && a !== transcript);
     buffer.current = { ...EMPTY_SPEECH_BUFFER };
     if (transcript) {
@@ -59,6 +59,7 @@ export function useNativeContinuousBindings(
   useNativeSpeechEvent('error', (event) => {
     clearAutoStop();
     const e = event as { error: string; message?: string };
+    buffer.current={...EMPTY_SPEECH_BUFFER};
     setErrorMessage(e.message ?? e.error);
     setState('error');
   });

@@ -19,10 +19,11 @@
     "check:isolation": "node scripts/check-japanese-isolation.mjs"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^5.20261113.1",
+    "@cloudflare/workers-types": "^4.20260430.1",
     "@playwright/test": "1.55.0",
     "@types/react": "~19.1.0",
     "@types/react-dom": "~19.1.0",
+    "@types/react-native-web": "^0.19.3",
     "@vitejs/plugin-react": "^5.0.0",
     "hono": "^4.13.18",
     "react-native": "^0.81.5",
@@ -30,8 +31,7 @@
     "turbo": "^2.5.3",
     "typescript": "^5.8.3",
     "vite": "^7.0.0",
-    "wrangler": "^4.87.0",
-    "@types/react-native-web": "^0.19.3"
+    "wrangler": "^4.87.0"
   },
   "engines": {
     "node": ">=22.16.0"

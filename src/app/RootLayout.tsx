@@ -1,5 +1,10 @@
 import React, { Suspense } from 'react';
-import { Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Outlet,
+  ScrollRestoration,
+  useLocation,
+  useNavigate,
+} from 'react-router-dom';
 
 import { AuthProvider, useAuth } from '@src/context/AuthContext';
 import { AudioProvider } from '@src/context/AudioContext';
@@ -35,7 +40,8 @@ function useRouteGuard() {
     if (isLoading || pathname === '/course') return;
 
     if (isAdminPath(pathname)) {
-      if (!isAuthenticated) navigate('/login?reason=protected', { replace: true });
+      if (!isAuthenticated)
+        navigate('/login?reason=protected', { replace: true });
       else if (!isAdmin) navigate('/home', { replace: true });
       return;
     }
@@ -50,7 +56,14 @@ function useRouteGuard() {
     } else if (hasSeenOnboarding && !PUBLIC_PATHS.has(pathname)) {
       navigate('/login?reason=protected', { replace: true });
     }
-  }, [isAuthenticated, isLoading, hasSeenOnboarding, isAdmin, pathname, navigate]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    hasSeenOnboarding,
+    isAdmin,
+    pathname,
+    navigate,
+  ]);
 }
 
 /**
@@ -80,7 +93,13 @@ function Shell() {
     <AppShell>
       <ScrollRestoration />
       <RouteChrome />
-      <div className={showTabs ? 'web-shell web-shell--tabs' : 'web-shell web-shell--plain'}>
+      <div
+        className={
+          showTabs
+            ? `web-shell web-shell--tabs${pathname === '/course' ? ' web-shell--course' : ''}`
+            : 'web-shell web-shell--plain'
+        }
+      >
         {showTabs ? <TabBar /> : null}
 
         <main className="web-shell__main">
@@ -93,7 +112,7 @@ function Shell() {
           </ErrorBoundary>
         </main>
 
-        {showTabs ? <WebRightRail /> : null}
+        {showTabs && pathname !== '/course' ? <WebRightRail /> : null}
       </div>
     </AppShell>
   );

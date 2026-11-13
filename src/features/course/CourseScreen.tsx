@@ -51,13 +51,10 @@ const TASK_MINUTES: Record<Task, number> = {
   speaking: 1,
 };
 function dateLabel(d: string) {
-  return new Intl.DateTimeFormat('mn-MN', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  }).format(new Date(d + 'T12:00:00Z'));
+  const [y, m, day] = d.split('-').map(Number);
+  return `${y} оны ${m} сарын ${day}`;
 }
+
 function account(token: string | null) {
   try {
     return JSON.parse(
@@ -551,8 +548,7 @@ function CourseWorkspace() {
               )}
               <p role="status">{store.notice}</p>
               <p className="course-subtle">
-                Энэ явц нь хуучин API-ийн XP-ээс тусдаа сургалтын нотолгоо. Оноо
-                автоматаар нэмж тооцохгүй.
+                Хичээлийн явц, давталт, өдөр тутмын хэмнэлээ эндээс удирдана.
               </p>
             </section>
           )}
@@ -588,7 +584,12 @@ function TaskView({
   return (
     <>
       <p className="course-kicker">
-        {lesson.stage.toUpperCase()} · {TASK_NAMES[task]}
+        {lesson.stage === 'hiragana'
+          ? 'ХИРАГАНА'
+          : lesson.stage === 'katakana'
+            ? 'КАТАКАНА'
+            : 'N5'}{' '}
+        · {TASK_NAMES[task]}
       </p>
       <h2>{lesson.title}</h2>
       {done && (
@@ -691,7 +692,6 @@ function TaskView({
             ))}
           </div>
           <StrokeTutor
-            key={character}
             char={character}
             onComplete={() => {
               const all = [...new Set([...written, character])];
@@ -763,19 +763,25 @@ function TaskView({
 function ReviewPanel({ store, ids }: { store: CourseStore; ids: string[] }) {
   const [revealed, setRevealed] = useState(false);
   const today = localDay(new Date(), store.preferences.timezone);
-  const done = new Set(
-    store.events
-      .filter((e) => e.kind === 'review' && e.day === today)
-      .map((e) => (e.kind === 'review' ? e.wordId : '')),
-  );
-  const id = ids.find((id) => !done.has(id));
+  const latest = new Map<string, Extract<CourseEvent, { kind: 'review' }>>();
+  for (const e of store.events)
+    if (e.kind === 'review' && e.day === today) latest.set(e.wordId, e);
+  const done = new Set(ids.filter((id) => (latest.get(id)?.rating ?? 0) > 0));
+  const id =
+    ids.find((id) => !latest.has(id)) ??
+    ids.find((id) => {
+      const e = latest.get(id);
+      return e?.rating === 0 && Date.parse(e.at) + 600000 <= Date.now();
+    });
   const word = id ? WORDS.get(id) : null;
   if (!word)
     return (
       <>
         <p>
           {ids.length
-            ? 'Өнөөдрийн давталтаа хийлээ.'
+            ? done.size === ids.length
+              ? 'Өнөөдрийн давталтаа хийлээ.'
+              : 'Мартсан үгс 10 минутын дараа дахин гарна. Түр завсарлаад эргээд ороорой.'
             : 'Одоогоор давтах үг алга. Шинэ үгийн дасгалын дараа үгс давталтад орно.'}
         </p>
         <small>

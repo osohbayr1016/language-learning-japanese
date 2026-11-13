@@ -222,7 +222,7 @@
 }
 .course-daily-grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
   gap: 22px;
 }
 .course-section-head {
@@ -521,7 +521,7 @@
 }
 .course-library-layout {
   display: grid;
-  grid-template-columns: 1fr 330px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 28px;
   margin-top: 22px;
 }
@@ -757,5 +757,11 @@
   .course-page * {
     transition: none !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .web-shell--course {
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   }
 }

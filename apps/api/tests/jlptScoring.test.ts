@@ -47,3 +47,9 @@ test('missing sections never produce a pass', () => {
     false,
   );
 });
+
+test('listening payload has playable Japanese TTS without exposing answers',async()=>{
+ const {omitExamQuestionAnswer}=await import('../src/routes/exams/examOmit');
+ const q={id:1,section:'listening',question_type:'paper_mcq',audio_text:'がくせいです。',question_text:'Хэн бэ?',question_romaji:'',options:'["Оюутан","Багш"]',correct_answer:'Оюутан'};
+ const payload=omitExamQuestionAnswer(q,'https://japanese.example');assert.match(String(payload.audio_url),/\/api\/audio\/tts\?/);assert.ok(!('correct_answer'in payload));
+});

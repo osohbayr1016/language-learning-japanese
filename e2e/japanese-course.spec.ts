@@ -60,7 +60,10 @@ test('guest course works without account or API, with locked future lessons', as
     page.getByRole('heading', { name: /Япон хэлний дэвтэр/ }),
   ).toBeVisible();
   await expect(page.locator('.course-ring')).toContainText('0/4');
-  await page.screenshot({path:test.info().outputPath('daily-course-desktop.png'),fullPage:true});
+  await page.screenshot({
+    path: test.info().outputPath('daily-course-desktop.png'),
+    fullPage: true,
+  });
   await page.getByRole('button', { name: 'Хөтөлбөр', exact: true }).click();
   await expect(
     page.getByRole('button').filter({ hasText: 'Хирагана · か き く け こ' }),
@@ -157,13 +160,11 @@ test('invalid progress imports cannot overwrite an existing plan', async ({
   page,
 }) => {
   await page.goto('/course?tab=settings');
-  await page
-    .locator('input[type=file]')
-    .setInputFiles({
-      name: 'invalid.json',
-      mimeType: 'application/json',
-      buffer: Buffer.from('{"version":1,"events":[{"kind":"task"}]}'),
-    });
+  await page.locator('input[type=file]').setInputFiles({
+    name: 'invalid.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{"version":1,"events":[{"kind":"task"}]}'),
+  });
   await expect(
     page.getByText('Япон сургалтын экспортын файл биш байна.', { exact: true }),
   ).toBeVisible();
@@ -191,7 +192,11 @@ test('360 px layout remains inside viewport across all course sections', async (
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   await page.goto('/course');
-  await page.screenshot({path:test.info().outputPath('daily-course-mobile.png'),fullPage:true});
+  await expect(page.locator('.course-page')).toBeVisible();
+  await page.screenshot({
+    path: test.info().outputPath('daily-course-mobile.png'),
+    fullPage: true,
+  });
   for (const name of [
     'Өнөөдөр',
     'Хөтөлбөр',

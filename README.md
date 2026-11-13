@@ -8,7 +8,9 @@ No runtime dependency on the Chinese learning repository or Mandarin stroke data
 
 Node 22.16+ (Node 22 LTS in CI). The root `package-lock.json` is canonical for
 web/API development and validation. Native Expo development uses the optional
-pnpm workspace; it has its own dependencies.
+pnpm workspace; it has its own dependencies. Run
+`pnpm --config.package-manager-strict=false --config.manage-package-manager-versions=false install --frozen-lockfile` for that
+workspace; its lockfile is also reconciled with the manifests.
 
 ```sh
 npm ci
