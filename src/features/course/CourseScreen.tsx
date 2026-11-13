@@ -914,13 +914,13 @@ function Library() {
         <KanjiDictionary />
       ) : kind === 'words' ? (
         <>
-          <label className="course-search">
-            Үгийн түвшин
-            <select value={wordStage} onChange={e => setWordStage(e.target.value as Stage | 'all')}>
+          <div className="course-search">
+            <label htmlFor="course-word-stage">Үгийн түвшин</label>
+            <select id="course-word-stage" value={wordStage} onChange={e => setWordStage(e.target.value as Stage | 'all')}>
               <option value="all">Бүх хичээл</option>
               {COURSE_STAGES.map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}
             </select>
-          </label>
+          </div>
           <p role="status">{wordMatches.length} хичээлийн карт · {Math.min(wordPage + 1, wordPages)} / {wordPages} хуудас</p>
           {!wordMatches.length && <p>Үг олдсонгүй. Хайлт эсвэл түвшнээ өөрчлөөрэй.</p>}
           <div className="course-vocab-grid">
