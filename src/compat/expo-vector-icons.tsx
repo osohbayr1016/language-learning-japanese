@@ -1,92 +1,88 @@
-import React from 'react';
-import { Text } from 'react-native-web';
-import glyphMap from '@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/Ionicons.json';
-import fontUrl from '@expo/vector-icons/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf?url';
-
-/**
- * Ionicons, without @expo/vector-icons.
- *
- * Two reasons this module exists rather than the real package:
- *
- *  1. It ships untranspiled JSX inside .js files, which no standard web
- *     bundler will parse.
- *  2. Importing from its barrel pulled in EVERY icon family — the old build
- *     emitted 19 font files totalling 3,981 KB, of which this app used exactly
- *     one. Ionicons alone is 389 KB.
- *
- * The glyph map (name -> codepoint) and the font both already ship inside the
- * package, so this renders the same glyphs with none of the weight.
- *
- * Longer term the 48 icons this app actually uses would be better as inline
- * SVG — single-digit KB, and no flash of unstyled icon while a font loads.
- */
+import React, { useEffect, useState } from "react";
+import glyphMap from "@expo/vector-icons/build/vendor/react-native-vector-icons/glyphmaps/Ionicons.json";
+import core from "./icon-core.json";
+import { toCssStyle } from "./style";
 
 export type IoniconName = keyof typeof glyphMap;
-
-const FONT_FAMILY = 'Ionicons';
-
-/** Injected once, on first render, rather than at import time. */
-let fontInjected = false;
-function ensureFont() {
-  if (fontInjected || typeof document === 'undefined') return;
-  fontInjected = true;
-  const style = document.createElement('style');
-  style.textContent = `@font-face{font-family:"${FONT_FAMILY}";src:url("${fontUrl}") format("truetype");font-display:block;}`;
-  document.head.appendChild(style);
-}
-
 export type IconProps = {
   name: IoniconName;
   size?: number;
   color?: string;
-  /** A React Native style prop — may be an object, an array, or nested arrays. */
   style?: unknown;
   accessibilityLabel?: string;
   testID?: string;
 };
 
+// Primary navigation is immediately available. Less common outlines load once,
+// without a blocking icon font or pulling every icon family into the bundle.
+let paths: Record<string, string> = core;
+let pending: Promise<Record<string, string>> | undefined;
+function loadPaths() {
+  return (pending ??= fetch("/icons.json")
+    .then(async (response) => {
+      if (!response.ok) throw new Error("Icon outlines unavailable");
+      paths = { ...paths, ...(await response.json()) };
+      return paths;
+    })
+    .catch(() => {
+      pending = undefined;
+      return paths;
+    }));
+}
+
 export function Ionicons({
   name,
   size = 24,
-  color = 'currentColor',
+  color = "currentColor",
   style,
   accessibilityLabel,
   testID,
 }: IconProps) {
-  ensureFont();
-  const codepoint = glyphMap[name];
-
-  if (codepoint == null) {
-    // An unknown name used to render an invisible box. Better to render nothing
-    // and leave the layout intact than to show a tofu glyph.
-    return null;
-  }
-
-  // react-native-web's Text is used rather than a raw <span> so that callers
-  // can keep passing RN style arrays; flattening them is its job, not ours.
+  const [path, setPath] = useState(paths[name]);
+  useEffect(() => {
+    let alive = true;
+    setPath(paths[name]);
+    if (!paths[name])
+      void loadPaths().then((all) => {
+        if (alive) setPath(all[name]);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [name]);
   return (
-    <Text
-      testID={testID}
-      accessibilityLabel={accessibilityLabel}
+    <span
+      data-testid={testID}
+      aria-label={accessibilityLabel}
       aria-hidden={accessibilityLabel ? undefined : true}
-      style={[
-        {
-          fontFamily: `"${FONT_FAMILY}"`,
-          fontSize: size,
-          lineHeight: size,
-          color,
-          textAlign: 'center',
-          userSelect: 'none',
-          flexShrink: 0,
-        },
-        style as never,
-      ]}
+      role={accessibilityLabel ? "img" : undefined}
+      style={{
+        display: "inline-flex",
+        width: size,
+        height: size,
+        flexShrink: 0,
+        color,
+        verticalAlign: "middle",
+        ...toCssStyle(style),
+      }}
     >
-      {String.fromCodePoint(codepoint)}
-    </Text>
+      <svg
+        viewBox="0 0 512 512"
+        width="100%"
+        height="100%"
+        focusable="false"
+        aria-hidden="true"
+      >
+        {path && (
+          <path
+            d={path}
+            fill="currentColor"
+            transform="translate(0 454) scale(1 -1)"
+          />
+        )}
+      </svg>
+    </span>
   );
 }
-
 Ionicons.glyphMap = glyphMap;
-
 export default { Ionicons };

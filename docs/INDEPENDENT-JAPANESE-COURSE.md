@@ -52,7 +52,8 @@ or replaced with Japanese-only contracts. Database migration history is preserve
 
 1. Back up production D1 before applying changes.
 2. Apply outstanding migrations, including `0031_japanese_course.sql`,
-   `0032_jlpt_scoring.sql`, `0033_japanese_foundation_checkpoint.sql`.
+   `0032_jlpt_scoring.sql`, `0033_japanese_foundation_checkpoint.sql`,
+   `0034_recovery_and_course_indexes.sql`.
 3. `0032` unpublishes old templates with a non-180 max; it retains their history.
    This is intentional: old results must not be silently relabeled as JLPT.
 4. Deploy API, then web including the bundled stroke/dictionary data and headers.
@@ -90,10 +91,12 @@ Teacher review in Japanese and Mongolian is still needed.
 
 Next content work: broaden N5/N4 words and graded listening, independently review
 Mongolian explanations, add held-out full-length mock banks, and author N3/N2/N1
-units. Acoustic pronunciation assessment needs a separately validated speech
-alignment/scoring service; browser transcription alone cannot supply it.
+units. Configured Azure acoustic assessment is implemented in the resilience waves;
+provider activation and validation against real Japanese reference recordings
+remain release work. Browser transcription alone does not measure acoustics.
 
 Sources consulted for scope/basic grammar, without copying curriculum exercises:
+
 - https://www.jlpt.jp/e/faq/
 - https://www.irodori.jpf.go.jp/assets/data/elementary02/pdf/Z_contents_en.pdf
 
@@ -129,3 +132,9 @@ continuation, the N4 prerequisite boundary, distinct word evidence, kana reading
 support, kanji deep links, absence of a kana sound grid for N4 kanji, word-library
 pagination/filter/search, and server-side N4 rejection/acceptance with idempotent
 account-isolated sync.
+
+## Resilience and usability waves
+
+See [implementation waves](IMPLEMENTATION-WAVES.md) for IndexedDB migration, draft
+resume, unified navigation, recovery, configured acoustic assessment, 12 short
+listening conversations, reading support, offline packs and release safeguards.

@@ -70,7 +70,8 @@ Browser recognition and native recognition use `ja-JP`. Only final transcripts
 are graded; permission denial, network errors and interim guesses are not grades.
 Short words require an exact match; longer targets use a stricter threshold.
 Recognition checks the words transcribed, **not phoneme accuracy or pitch accent**.
-No paid speech API or AI key is required. The browser's speech provider may process
+Transcript practice can use the browser provider. Optional server Japanese TTS
+and acoustic assessment require SPEECH_KEY and SPEECH_REGION. The browser's speech provider may process
 microphone audio remotely. This application does not save raw recordings.
 When no Japanese voice is installed, course playback uses the dedicated Japanese
 API’s cached Japanese TTS. Browser support varies; unavailable audio/recognition
@@ -92,15 +93,18 @@ npm run api:dev
 For production, back up D1 and apply outstanding migrations **before** API and web
 rollout. This change adds `0031` (course events/settings), `0032` (JLPT score
 sections and old-template quarantine), and `0033` (original foundation checkpoint).
+Migration `0034` adds account recovery, rate limits and session revocation.
 It does not automatically deploy or mutate the live database.
 
 Web deployment uses `npm run deploy`. The existing main-branch deploy workflow
-is preserved. Native Expo builds remain optional and need separate device QA.
+is preserved, with an API-schema readiness check before web rollout. A manual
+release workflow applies migrations and deploys the API before the web. Native
+Expo builds remain optional and need separate device QA.
 
 ## Data credits
 
 Original curriculum text is stored in `packages/curriculum/src/lessons.json` and
- `kanji.json`, and their append-only `extension-*.json` companions. Keep
+`kanji.json`, and their append-only `extension-*.json` companions. Keep
 content additions original or appropriately licensed. Published IDs and answer
 positions are immutable; compatibility fingerprints protect the original 50 units.
 This curriculum's N5/N4 labels are editorial sequencing, not an official JLPT
@@ -119,3 +123,11 @@ Independent Japanese/Mongolian teacher review is still required.
 - Refresh scripts accept local upstream checkouts:
   `python scripts/import-kanjivg.py /path/to/kanjivg` and
   `python scripts/import-kanji-dictionary.py /path/to/kanji-data`.
+
+## Resilient study and optional services
+
+IndexedDB keeps per-account events and unfinished quiz/writing drafts. The course
+also includes a mistake notebook, timed kana recognition, 12 short listening
+conversations, furigana/inline reading support, catch-up recommendations, weekly
+reports and a user-requested offline pack. See
+[implementation waves and release configuration](docs/IMPLEMENTATION-WAVES.md).

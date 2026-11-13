@@ -7,8 +7,8 @@ on:
     branches: [main]
     # Changes that cannot affect the built site should not spend a deploy.
     paths-ignore:
-      - '**/*.md'
-      - '.gitignore'
+      - "**/*.md"
+      - ".gitignore"
   workflow_dispatch:
 
 # A second push while one is deploying supersedes it, rather than racing to
@@ -28,7 +28,7 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: '22'
+          node-version: "22"
           cache: npm
 
       # `npm ci` installs exactly what package-lock.json pins, and fails loudly
@@ -58,6 +58,10 @@ jobs:
             echo "::warning::CLOUDFLARE_API_TOKEN is not set, so this push was built but not deployed. Add it under Settings → Secrets and variables → Actions, or run 'npm run deploy' locally."
           fi
 
+      - name: Verify API is ready before web rollout
+        if: steps.token.outputs.present == 'true'
+        run: node scripts/check-release-api.mjs
+
       - name: Deploy to Cloudflare Workers
         if: steps.token.outputs.present == 'true'
         uses: cloudflare/wrangler-action@v3
@@ -65,5 +69,5 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           # Use the wrangler pinned in package.json rather than letting the
           # action fetch its own, so CI and `npm run deploy` are the same tool.
-          wranglerVersion: '4.87.0'
+          wranglerVersion: "4.87.0"
           command: deploy --env production

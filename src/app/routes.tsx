@@ -1,9 +1,9 @@
-import React from 'react';
-import type { RouteObject } from 'react-router-dom';
+import React from "react";
+import { Navigate, type RouteObject } from "react-router-dom";
 
-import AuthLayout from './layouts/AuthLayout';
-import OnboardingLayout from './layouts/OnboardingLayout';
-import AdminLayout from './layouts/AdminLayout';
+import AuthLayout from "./layouts/AuthLayout";
+import OnboardingLayout from "./layouts/OnboardingLayout";
+import AdminLayout from "./layouts/AdminLayout";
 
 /**
  * Every URL the site serves.
@@ -26,110 +26,280 @@ const lazy = (loader: () => Promise<{ default: React.ComponentType }>) =>
 
 export const routes: RouteObject[] = [
   // ── Entry ────────────────────────────────────────────────────────────────
-  { index: true, Component: lazy(() => import('./IndexRedirect')) },
+  { index: true, Component: lazy(() => import("./IndexRedirect")) },
 
   // ── Auth ─────────────────────────────────────────────────────────────────
   {
     Component: AuthLayout,
     children: [
-      { path: 'login', Component: lazy(() => import('@src/features/auth/LoginScreen')) },
-      { path: 'register', Component: lazy(() => import('@src/features/auth/RegisterScreen')) },
+      {
+        path: "login",
+        Component: lazy(() => import("@src/features/auth/LoginScreen")),
+      },
+      {
+        path: "register",
+        Component: lazy(() => import("@src/features/auth/RegisterScreen")),
+      },
     ],
   },
   {
     Component: OnboardingLayout,
     children: [
-      { path: 'onboarding', Component: lazy(() => import('@src/features/onboarding/OnboardingScreen')) },
+      {
+        path: "onboarding",
+        Component: lazy(
+          () => import("@src/features/onboarding/OnboardingScreen"),
+        ),
+      },
     ],
   },
-  { path: 'setup', Component: lazy(() => import('@src/features/setup/SetupScreen')) },
+  {
+    path: "setup",
+    Component: lazy(() => import("@src/features/setup/SetupScreen")),
+  },
+
+  {
+    path: "forgot-password",
+    Component: lazy(() => import("../features/auth/PasswordRecovery")),
+  },
+  {
+    path: "reset-password",
+    Component: lazy(() => import("../features/auth/PasswordRecovery")),
+  },
 
   // ── Main sections (the tab bar) ──────────────────────────────────────────
-  { path: 'course', Component: lazy(() => import('../features/course/CourseScreen')) },
-  { path: 'home', Component: lazy(() => import('@src/features/home/HomeScreen')) },
-  { path: 'study', Component: lazy(() => import('@src/features/study/StudyHubScreen')) },
-  { path: 'kanji', Component: lazy(() => import('@src/features/kanji/KanjiScreen')) },
-  { path: 'kana', Component: lazy(() => import('@src/features/kana/KanaHubScreen')) },
-  { path: 'kana/checkpoint', Component: lazy(() => import('@src/features/kana/KanaCheckpointScreen')) },
-  { path: 'games', Component: lazy(() => import('@src/features/games/GamesHubScreen')) },
-  { path: 'profile', Component: lazy(() => import('@src/features/profile/ProfileScreen')) },
+  {
+    path: "course",
+    Component: lazy(() => import("../features/course/CourseScreen")),
+  },
+  {
+    path: "home",
+    Component: lazy(() => import("@src/features/home/HomeScreen")),
+  },
+  {
+    path: "study",
+    Component: lazy(() => import("@src/features/study/StudyHubScreen")),
+  },
+  {
+    path: "kanji",
+    Component: lazy(() => import("@src/features/kanji/KanjiScreen")),
+  },
+  {
+    path: "kana",
+    Component: lazy(() => import("@src/features/kana/KanaHubScreen")),
+  },
+  {
+    path: "kana/checkpoint",
+    Component: lazy(() => import("@src/features/kana/KanaCheckpointScreen")),
+  },
+  {
+    path: "games",
+    Component: lazy(() => import("@src/features/games/GamesHubScreen")),
+  },
+  {
+    path: "profile",
+    Component: () => <Navigate to="/course?tab=settings" replace />,
+  },
 
   // ── Study ────────────────────────────────────────────────────────────────
-  { path: 'study/flashcard', Component: lazy(() => import('@screens/study/flashcard')) },
-  { path: 'study/flashcards', Component: lazy(() => import('@screens/study/flashcards')) },
-  { path: 'study/learn', Component: lazy(() => import('@screens/study/learn')) },
-  { path: 'study/weak', Component: lazy(() => import('@screens/study/weak')) },
-  { path: 'study/write', Component: lazy(() => import('@screens/study/write')) },
-  { path: 'study/writer', Component: lazy(() => import('@screens/study/writer')) },
-  { path: 'study/speak', Component: lazy(() => import('@screens/study/speak')) },
-  { path: 'study/mock-exam', Component: lazy(() => import('@screens/study/mock-exam')) },
-  { path: 'study/kanji', Component: lazy(() => import('@screens/study/kanji')) },
-  { path: 'study/grammar', Component: lazy(() => import('@screens/study/grammar/index')) },
-  { path: 'study/grammar/:id', Component: lazy(() => import('@screens/study/grammar/[id]')) },
-  { path: 'study/loop', Component: lazy(() => import('@screens/study/loop')) },
-  { path: 'study/ai-reading', Component: lazy(() => import('@screens/study/ai-reading')) },
-  { path: 'study/category-words', Component: lazy(() => import('@screens/study/category-words')) },
+  {
+    path: "study/flashcard",
+    Component: lazy(() => import("@screens/study/flashcard")),
+  },
+  {
+    path: "study/flashcards",
+    Component: lazy(() => import("@screens/study/flashcards")),
+  },
+  {
+    path: "study/learn",
+    Component: lazy(() => import("@screens/study/learn")),
+  },
+  { path: "study/weak", Component: lazy(() => import("@screens/study/weak")) },
+  {
+    path: "study/write",
+    Component: lazy(() => import("@screens/study/write")),
+  },
+  {
+    path: "study/writer",
+    Component: lazy(() => import("@screens/study/writer")),
+  },
+  {
+    path: "study/speak",
+    Component: lazy(() => import("@screens/study/speak")),
+  },
+  {
+    path: "study/mock-exam",
+    Component: lazy(() => import("@screens/study/mock-exam")),
+  },
+  {
+    path: "study/kanji",
+    Component: lazy(() => import("@screens/study/kanji")),
+  },
+  {
+    path: "study/grammar",
+    Component: lazy(() => import("@screens/study/grammar/index")),
+  },
+  {
+    path: "study/grammar/:id",
+    Component: lazy(() => import("@screens/study/grammar/[id]")),
+  },
+  { path: "study/loop", Component: lazy(() => import("@screens/study/loop")) },
+  {
+    path: "study/ai-reading",
+    Component: lazy(() => import("@screens/study/ai-reading")),
+  },
+  {
+    path: "study/category-words",
+    Component: lazy(() => import("@screens/study/category-words")),
+  },
 
   // ── Games ────────────────────────────────────────────────────────────────
-  { path: 'games/match', Component: lazy(() => import('@screens/games/match')) },
-  { path: 'games/sentence', Component: lazy(() => import('@screens/games/sentence')) },
-  { path: 'games/stroke', Component: lazy(() => import('@screens/games/stroke')) },
-  { path: 'games/translate', Component: lazy(() => import('@screens/games/translate')) },
-  { path: 'games/missing-word', Component: lazy(() => import('@screens/games/missing-word')) },
-  { path: 'games/missing-stroke', Component: lazy(() => import('@screens/games/missing-stroke')) },
+  {
+    path: "games/match",
+    Component: lazy(() => import("@screens/games/match")),
+  },
+  {
+    path: "games/sentence",
+    Component: lazy(() => import("@screens/games/sentence")),
+  },
+  {
+    path: "games/stroke",
+    Component: lazy(() => import("@screens/games/stroke")),
+  },
+  {
+    path: "games/translate",
+    Component: lazy(() => import("@screens/games/translate")),
+  },
+  {
+    path: "games/missing-word",
+    Component: lazy(() => import("@screens/games/missing-word")),
+  },
+  {
+    path: "games/missing-stroke",
+    Component: lazy(() => import("@screens/games/missing-stroke")),
+  },
 
   // ── Content ──────────────────────────────────────────────────────────────
-  { path: 'kanji/:id', Component: lazy(() => import('@screens/kanji/[id]')) },
-  { path: 'lessons', Component: lazy(() => import('@screens/lessons/index')) },
-  { path: 'lessons/:id', Component: lazy(() => import('@screens/lessons/[id]')) },
-  { path: 'cartoons/:id', Component: lazy(() => import('@screens/cartoons/[id]')) },
+  { path: "kanji/:id", Component: lazy(() => import("@screens/kanji/[id]")) },
+  { path: "lessons", Component: lazy(() => import("@screens/lessons/index")) },
+  {
+    path: "lessons/:id",
+    Component: lazy(() => import("@screens/lessons/[id]")),
+  },
+  {
+    path: "cartoons/:id",
+    Component: lazy(() => import("@screens/cartoons/[id]")),
+  },
 
   // ── Profile ──────────────────────────────────────────────────────────────
-  { path: 'profile/avatar', Component: lazy(() => import('@screens/profile/avatar')) },
-  { path: 'profile/insights', Component: lazy(() => import('@screens/profile/insights')) },
-  { path: 'profile/settings', Component: lazy(() => import('@screens/profile/settings')) },
-  { path: 'profile/vocabulary', Component: lazy(() => import('@screens/profile/vocabulary')) },
-  { path: 'profile/word/:id', Component: lazy(() => import('@screens/profile/word/[id]')) },
-  { path: 'profile/learned-words', Component: lazy(() => import('@screens/profile/learned-words')) },
-  { path: 'profile/learned-word-detail', Component: lazy(() => import('@screens/profile/learned-word-detail')) },
-  { path: 'profile/learned-kanjis', Component: lazy(() => import('@screens/profile/learned-kanjis')) },
+  {
+    path: "profile/avatar",
+    Component: lazy(() => import("@screens/profile/avatar")),
+  },
+  {
+    path: "profile/insights",
+    Component: () => <Navigate to="/course?tab=milestones" replace />,
+  },
+  {
+    path: "profile/settings",
+    Component: lazy(() => import("@screens/profile/settings")),
+  },
+  {
+    path: "profile/vocabulary",
+    Component: lazy(() => import("@screens/profile/vocabulary")),
+  },
+  {
+    path: "profile/word/:id",
+    Component: lazy(() => import("@screens/profile/word/[id]")),
+  },
+  {
+    path: "profile/learned-words",
+    Component: lazy(() => import("@screens/profile/learned-words")),
+  },
+  {
+    path: "profile/learned-word-detail",
+    Component: lazy(() => import("@screens/profile/learned-word-detail")),
+  },
+  {
+    path: "profile/learned-kanjis",
+    Component: lazy(() => import("@screens/profile/learned-kanjis")),
+  },
 
   // ── Admin ────────────────────────────────────────────────────────────────
   // Guarded in RootLayout: signed in AND is_admin, else bounced.
   {
     Component: AdminLayout,
     children: [
-      { path: 'admin', Component: lazy(() => import('@screens/admin/index')) },
-      { path: 'admin/dashboard', Component: lazy(() => import('@screens/admin/dashboard')) },
-      { path: 'admin/cartoons', Component: lazy(() => import('@screens/admin/cartoons')) },
-      { path: 'admin/exam-import', Component: lazy(() => import('@screens/admin/exam-import')) },
-      { path: 'admin/jlpt-n5-lessons', Component: lazy(() => import('@screens/admin/jlpt-n5-lessons')) },
-      { path: 'admin/learning-path', Component: lazy(() => import('@screens/admin/learning-path')) },
-      { path: 'admin/lesson-html-import', Component: lazy(() => import('@screens/admin/lesson-html-import')) },
-      { path: 'admin/lesson/:id', Component: lazy(() => import('@screens/admin/lesson/[id]')) },
-      { path: 'admin/lesson-preview/:id', Component: lazy(() => import('@screens/admin/lesson-preview/[id]')) },
-      { path: 'admin/users', Component: lazy(() => import('@screens/admin/users')) },
-      { path: 'admin/vocabulary', Component: lazy(() => import('@screens/admin/vocabulary')) },
-      { path: 'admin/word/:id', Component: lazy(() => import('@screens/admin/word/[id]')) },
-      { path: 'admin/words', Component: lazy(() => import('@screens/admin/words')) },
-      { path: 'admin/words/new', Component: lazy(() => import('@screens/admin/words/new')) },
+      { path: "admin", Component: lazy(() => import("@screens/admin/index")) },
+      {
+        path: "admin/dashboard",
+        Component: lazy(() => import("@screens/admin/dashboard")),
+      },
+      {
+        path: "admin/cartoons",
+        Component: lazy(() => import("@screens/admin/cartoons")),
+      },
+      {
+        path: "admin/exam-import",
+        Component: lazy(() => import("@screens/admin/exam-import")),
+      },
+      {
+        path: "admin/jlpt-n5-lessons",
+        Component: lazy(() => import("@screens/admin/jlpt-n5-lessons")),
+      },
+      {
+        path: "admin/learning-path",
+        Component: lazy(() => import("@screens/admin/learning-path")),
+      },
+      {
+        path: "admin/lesson-html-import",
+        Component: lazy(() => import("@screens/admin/lesson-html-import")),
+      },
+      {
+        path: "admin/lesson/:id",
+        Component: lazy(() => import("@screens/admin/lesson/[id]")),
+      },
+      {
+        path: "admin/lesson-preview/:id",
+        Component: lazy(() => import("@screens/admin/lesson-preview/[id]")),
+      },
+      {
+        path: "admin/users",
+        Component: lazy(() => import("@screens/admin/users")),
+      },
+      {
+        path: "admin/vocabulary",
+        Component: lazy(() => import("@screens/admin/vocabulary")),
+      },
+      {
+        path: "admin/word/:id",
+        Component: lazy(() => import("@screens/admin/word/[id]")),
+      },
+      {
+        path: "admin/words",
+        Component: lazy(() => import("@screens/admin/words")),
+      },
+      {
+        path: "admin/words/new",
+        Component: lazy(() => import("@screens/admin/words/new")),
+      },
     ],
   },
 
-  { path: '*', Component: lazy(() => import('./NotFound')) },
+  { path: "*", Component: lazy(() => import("./NotFound")) },
 ];
 
 /** Legacy expo-router URLs, so an old bookmark or shared link still lands. */
 export const legacyRedirects: Record<string, string> = {
-  '/(tabs)/home': '/home',
-  '/(tabs)/study': '/study',
-  '/(tabs)/kanji': '/kanji',
+  "/(tabs)/home": "/home",
+  "/(tabs)/study": "/study",
+  "/(tabs)/kanji": "/kanji",
   // The games slot in the native tab bar now holds the kana hub.
-  '/(tabs)/games': '/kana',
-  '/(tabs)/kana': '/kana',
-  '/(tabs)/profile': '/profile',
-  '/(auth)/login': '/login',
-  '/(auth)/register': '/register',
-  '/(onboarding)': '/onboarding',
-  '/(setup)': '/setup',
+  "/(tabs)/games": "/kana",
+  "/(tabs)/kana": "/kana",
+  "/(tabs)/profile": "/profile",
+  "/(auth)/login": "/login",
+  "/(auth)/register": "/register",
+  "/(onboarding)": "/onboarding",
+  "/(setup)": "/setup",
 };

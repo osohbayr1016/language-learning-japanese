@@ -1,0 +1,61 @@
+name: Release Japanese API and web
+on:
+  workflow_dispatch:
+    inputs:
+      backup_reference:
+        description: Private production backup reference verified before migration (never paste a secret or download URL)
+        required: true
+        type: string
+concurrency:
+  group: release-japanese
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Require main and a recorded backup
+        env:
+          BACKUP_REFERENCE: ${{ inputs.backup_reference }}
+        run: |
+          test "$GITHUB_REF" = refs/heads/main
+          test -n "$BACKUP_REFERENCE"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run api:typecheck
+      - run: npm test
+      - run: npm run check:isolation
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Apply API migrations
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/api
+          wranglerVersion: "4.87.0"
+          command: d1 migrations apply nihongo-mn-db --remote --env production
+      - name: Deploy Japanese API
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/api
+          wranglerVersion: "4.87.0"
+          command: deploy --env production
+      - name: Verify API contract
+        run: node scripts/check-release-api.mjs
+      - name: Deploy web after API
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.87.0"
+          command: deploy --env production

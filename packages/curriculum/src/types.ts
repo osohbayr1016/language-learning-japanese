@@ -1,11 +1,11 @@
-export type Stage = 'hiragana' | 'katakana' | 'n5' | 'n4';
+export type Stage = "hiragana" | "katakana" | "n5" | "n4";
 export type Task =
-  | 'words'
-  | 'reading'
-  | 'writing'
-  | 'quiz'
-  | 'listening'
-  | 'speaking';
+  | "words"
+  | "reading"
+  | "writing"
+  | "quiz"
+  | "listening"
+  | "speaking";
 export type Question = {
   prompt: string;
   options: string[];
@@ -46,35 +46,52 @@ export type Preferences = {
   minutes: number;
   daysPerWeek: number;
   timezone: string;
-  target: 'N5' | 'N4' | 'N3' | 'N2' | 'N1';
+  target: "N5" | "N4" | "N3" | "N2" | "N1";
+  examDate?: string;
 };
 export type CourseEvent = {
   id: string;
   at: string;
   day: string;
 } & (
-  | { kind: 'plan'; lessonId: string; reviews: string[] }
+  | { kind: "plan"; lessonId: string; reviews: string[] }
   | {
-      kind: 'task';
+      kind: "task" | "attempt";
       lessonId: string;
       task: Task;
       answers?: number[];
       characters?: string[];
       transcript?: string;
     }
-  | { kind: 'review'; wordId: string; rating: 0 | 1 | 2 | 3 }
-  | { kind: 'placement'; answers: number[] }
-  | { kind: 'study'; seconds: number }
+  | {
+      kind: "remedy";
+      lessonId: string;
+      task: Task;
+      question: number;
+      answer: number;
+    }
+  | {
+      kind: "fluency";
+      script: "hiragana" | "katakana";
+      correct: number;
+      total: number;
+      seconds: number;
+    }
+  | { kind: "dialogue"; clipId: string; answer: number }
+  | { kind: "expose"; wordId: string }
+  | { kind: "review"; wordId: string; rating: 0 | 1 | 2 | 3 }
+  | { kind: "placement"; answers: number[] }
+  | { kind: "study"; seconds: number }
 );
 export const DEFAULT_PREFERENCES: Preferences = {
   minutes: 20,
   daysPerWeek: 7,
-  timezone: 'Asia/Ulaanbaatar',
-  target: 'N2',
+  timezone: "Asia/Ulaanbaatar",
+  target: "N2",
 };
 
 export type EventInput = CourseEvent extends infer E
   ? E extends CourseEvent
-    ? Omit<E, 'id' | 'at' | 'day'>
+    ? Omit<E, "id" | "at" | "day">
     : never
   : never;

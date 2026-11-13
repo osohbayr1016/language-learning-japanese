@@ -2,7 +2,10 @@
 <html lang="mn">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="theme-color" content="#2E8B57" />
     <meta
       name="description"
@@ -18,14 +21,27 @@
     <title>Япон хэл сурах</title>
 
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;600;700&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      href="/fonts/nihongo-ui-regular.woff"
+      as="font"
+      type="font/woff"
+      crossorigin
     />
-
     <style>
+      @font-face {
+        font-family: NihongoJP;
+        src: url("/fonts/nihongo-jp.woff") format("woff");
+        font-weight: 400;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: NihongoUI;
+        src: url("/fonts/nihongo-ui-regular.woff") format("woff");
+        font-weight: 400;
+        font-display: swap;
+      }
+
       :root {
         --plum: #2e8b57;
         --plum-dark: #1f6b42;
@@ -54,16 +70,33 @@
         overflow-x: hidden;
         overflow-y: auto;
         background: var(--paper);
-        background-image: radial-gradient(circle at 50% -120px, #effaf2 0, transparent 440px);
+        background-image: radial-gradient(
+          circle at 50% -120px,
+          #effaf2 0,
+          transparent 440px
+        );
         background-attachment: fixed;
         color: var(--ink);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         text-rendering: optimizeLegibility;
-        font-family: "Noto Sans", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", Roboto, sans-serif;
+        font-family:
+          NihongoUI,
+          NihongoJP,
+          "Noto Sans JP",
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
       }
 
+      /* Native-web Text defaults use platform-only families. Keep ordinary labels
+         on the bundled Cyrillic font; inline icon/custom fonts retain priority. */
+      #root [dir="auto"]:not([style*="font-family"]):not([aria-hidden="true"]) {
+        font-family: NihongoUI, NihongoJP, "Noto Sans JP", Arial, sans-serif;
+      }
       #root {
         display: flex;
         flex-direction: column;
@@ -171,7 +204,10 @@
         border-radius: 14px;
         text-decoration: none;
         color: var(--muted);
-        transition: transform 120ms ease, background-color 160ms ease, color 160ms ease;
+        transition:
+          transform 120ms ease,
+          background-color 160ms ease,
+          color 160ms ease;
       }
 
       .tabbar__item:hover {
@@ -189,7 +225,9 @@
         width: 46px;
         height: 28px;
         border-radius: 999px;
-        transition: background-color 160ms ease, transform 160ms ease;
+        transition:
+          background-color 160ms ease,
+          transform 160ms ease;
       }
 
       .tabbar__item.is-active .tabbar__pill {
@@ -219,7 +257,7 @@
           min-height: calc(100% - 40px);
           border-radius: 26px;
           border: 1px solid var(--border);
-          box-shadow: 0 18px 48px rgba(23, 33, 29, 0.10);
+          box-shadow: 0 18px 48px rgba(23, 33, 29, 0.1);
           overflow: hidden;
         }
       }
@@ -233,7 +271,10 @@
 
         .web-shell--tabs {
           display: grid;
-          grid-template-columns: var(--sidebar-w) minmax(0, var(--content-w)) var(--rail-w);
+          grid-template-columns: var(--sidebar-w) minmax(
+              0,
+              var(--content-w)
+            ) var(--rail-w);
           gap: 32px;
           align-items: start;
           justify-content: center;
@@ -293,7 +334,7 @@
           place-items: center;
           background: var(--plum);
           color: #fff;
-          font-family: "Noto Sans JP", sans-serif;
+          font-family: NihongoJP, "Noto Sans JP", sans-serif;
           font-size: 24px;
           font-weight: 800;
           border-bottom: 4px solid var(--plum-dark);
@@ -592,7 +633,12 @@
       .skeleton__line,
       .skeleton__card {
         border-radius: 12px;
-        background: linear-gradient(90deg, #eae5e0 25%, #f3efeb 37%, #eae5e0 63%);
+        background: linear-gradient(
+          90deg,
+          #eae5e0 25%,
+          #f3efeb 37%,
+          #eae5e0 63%
+        );
         background-size: 400% 100%;
         animation: skeleton-shimmer 1.4s linear infinite;
       }
@@ -685,7 +731,8 @@
         color: var(--ink);
         background: #fff;
         border: 2px solid #cfcbc5;
-        transition: transform 140ms cubic-bezier(0.2, 0, 0, 1),
+        transition:
+          transform 140ms cubic-bezier(0.2, 0, 0, 1),
           background-color 140ms cubic-bezier(0.2, 0, 0, 1),
           box-shadow 140ms cubic-bezier(0.2, 0, 0, 1);
       }
@@ -738,7 +785,12 @@
       #web-boot-splash .boot-line {
         height: 10px;
         border-radius: 6px;
-        background: linear-gradient(90deg, #eae5e0 25%, #f3efeb 37%, #eae5e0 63%);
+        background: linear-gradient(
+          90deg,
+          #eae5e0 25%,
+          #f3efeb 37%,
+          #eae5e0 63%
+        );
         background-size: 400% 100%;
         margin-bottom: 8px;
         animation: boot-shimmer 1.4s linear infinite;

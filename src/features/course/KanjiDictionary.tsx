@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { KANJI } from '../../../packages/curriculum/src';
-import { StrokeTutor } from './Exercises';
+import React, { useEffect, useMemo, useState } from "react";
+import { KANJI } from "../../../packages/curriculum/src";
+import { StrokeTutor } from "./Exercises";
 type Entry = {
   char: string;
   meanings: string[];
@@ -12,16 +12,16 @@ type Entry = {
 };
 export function KanjiDictionary() {
   const [data, setData] = useState<Entry[]>([]),
-    [error, setError] = useState(''),
+    [error, setError] = useState(""),
     [retry, setRetry] = useState(0),
-    [query, setQuery] = useState(''),
+    [query, setQuery] = useState(""),
     [joyo, setJoyo] = useState(true),
     [page, setPage] = useState(0),
-    [selected, setSelected] = useState('日');
+    [selected, setSelected] = useState("日");
   useEffect(() => {
     const controller = new AbortController();
-    setError('');
-    void fetch('/dictionary/kanji.json', { signal: controller.signal })
+    setError("");
+    void fetch("/dictionary/kanji.json", { signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw Error();
         return r.json();
@@ -31,8 +31,8 @@ export function KanjiDictionary() {
         setData(rows);
       })
       .catch((e) => {
-        if (e.name !== 'AbortError')
-          setError('Ханзны толийг ачаалж чадсангүй.');
+        if (e.name !== "AbortError")
+          setError("Ханзны толийг ачаалж чадсангүй.");
       });
     return () => controller.abort();
   }, [retry]);
@@ -47,9 +47,9 @@ export function KanjiDictionary() {
             ...k.meanings,
             ...k.on,
             ...k.kun,
-            overlay.get(k.char)?.mn ?? '',
+            overlay.get(k.char)?.mn ?? "",
           ]
-            .join(' ')
+            .join(" ")
             .toLowerCase()
             .includes(query.toLowerCase()),
       ),
@@ -62,8 +62,8 @@ export function KanjiDictionary() {
       <h3>Япон ханзны дэлгэрэнгүй толь</h3>
       <p>
         13,108 тэмдэгтийн япон уншлага, англи утга. Jōyō 2,136 ханзаас эхэлж
-        болно. 102 суурь ханз монгол тайлбартай. Дурын ханзыг JLPT-ийн албан
-        жагсаалтад хамааруулж тооцохгүй.
+        болно. {KANJI.length} суурь ханз монгол тайлбартай. Дурын ханзыг
+        JLPT-ийн албан жагсаалтад хамааруулж тооцохгүй.
       </p>
       <label className="course-search">
         Хайх
@@ -84,7 +84,7 @@ export function KanjiDictionary() {
             setJoyo(e.target.checked);
             setPage(0);
           }}
-        />{' '}
+        />{" "}
         Зөвхөн Jōyō 2,136 ханз
       </label>
       {error ? (
@@ -97,7 +97,7 @@ export function KanjiDictionary() {
       ) : (
         <>
           <p>
-            {results.length} илэрц · {page + 1} /{' '}
+            {results.length} илэрц · {page + 1} /{" "}
             {Math.max(1, Math.ceil(results.length / 100))} хуудас
           </p>
           <div className="course-library-layout">
@@ -131,12 +131,12 @@ export function KanjiDictionary() {
                 <h3 lang="ja">
                   {entry.char} <span lang="mn">{mn?.mn}</span>
                 </h3>
-                <p lang="en">{entry.meanings.join(', ')}</p>
+                <p lang="en">{entry.meanings.join(", ")}</p>
                 <dl>
                   <dt>Он</dt>
-                  <dd lang="ja">{entry.on.join('・') || '—'}</dd>
+                  <dd lang="ja">{entry.on.join("・") || "—"}</dd>
                   <dt>Күн</dt>
-                  <dd lang="ja">{entry.kun.join('・') || '—'}</dd>
+                  <dd lang="ja">{entry.kun.join("・") || "—"}</dd>
                   <dt>Зурлага</dt>
                   <dd>{entry.strokes}</dd>
                 </dl>
@@ -151,23 +151,23 @@ export function KanjiDictionary() {
         </>
       )}
       <p className="course-subtle">
-        KANJIDIC © James William Breen / EDRDG ·{' '}
+        KANJIDIC © James William Breen / EDRDG ·{" "}
         <a
           href="https://www.edrdg.org/edrdg/licence.html"
           target="_blank"
           rel="noreferrer"
         >
           CC BY-SA 4.0
-        </a>{' '}
-        ·{' '}
+        </a>{" "}
+        ·{" "}
         <a
           href="https://github.com/davidluzgouveia/kanji-data"
           target="_blank"
           rel="noreferrer"
         >
           JSON: David Luz Gouveia
-        </a>{' '}
-        ·{' '}
+        </a>{" "}
+        ·{" "}
         <a href="/dictionary/source.json" target="_blank" rel="noreferrer">
           Өгөгдлийн хувилбар
         </a>
