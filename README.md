@@ -24,7 +24,8 @@ npx playwright install chromium
 npm run test:e2e
 ```
 
-`/course` works without an account or API connection. It stores progress in the
+The root URL and primary learning tab open `/course`. It works without an
+account or API connection. It stores progress in the
 current browser; export it before clearing browser data or changing devices.
 After signing in, settings can explicitly merge guest progress into that account.
 The account's course events then sync to D1; failed writes remain local and retry

@@ -17,12 +17,13 @@ type Tab = {
 
 const TABS: Tab[] = [
   {
-    path: '/home',
+    path: '/course',
     label: 'Сурах',
     icon: 'home-outline',
     activeIcon: 'home',
     hint: 'Өнөөдрийн хичээл ба JLPT зам',
-    matches: (p) => p === '/home' || p === '/course' || p.startsWith('/lessons/'),
+    matches: (p) =>
+      p === '/home' || p === '/course' || p.startsWith('/lessons/'),
   },
   {
     path: '/study',
@@ -54,7 +55,9 @@ const TABS: Tab[] = [
     icon: 'person-circle-outline',
     activeIcon: 'person-circle',
     hint: 'Профайл ба тохиргоо',
-    matches: (p) => p === '/profile' || (p.startsWith('/profile/') && p !== '/profile/insights'),
+    matches: (p) =>
+      p === '/profile' ||
+      (p.startsWith('/profile/') && p !== '/profile/insights'),
   },
 ];
 
@@ -62,6 +65,7 @@ export const TAB_PATHS = new Set(TABS.map((t) => t.path));
 export const TAB_BAR_PATHS = new Set([
   ...TAB_PATHS,
   '/course',
+  '/home',
   '/kana',
   '/kanji',
   '/games',
@@ -72,7 +76,11 @@ export function TabBar() {
 
   return (
     <nav className="tabbar" aria-label="Үндсэн цэс">
-      <Link to="/home" className="tabbar__brand" aria-label="Япон хэл сурах — нүүр">
+      <Link
+        to="/course"
+        className="tabbar__brand"
+        aria-label="Япон хэл сурах — нүүр"
+      >
         <span className="tabbar__brand-mark">日</span>
         <span className="tabbar__brand-copy">
           <strong>Nihongo</strong>

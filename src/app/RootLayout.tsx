@@ -37,17 +37,17 @@ function useRouteGuard() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (isLoading || pathname === '/course') return;
+    if (isLoading || pathname === '/course' || pathname === '/') return;
 
     if (isAdminPath(pathname)) {
       if (!isAuthenticated)
         navigate('/login?reason=protected', { replace: true });
-      else if (!isAdmin) navigate('/home', { replace: true });
+      else if (!isAdmin) navigate('/course', { replace: true });
       return;
     }
 
     if (isAuthenticated) {
-      if (PUBLIC_PATHS.has(pathname)) navigate('/home', { replace: true });
+      if (PUBLIC_PATHS.has(pathname)) navigate('/course', { replace: true });
       return;
     }
 

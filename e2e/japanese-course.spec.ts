@@ -236,3 +236,13 @@ test('unavailable Japanese voice leaves listening practice ungraded', async ({
     page.getByRole('button', { name: 'Шалгах', exact: true }),
   ).toBeDisabled();
 });
+
+test('first visit opens the guided course directly with no login wall', async ({
+  page,
+}) => {
+  await page.goto('/');
+  await expect(page).toHaveURL(/\/course$/);
+  await expect(
+    page.getByRole('heading', { name: /Япон хэлний дэвтэр/ }),
+  ).toBeVisible();
+});

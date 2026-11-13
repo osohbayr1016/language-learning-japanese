@@ -6,6 +6,7 @@ or replaced with Japanese-only contracts. Database migration history is preserve
 
 ## Implemented
 
+- `/` and the primary Study navigation open `/course` immediately, without a login wall.
 - `/course`: public, responsive daily course with an explicit sequence, task
   feedback, Japanese audio where the device supports it, writing animation and
   ordered tracing, due reviews and a visible daily completion state.
@@ -90,3 +91,11 @@ SRS exposure and lapse behavior, timezone boundaries, forecast inputs, and actua
 ordered/reversed pointer traces in Chromium. The browser suite also covers the
 legacy learner paths, a guest course day, reload, export/import, small screens,
 voice absence and microphone denial.
+
+## Curriculum maintenance
+
+Published lesson IDs, word IDs and answer ordering are immutable: stored attempts
+reference these records. Add units with new IDs; publish revised exercises under
+new versioned IDs rather than changing historical answer keys. Keep earlier units
+available when introducing a new course revision. Dictionary refreshes do not
+change lesson mastery or inflate taught vocabulary counts.
