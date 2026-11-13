@@ -8,7 +8,7 @@ concurrency:
 jobs:
   validate:
     name: Types, curriculum, API and isolation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v5
@@ -26,7 +26,7 @@ jobs:
         run: node scripts/check-bundle.mjs
   e2e:
     name: Chromium learner journeys
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
