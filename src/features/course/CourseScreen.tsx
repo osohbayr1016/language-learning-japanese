@@ -33,6 +33,7 @@ import {
   type Lesson,
   type Task,
   type Preferences,
+  type Stage,
 } from '../../../packages/curriculum/src';
 import { useCourse, type CourseStore } from './useCourse';
 import { Quiz, Speaking, StrokeTutor, speakJapanese } from './Exercises';
@@ -854,6 +855,15 @@ function Library() {
     [kind, setKind] = useState<'kanji' | 'words' | 'kana' | 'dictionary'>(
       'kanji',
     );
+  const [wordStage, setWordStage] = useState<Stage | 'all'>('all');
+  const [wordPage, setWordPage] = useState(0);
+  useEffect(() => setWordPage(0), [query, wordStage, kind]);
+  const wordMatches = [...WORDS.values()].filter(w =>
+    (wordStage === 'all' || w.id.startsWith(wordStage + '-')) &&
+    [w.jp, w.kana, w.romaji, w.mn].join(' ').toLowerCase().includes(query.toLowerCase()),
+  );
+  const pageSize = 24;
+  const wordPages = Math.max(1, Math.ceil(wordMatches.length / pageSize));
   const matches = KANJI.filter((k) =>
     [k.char, k.mn, k.on, k.kun, k.example, k.reading].join(' ').includes(query),
   );
@@ -903,27 +913,31 @@ function Library() {
       {kind === 'dictionary' ? (
         <KanjiDictionary />
       ) : kind === 'words' ? (
-        <div className="course-vocab-grid">
-          {[...WORDS.values()]
-            .filter((w) =>
-              [w.jp, w.kana, w.romaji, w.mn]
-                .join(' ')
-                .toLowerCase()
-                .includes(query.toLowerCase()),
-            )
-            .map((w) => (
+        <>
+          <label className="course-search">
+            Үгийн түвшин
+            <select value={wordStage} onChange={e => setWordStage(e.target.value as Stage | 'all')}>
+              <option value="all">Бүх хичээл</option>
+              {COURSE_STAGES.map(stage => <option key={stage} value={stage}>{STAGE_LABELS[stage]}</option>)}
+            </select>
+          </label>
+          <p role="status">{wordMatches.length} хичээлийн карт · {Math.min(wordPage + 1, wordPages)} / {wordPages} хуудас</p>
+          {!wordMatches.length && <p>Үг олдсонгүй. Хайлт эсвэл түвшнээ өөрчлөөрэй.</p>}
+          <div className="course-vocab-grid">
+            {wordMatches.slice(wordPage * pageSize, (wordPage + 1) * pageSize).map((w) => (
               <article key={w.id}>
                 <h3 lang="ja">{w.jp}</h3>
-                <p>
-                  {w.kana} · {w.romaji}
-                </p>
+                <p>{w.kana} · {w.romaji}</p>
                 <strong>{w.mn}</strong>
-                <button onClick={() => speakJapanese(w.kana, setAudioError)}>
-                  ▶
-                </button>
+                <button aria-label={w.kana + ' сонсох'} onClick={() => speakJapanese(w.kana, setAudioError)}>▶</button>
               </article>
             ))}
-        </div>
+          </div>
+          <nav className="course-actions" aria-label="Үгийн сангийн хуудас">
+            <button disabled={wordPage === 0} onClick={() => setWordPage(p => p - 1)}>Өмнөх үгс</button>
+            <button disabled={wordPage + 1 >= wordPages} onClick={() => setWordPage(p => p + 1)}>Дараагийн үгс</button>
+          </nav>
+        </>
       ) : (
         <div className="course-library-layout">
           <div>

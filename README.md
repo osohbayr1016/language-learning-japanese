@@ -42,7 +42,8 @@ on reconnect or with the sync control. Account progress is kept separate.
   comprehension questions and Japanese writing practice.
 - Level progress separates completed lessons, unique words introduced,
   ordered handwriting and optional listening. Recognition placement stays
-  separate from these counts. Course stages collapse to keep the next step visible.
+  separate from these counts. Course stages collapse to keep the next step visible; the word library has level
+  filters, search and 24-card pages.
 - Daily plan (20 minutes by default): new words, reading, writing and a checkpoint;
   listening and transcript-based speaking are optional. A daily lesson stays
   stable across refreshes. New lessons require the four core tasks to pass.

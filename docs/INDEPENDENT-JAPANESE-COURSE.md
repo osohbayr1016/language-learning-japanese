@@ -126,4 +126,6 @@ schema change. Historical task evidence remains interpretable.
 
 Regression coverage includes 50 published-content fingerprints, old-export
 continuation, the N4 prerequisite boundary, distinct word evidence, kana reading
-support, kanji deep links and absence of a kana sound grid for N4 kanji.
+support, kanji deep links, absence of a kana sound grid for N4 kanji, word-library
+pagination/filter/search, and server-side N4 rejection/acceptance with idempotent
+account-isolated sync.

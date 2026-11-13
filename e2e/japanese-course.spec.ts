@@ -342,3 +342,23 @@ test('N4 words keep kanji separate from the kana sound grid and expose all new v
   await expect(p).toContainText('0 / 32 хичээл');
   await expect(p.locator('dd').first()).toContainText('6 /');
 });
+
+test('large word library is paginated, level-filtered and searchable', async ({page}) => {
+  await page.setViewportSize({width:360,height:800});
+  await page.goto('/course?tab=library');
+  await page.getByRole('button',{name:'Үгс',exact:true}).click();
+  await expect(page.locator('.course-vocab-grid article')).toHaveCount(24);
+  await page.getByLabel('Үгийн түвшин',{exact:true}).selectOption('n4');
+  await expect(page.getByRole('status')).toContainText('192 хичээлийн карт');
+  await expect(page.locator('.course-vocab-grid article h3').first()).toHaveText('頭');
+  await page.getByRole('button',{name:'Дараагийн үгс',exact:true}).click();
+  await expect(page.locator('.course-vocab-grid article h3').first()).toHaveText('漢字');
+  await page.getByPlaceholder('Үг, уншлага, утга…').fill('申し込む');
+  await expect(page.locator('.course-vocab-grid article')).toHaveCount(1);
+  await expect(page.locator('.course-vocab-grid article')).toContainText('бүртгүүлэх');
+  await expect(page.getByRole('button',{name:'Дараагийн үгс',exact:true})).toBeDisabled();
+  await page.getByPlaceholder('Үг, уншлага, утга…').fill('not-a-japanese-word');
+  await expect(page.getByText('Үг олдсонгүй. Хайлт эсвэл түвшнээ өөрчлөөрэй.',{exact:true})).toBeVisible();
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBeTruthy();
+  await page.screenshot({path:test.info().outputPath('word-library-mobile.png'),fullPage:true});
+});

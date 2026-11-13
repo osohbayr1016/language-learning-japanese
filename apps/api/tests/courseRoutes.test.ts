@@ -8,6 +8,8 @@ import {
   DEFAULT_PREFERENCES,
   LESSONS,
   wordQuestions,
+  lessonQuestions,
+  writingCharacters,
 } from '../../../packages/curriculum/src';
 function database() {
   const sqlite = new DatabaseSync(':memory:');
@@ -195,4 +197,41 @@ test('settings reject invalid schedules and survive a new request', async () => 
   } finally {
     f.sqlite.close();
   }
+});
+
+test('N4 evidence syncs only after the N5 extension and remains account-scoped', async () => {
+  const f = await fixture();
+  let serial = 0;
+  const evidenceFor = (lessons: typeof LESSONS) => lessons.flatMap(l => [
+    {kind:'task',lessonId:l.id,task:'words',answers:wordQuestions(l.words).map(q=>q.answer)},
+    {kind:'task',lessonId:l.id,task:'reading',answers:[l.readingQuestion.answer]},
+    {kind:'task',lessonId:l.id,task:'writing',characters:writingCharacters(l)},
+    {kind:'task',lessonId:l.id,task:'quiz',answers:lessonQuestions(l).map(q=>q.answer)},
+  ].map(e => {
+    const i = ++serial;
+    return {...e,id:'n4_sync_'+String(i).padStart(8,'0'),at:new Date(Date.UTC(2026,0,1,0,0,i)).toISOString(),day:'2026-01-01'};
+  }));
+  const upload = async (events: ReturnType<typeof evidenceFor>) => {
+    for (let i=0; i<events.length; i+=100)
+      assert.equal((await f.call('/events',{events:events.slice(i,i+100)})).status,200);
+  };
+  try {
+    const old = evidenceFor(LESSONS.slice(0,50));
+    await upload(old);
+    const n4Index=LESSONS.findIndex(l=>l.id==='n4-01');
+    // Build the missing prerequisites before the later N4 attempt so timestamps
+    // preserve the actual learning order when a second device replays the log.
+    const extension=evidenceFor(LESSONS.slice(50,n4Index));
+    const n4=evidenceFor([LESSONS[n4Index]]);
+    assert.equal((await f.call('/events',{events:n4})).status,409);
+    assert.equal(f.sqlite.prepare('SELECT count(*) n FROM course_events').get()?.n,old.length);
+    await upload(extension);
+    await upload(n4);
+    await upload(n4); // Retry from another device must not duplicate evidence.
+    const state=(await (await f.call('/')).json()) as any;
+    assert.equal(state.data.events.length,old.length+extension.length+n4.length);
+    assert.equal(state.data.events.filter((e:any)=>e.lessonId==='n4-01').length,4);
+    const other=(await (await f.call('/',undefined,'GET',f.token2)).json()) as any;
+    assert.deepEqual(other.data.events,[]);
+  } finally { f.sqlite.close(); }
 });
