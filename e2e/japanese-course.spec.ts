@@ -349,7 +349,7 @@ test('large word library is paginated, level-filtered and searchable', async ({p
   await page.getByRole('button',{name:'Үгс',exact:true}).click();
   await expect(page.locator('.course-vocab-grid article')).toHaveCount(24);
   await page.getByLabel('Үгийн түвшин',{exact:true}).selectOption('n4');
-  await expect(page.getByRole('status')).toContainText('192 хичээлийн карт');
+  await expect(page.locator('.course-card').getByRole('status')).toContainText('192 хичээлийн карт');
   await expect(page.locator('.course-vocab-grid article h3').first()).toHaveText('頭');
   await page.getByRole('button',{name:'Дараагийн үгс',exact:true}).click();
   await expect(page.locator('.course-vocab-grid article h3').first()).toHaveText('漢字');
