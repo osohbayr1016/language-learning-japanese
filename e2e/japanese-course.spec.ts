@@ -268,3 +268,77 @@ test('Japanese server audio is used when the device has no Japanese voice', asyn
   expect(url).toContain('/api/audio/tts?');
   expect(new URL(url).searchParams.get('text')).toBe(first.words[0].kana);
 });
+
+function completionEvidence(lessons: typeof LESSONS) {
+  let id = 0;
+  return lessons.flatMap(l => [
+    {kind:'task', lessonId:l.id, task:'words', answers:wordQuestions(l.words).map(q=>q.answer)},
+    {kind:'task', lessonId:l.id, task:'reading', answers:[l.readingQuestion.answer]},
+    {kind:'task', lessonId:l.id, task:'writing', characters:writingCharacters(l)},
+    {kind:'task', lessonId:l.id, task:'quiz', answers:lessonQuestions(l).map(q=>q.answer)},
+  ].map(e=>({...e,id:'seed_evidence_'+String(++id).padStart(8,'0'),at:'2026-01-01T01:00:00.000Z',day:'2026-01-01'})));
+}
+async function seedCourse(page: Page, evidence: ReturnType<typeof completionEvidence>) {
+  await page.addInitScript(events => {
+    const key = 'nihongo.course.v1.guest';
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({version:1,events,preferences:{minutes:20,daysPerWeek:7,timezone:'Asia/Ulaanbaatar',target:'N2'}}));
+  }, evidence);
+}
+test('the previous 50-unit export continues at N5 extension without granting N4', async ({page}) => {
+  await seedCourse(page, completionEvidence(LESSONS.slice(0,50)));
+  await page.goto('/course');
+  await expect(page.locator('.course-hero')).toContainText('Үйл үгийн бүлгийг ялгах');
+  await page.getByRole('button',{name:'Хөтөлбөр',exact:true}).click();
+  const n4 = page.locator('.course-stage').filter({has:page.getByRole('heading',{name:'04 · N4 суурь',exact:true})});
+  await n4.locator('summary').click();
+  await expect(n4.getByRole('button').filter({hasText:'Нөхцөлөө тайлбарлах'})).toBeDisabled();
+  await page.getByRole('button',{name:'JLPT зам',exact:true}).click();
+  const n5 = page.locator('.course-evidence').filter({has:page.getByRole('heading',{name:'N5 суурь',exact:true})});
+  await expect(n5).toContainText('24 / 40 хичээл');
+  const n4Progress = page.locator('.course-evidence').filter({has:page.getByRole('heading',{name:'N4 суурь',exact:true})});
+  await expect(n4Progress).toContainText('0 / 32 хичээл');
+});
+test('N4 reading offers optional kana support and records real comprehension', async ({page}) => {
+  const index=LESSONS.findIndex(l=>l.id==='n4-01');
+  const lesson=LESSONS[index];
+  await seedCourse(page,completionEvidence(LESSONS.slice(0,index)));
+  await page.goto('/course');
+  await expect(page.locator('.course-hero')).toContainText(lesson.title);
+  await page.getByRole('button',{name:'Уншлага эхлэх',exact:true}).click();
+  await expect(page.locator('.course-reading-support')).toHaveCount(0);
+  await page.getByRole('button',{name:'Кана уншлага харах',exact:true}).click();
+  await expect(page.locator('.course-reading-support')).toHaveText(lesson.passageKana!);
+  await answerQuiz(page,[lesson.readingQuestion]);
+  await page.getByRole('button',{name:'← Өдрийн төлөвлөгөө'}).click();
+  await expect(page.locator('.course-ring')).toContainText('1/4');
+  await page.reload();
+  await expect(page.locator('.course-ring')).toContainText('1/4');
+  await page.getByRole('button',{name:'Бичлэг эхлэх',exact:true}).click();
+  await expect(page.locator('.course-kanji-hint')).toContainText('толгой');
+  await expect(page.frameLocator('.course-tutor iframe').locator('#paths path').first()).toBeVisible();
+  await page.screenshot({path:test.info().outputPath('n4-writing-desktop.png'),fullPage:true});
+});
+test('daily kanji opens the selected character in the dictionary', async ({page}) => {
+  const index=LESSONS.findIndex(l=>l.id==='n4-01');
+  await seedCourse(page,completionEvidence(LESSONS.slice(0,index)));
+  await page.goto('/course');
+  await page.locator('.course-glyph-row').getByRole('button',{name:'頭',exact:true}).click();
+  await expect(page).toHaveURL(/tab=library/);
+  await expect(page.locator('.course-library-detail h3')).toContainText('頭');
+  await expect(page.locator('.course-library-detail h3')).toContainText('толгой');
+  await expect(page.frameLocator('.course-tutor iframe').locator('#paths path').first()).toBeVisible();
+});
+test('N4 words keep kanji separate from the kana sound grid and expose all new vocabulary', async ({page}) => {
+  const index=LESSONS.findIndex(l=>l.id==='n4-01');
+  await seedCourse(page,completionEvidence(LESSONS.slice(0,index)));
+  await page.goto('/course');
+  await page.getByRole('button',{name:'Шинэ үг эхлэх',exact:true}).click();
+  await expect(page.locator('.course-glyph-grid')).toHaveCount(0);
+  await expect(page.locator('.course-vocab-grid article')).toHaveCount(6);
+  await answerQuiz(page,wordQuestions(LESSONS[index].words));
+  await page.getByRole('button',{name:'← Өдрийн төлөвлөгөө'}).click();
+  await page.getByRole('button',{name:'JLPT зам',exact:true}).click();
+  const p=page.locator('.course-evidence').filter({has:page.getByRole('heading',{name:'N4 суурь',exact:true})});
+  await expect(p).toContainText('0 / 32 хичээл');
+  await expect(p.locator('dd').first()).toContainText('6 /');
+});

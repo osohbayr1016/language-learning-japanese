@@ -3,6 +3,10 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { getKanaRomaji } from '@src/lib/content/kanaRomaji';
 import { useAuth } from '@src/context/AuthContext';
 import {
+  COURSE_STAGES,
+  STAGE_LABELS,
+  isKanaStage,
+  stageProgress,
   DEFAULT_PREFERENCES,
   HIRAGANA_PLACEMENT,
   KANJI,
@@ -136,8 +140,8 @@ function CourseWorkspace() {
     setPlacement(false);
   };
   useEffect(() => () => stopJapaneseAudio(), [active?.lessonId, active?.task, placement, tab]);
-  const chooseTab = (value: string) => {
-    setParams({ tab: value });
+  const chooseTab = (value: string, char?: string) => {
+    setParams(char ? { tab: value, char } : { tab: value });
     setActive(null);
     setPlacement(false);
   };
@@ -149,7 +153,7 @@ function CourseWorkspace() {
           <h1>
             Япон хэлний дэвтэр<span lang="ja">日本語</span>
           </h1>
-          <p>Хирагана → катакана → үг → ханз → N5 суурь</p>
+          <p>Хирагана → катакана → үг → ханз → N5 → N4 суурь</p>
         </div>
         <div className="course-header-meta">
           <span>{preferences.minutes} мин / өдөр</span>
@@ -245,7 +249,7 @@ function CourseWorkspace() {
                   </h2>
                   <p>
                     {lesson?.objective ??
-                      'N5-ийн суурь нэгжүүд дууссан. Энэ нь JLPT N5 тэнцсэн гэсэн баталгаа биш. Давталт, бүтэн хэмжээний сорил болон сонсголоо үргэлжлүүлээрэй.'}
+                      'N5, N4-ийн суурь нэгжүүд дууссан. Энэ нь JLPT-д тэнцсэн гэсэн баталгаа биш. Давталт, бүтэн хэмжээний сорил болон сонсголоо үргэлжлүүлээрэй.'}
                   </p>
                   {lesson && (
                     <button
@@ -383,7 +387,7 @@ function CourseWorkspace() {
                       <button
                         lang="ja"
                         key={c}
-                        onClick={() => chooseTab('library')}
+                        onClick={() => chooseTab('library', c)}
                       >
                         {c}
                       </button>
@@ -406,18 +410,16 @@ function CourseWorkspace() {
             <section className="course-card">
               <h2>Таны суралцах дараалал</h2>
               <p>
-                50 нэгж нь кана ба N5-ийн суурь агуулга. Бүх N5 үгийн сан болон
-                N4–N1-ийн бүрэн курс гэж тооцохгүй.
+                {LESSONS.length} нэгж: кана, N5-ийн 40 болон N4-ийн 32 суурь
+                хичээл. Түвшний нэр нь сургалтын дарааллын баримжаа; бүрэн JLPT
+                бэлтгэл эсвэл албан ёсны үгсийн жагсаалт биш.
               </p>
-              {(['hiragana', 'katakana', 'n5'] as const).map((stage) => (
-                <section className="course-stage" key={stage}>
-                  <h3>
-                    {stage === 'hiragana'
-                      ? '01 · Хирагана'
-                      : stage === 'katakana'
-                        ? '02 · Катакана'
-                        : '03 · N5 суурь'}
-                  </h3>
+              {COURSE_STAGES.map((stage, index) => (
+                <details className="course-stage" key={stage} open={stage === next?.stage}>
+                  <summary>
+                    <h3>{String(index + 1).padStart(2, '0')} · {STAGE_LABELS[stage]}</h3>
+                    <span>{LESSONS.filter(l => l.stage === stage && mastered(events, l.id)).length} / {LESSONS.filter(l => l.stage === stage).length} хичээл</span>
+                  </summary>
                   <div className="course-lesson-grid">
                     {LESSONS.filter((l) => l.stage === stage).map((l) => {
                       const done = mastered(events, l.id),
@@ -450,7 +452,7 @@ function CourseWorkspace() {
                       );
                     })}
                   </div>
-                </section>
+                </details>
               ))}
             </section>
           )}
@@ -573,6 +575,7 @@ function TaskView({
   lesson: Lesson;
   task: Task;
 }) {
+  const [showKana, setShowKana] = useState(false);
   const [showRomaji, setShowRomaji] = useState(false),
     [showTranslation, setShowTranslation] = useState(false),
     [audioError, setAudioError] = useState('');
@@ -580,17 +583,14 @@ function TaskView({
   const [index, setIndex] = useState(0);
   const characters = writingCharacters(lesson),
     character = characters[index];
+  const kanji = KANJI.find(k => k.char === character);
   const done = taskDone(store.events, lesson.id, task);
   const record = (answers: number[]) =>
     store.add({ kind: 'task', lessonId: lesson.id, task, answers });
   return (
     <>
       <p className="course-kicker">
-        {lesson.stage === 'hiragana'
-          ? 'ХИРАГАНА'
-          : lesson.stage === 'katakana'
-            ? 'КАТАКАНА'
-            : 'N5'}{' '}
+        {STAGE_LABELS[lesson.stage]}{' '}
         · {TASK_NAMES[task]}
       </p>
       <h2>{lesson.title}</h2>
@@ -611,7 +611,7 @@ function TaskView({
           >
             Romaji {showRomaji ? 'нуух' : 'харуулах'}
           </button>
-          {lesson.stage !== 'n5' && (
+          {isKanaStage(lesson.stage) && (
             <div className="course-glyph-grid" style={{ marginTop: 20 }}>
               {lesson.glyphs.map((c) => (
                 <button
@@ -657,10 +657,15 @@ function TaskView({
           </div>
           <div className="course-actions">
             <button
-              onClick={() => speakJapanese(lesson.passage, setAudioError)}
+              onClick={() => speakJapanese(lesson.passageKana ?? lesson.passage, setAudioError)}
             >
               ▶ Жишиг уншлага
             </button>
+            {lesson.passageKana && (
+              <button aria-expanded={showKana} onClick={() => setShowKana(!showKana)}>
+                Кана уншлага {showKana ? 'нуух' : 'харах'}
+              </button>
+            )}
             <button
               aria-expanded={showTranslation}
               onClick={() => setShowTranslation(!showTranslation)}
@@ -668,6 +673,9 @@ function TaskView({
               Утгыг {showTranslation ? 'нуух' : 'харах'}
             </button>
           </div>
+          {showKana && lesson.passageKana && (
+            <p className="course-reading-support" lang="ja">{lesson.passageKana}</p>
+          )}
           {showTranslation && (
             <p className="course-translation">{lesson.translation}</p>
           )}
@@ -693,6 +701,13 @@ function TaskView({
               </button>
             ))}
           </div>
+          {kanji && (
+            <div className="course-kanji-hint">
+              <strong>{kanji.mn}</strong>
+              <span lang="ja">Он: {kanji.on} · Күн: {kanji.kun}</span>
+              <span lang="ja">{kanji.example}（{kanji.reading}）</span>
+            </div>
+          )}
           <StrokeTutor
             char={character}
             onComplete={() => {
@@ -831,8 +846,11 @@ function ReviewPanel({ store, ids }: { store: CourseStore; ids: string[] }) {
   );
 }
 function Library() {
+  const [params] = useSearchParams();
+  const requested = params.get('char') ?? '';
+  const initial = /^[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]$/u.test(requested) ? requested : '日';
   const [query, setQuery] = useState(''),
-    [selected, setSelected] = useState('日'),
+    [selected, setSelected] = useState(initial),
     [kind, setKind] = useState<'kanji' | 'words' | 'kana' | 'dictionary'>(
       'kanji',
     );
@@ -845,7 +863,7 @@ function Library() {
     <section className="course-card">
       <h2>Үсэг, үг, ханзны сан</h2>
       <p>
-        102 суурь ханзны монгол тайлбар, төлөөлөх он/күн уншлага. Бичлэгийн сан
+        {KANJI.length} суурь ханзны монгол тайлбар, төлөөлөх он/күн уншлага. Бичлэгийн сан
         6,798 япон тэмдэгттэй. Бүх ханзны тайлбар, бүх уншлагыг багтаасан толь
         биш.
       </p>
@@ -913,7 +931,7 @@ function Library() {
               {(kind === 'kana'
                 ? Array.from(
                     new Set(
-                      LESSONS.filter((l) => l.stage !== 'n5')
+                      LESSONS.filter((l) => isKanaStage(l.stage))
                         .flatMap((l) => l.glyphs)
                         .join(''),
                     ),
@@ -983,6 +1001,7 @@ function Library() {
 }
 function Milestones({ store }: { store: CourseStore }) {
   const cards = milestones(store.events, store.preferences);
+  const progress = stageProgress(store.events);
   const learned = LESSONS.filter((l) => mastered(store.events, l.id)).length;
   const minutes = Math.floor(
     store.events.reduce((n, e) => n + (e.kind === 'study' ? e.seconds : 0), 0) /
@@ -1011,6 +1030,23 @@ function Milestones({ store }: { store: CourseStore }) {
         JLPT-ийн албан ёсны оноог зөвхөн шалгалтын байгууллага гаргана. Эндхийн
         дасгалын хувь, хичээлийн явц нь JLPT оноо биш.
       </p>
+      <h3>Хөтөлбөр доторх бодит ахиц</h3>
+      <div className="course-evidence-grid">
+        {progress.map(p => (
+          <article className="course-evidence" key={p.stage}>
+            <h4>{STAGE_LABELS[p.stage]}</h4>
+            <p>{p.completed} / {p.total} хичээл</p>
+            <progress aria-label={STAGE_LABELS[p.stage] + ' хичээлийн ахиц'} value={p.completed} max={p.total} />
+            {p.placement && <small>Үсэг таних шалгалтаар баталсан. Үндсэн дасгалын ахицаас тусдаа.</small>}
+            <dl>
+              <dt>Танилцсан ялгаатай үг</dt><dd>{p.words} / {p.totalWords}</dd>
+              <dt>Дэсээр бичсэн тэмдэгт</dt><dd>{p.characters} / {p.totalCharacters}</dd>
+              <dt>Сонсголын дасгал</dt><dd>{p.listening} / {p.total}</dd>
+            </dl>
+          </article>
+        ))}
+      </div>
+      <p className="course-subtle">Эдгээр нь энэ хөтөлбөрийн дасгалын нотолгоо. JLPT-д бэлэн болсон хувь эсвэл албан ёсны оноо биш.</p>
       <h3>Төлөвлөлтийн баримжаа</h3>
       <p>
         Тэгээс эхлэх цагийн өргөн хүрээгээр тооцсон бүтээгдэхүүний таамаг. Албан
@@ -1041,9 +1077,9 @@ function Milestones({ store }: { store: CourseStore }) {
                   {dateLabel(m.earliest)} – {dateLabel(m.latest)}
                 </td>
                 <td>
-                  {m.level === 'N5'
-                    ? 'Суурь 24 нэгж; бүрэн N5 биш'
-                    : 'Бүрэн курс нэмэгдээгүй'}
+                  {m.level === 'N5' || m.level === 'N4'
+                    ? `Суурь ${LESSONS.filter(l => l.stage === m.level.toLowerCase()).length} нэгж; бүрэн түвшин биш`
+                    : 'Курс нэмэгдээгүй'}
                 </td>
               </tr>
             ))}

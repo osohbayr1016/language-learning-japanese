@@ -765,3 +765,32 @@
     grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
   }
 }
+
+.course-stage > summary {
+  cursor: pointer;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.course-stage > summary h3 { display: inline; margin-right: 12px; }
+.course-stage > summary span { font-size: 13px; color: var(--muted); }
+.course-reading-support, .course-kanji-hint {
+  border-left: 3px solid #6b8b61;
+  background: #f1f4eb;
+  padding: 14px 16px;
+  border-radius: 8px;
+  line-height: 1.9;
+  overflow-wrap: anywhere;
+}
+.course-kanji-hint { display: grid; gap: 4px; margin: 12px 0; }
+.course-evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 12px;
+}
+.course-evidence { border: 1px solid var(--line); border-radius: 14px; padding: 16px; min-width: 0; }
+.course-evidence h4 { margin: 0 0 8px; font-size: 18px; }
+.course-evidence p { margin: 0 0 8px; }
+.course-evidence progress { width: 100%; accent-color: #527348; }
+.course-evidence small { display: block; margin-top: 8px; }
+.course-evidence dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin: 14px 0 0; font-size: 13px; }
+.course-evidence dd { margin: 0; font-variant-numeric: tabular-nums; }

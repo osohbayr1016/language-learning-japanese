@@ -5,6 +5,7 @@ import {
   type Task,
 } from './types';
 import {
+  COURSE_STAGES,
   HIRAGANA_PLACEMENT,
   LESSONS,
   LESSON_BY_ID,
@@ -334,4 +335,27 @@ export function milestones(
     latest: estimate(Math.max(0, high - studiedHours)),
     observedDays,
   }));
+}
+
+/** Course evidence only. Recognition placement and learned task completion stay separate. */
+export function stageProgress(events: readonly CourseEvent[]) {
+  return COURSE_STAGES.map((stage) => {
+    const lessons = LESSONS.filter((lesson) => lesson.stage === stage);
+    const introduced = lessons.filter((lesson) => taskDone(events, lesson.id, 'words'));
+    const written = lessons.filter((lesson) => taskDone(events, lesson.id, 'writing'));
+    const uniqueWords = (items: typeof lessons) => new Set(
+      items.flatMap((lesson) => lesson.words.map((word) => word.jp + '\u0000' + word.kana)),
+    ).size;
+    return {
+      stage,
+      total: lessons.length,
+      completed: lessons.filter((lesson) => mastered(events, lesson.id)).length,
+      placement: stage === 'hiragana' && hiraPlaced(events),
+      words: uniqueWords(introduced),
+      totalWords: uniqueWords(lessons),
+      characters: new Set(written.flatMap(writingCharacters)).size,
+      totalCharacters: new Set(lessons.flatMap(writingCharacters)).size,
+      listening: lessons.filter((lesson) => taskDone(events, lesson.id, 'listening')).length,
+    };
+  });
 }

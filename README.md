@@ -36,14 +36,19 @@ on reconnect or with the sync control. Account progress is kept separate.
 - 13 hiragana and 13 katakana units: all 46 base kana in each script, voiced
   sounds, combinations, small っ and long vowels; a 46-question optional hiragana
   recognition check lets returning learners start at katakana.
-- 24 original N5 foundation lessons, 198 vocabulary entries, original reading
-  passages, Mongolian explanations, recall questions, Japanese writing practice.
+- 40 original N5 and 32 N4 foundation lessons: 486 vocabulary records
+  (416 distinct Japanese spelling/reading pairs across all 98 units), original
+  passages, optional kana reading support, Mongolian grammar explanations,
+  comprehension questions and Japanese writing practice.
+- Level progress separates completed lessons, unique words introduced,
+  ordered handwriting and optional listening. Recognition placement stays
+  separate from these counts. Course stages collapse to keep the next step visible.
 - Daily plan (20 minutes by default): new words, reading, writing and a checkpoint;
   listening and transcript-based speaking are optional. A daily lesson stays
   stable across refreshes. New lessons require the four core tasks to pass.
 - Spaced repetition after exposure, visible due reviews, configurable study time,
   learning days/week, timezone and JLPT target; versioned progress export/import.
-- 102 beginner kanji with Mongolian meanings and representative on/kun readings.
+- 198 beginner kanji with Mongolian meanings and representative on/kun readings.
 - Supplementary KANJIDIC dictionary: 13,108 characters, including all 2,136 jōyō
   kanji, Japanese readings and English meanings. Loaded only when opened.
 - Self-hosted KanjiVG stroke animation and direction/order-sensitive tracing for
@@ -53,8 +58,8 @@ on reconnect or with the sync control. Account progress is kept separate.
   transparent planning assumptions updated by active study time and frequency.
 
 This is a complete **foundation learning loop**, not a complete N5–N1 curriculum.
-N4–N1 course content, full N5 vocabulary coverage and independently reviewed
-full-length mock exams remain content work. Completing these 50 units does not
+N3–N1 course content, broader N5/N4 coverage and independently reviewed
+full-length mock exams remain content work. Completing these 98 units does not
 certify a JLPT level. The new 36-question N5 foundation checkpoint cannot unlock
 N4 by itself. See [release notes](docs/INDEPENDENT-JAPANESE-COURSE.md).
 
@@ -94,7 +99,15 @@ is preserved. Native Expo builds remain optional and need separate device QA.
 ## Data credits
 
 Original curriculum text is stored in `packages/curriculum/src/lessons.json` and
-`kanji.json`. Keep content additions original or appropriately licensed.
+ `kanji.json`, and their append-only `extension-*.json` companions. Keep
+content additions original or appropriately licensed. Published IDs and answer
+positions are immutable; compatibility fingerprints protect the original 50 units.
+This curriculum's N5/N4 labels are editorial sequencing, not an official JLPT
+word list. The organizers do not publish current vocabulary/kanji/grammar lists:
+https://www.jlpt.jp/e/faq/. Japan Foundation Irodori's Elementary 2 grammar overview
+was consulted for basic usage; passages, questions and Mongolian explanations are
+original: https://www.irodori.jpf.go.jp/assets/data/elementary02/pdf/Z_contents_en.pdf.
+Independent Japanese/Mongolian teacher review is still required.
 
 - Stroke geometry: KanjiVG, © Ulrich Apel and contributors, CC BY-SA 3.0. Source
   revision and complete notice: `public/stroke-data/LICENSE.txt`.

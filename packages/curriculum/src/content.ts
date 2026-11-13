@@ -1,8 +1,18 @@
 import lessonsData from './lessons.json';
 import kanjiData from './kanji.json';
-import type { Lesson, Question, Kanji, Vocabulary } from './types';
-export const LESSONS = lessonsData as Lesson[];
-export const KANJI = kanjiData as Kanji[];
+import extensionLessons from './extension-lessons.json';
+import extensionKanji from './extension-kanji.json';
+import type { Lesson, Question, Kanji, Vocabulary, Stage } from './types';
+// Append only: stored answer indices and existing course events depend on stable IDs/content.
+export const LESSONS = [...lessonsData, ...extensionLessons] as Lesson[];
+export const KANJI = [...kanjiData, ...extensionKanji] as Kanji[];
+export const COURSE_STAGES: readonly Stage[] = ['hiragana', 'katakana', 'n5', 'n4'];
+export const STAGE_LABELS: Record<Stage, string> = {
+  hiragana: 'Хирагана', katakana: 'Катакана', n5: 'N5 суурь', n4: 'N4 суурь',
+};
+export function isKanaStage(stage: Stage): boolean {
+  return stage === 'hiragana' || stage === 'katakana';
+}
 export const LESSON_BY_ID = new Map(LESSONS.map((l) => [l.id, l]));
 export const WORDS = new Map(
   LESSONS.flatMap((l) => l.words).map((w) => [w.id, w]),

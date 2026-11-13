@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   LESSONS,
+  stageProgress,
+  parseSaved,
   KANJI,
   REQUIRED_TASKS,
   HIRAGANA_PLACEMENT,
@@ -64,9 +66,10 @@ function complete(id: string) {
   ];
 }
 test('curriculum has distinct lessons, real answers, and Japanese writing data', () => {
-  assert.equal(LESSONS.length, 50);
-  assert.equal(new Set(LESSONS.map((l) => l.id)).size, 50);
-  assert.equal(KANJI.length, 102);
+  assert.equal(LESSONS.length, 98);
+  assert.equal(new Set(LESSONS.map((l) => l.id)).size, 98);
+  assert.equal(KANJI.length, 198);
+  assert.equal(new Set(KANJI.map(k => k.char)).size, KANJI.length);
   for (const l of LESSONS) {
     for (const q of [...lessonQuestions(l), l.readingQuestion]) {
       assert.ok(q.options.length >= 2, l.id);
@@ -229,4 +232,69 @@ test('dictionary includes all joyo and every joyo character has a Japanese strok
   assert.equal(joyo.length, 2136);
   for (const k of joyo)
     assert.ok((counts as Record<string, number>)[k.char], k.char);
+});
+
+test('published answer positions and word IDs remain compatible with existing progress', () => {
+  const snapshots = JSON.parse(readFileSync(new URL('./legacy-course-fingerprints.json', import.meta.url), 'utf8'));
+  assert.equal(Object.keys(snapshots).length, 50);
+  for (const [id, expected] of Object.entries(snapshots)) {
+    const lesson = LESSONS.find(l => l.id === id)!;
+    assert.ok(lesson, id);
+    const value = JSON.stringify([lesson.id, lesson.stage, lesson.words, lesson.glyphs, lesson.readingQuestion, lesson.grammarQuestion]);
+    let hash = 2166136261;
+    for (let i = 0; i < value.length; i++) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619); }
+    assert.equal((hash >>> 0).toString(16).padStart(8, '0'), expected, id);
+  }
+});
+test('extensions have original comprehension tasks, kana support and distinct vocabulary records', () => {
+  const extensions = LESSONS.slice(50);
+  assert.equal(extensions.filter(l => l.stage === 'n5').length, 16);
+  assert.equal(extensions.filter(l => l.stage === 'n4').length, 32);
+  const words = LESSONS.flatMap(l => l.words);
+  assert.equal(words.length, 486);
+  assert.equal(new Set(words.map(w => w.id)).size, words.length);
+  for (const lesson of extensions) {
+    assert.equal(lesson.words.length, 6, lesson.id);
+    assert.ok(lesson.passageKana, lesson.id);
+    assert.doesNotMatch(lesson.passageKana!, /[\p{Script=Han}]/u, lesson.id);
+    assert.ok(lesson.passage !== lesson.passageKana, lesson.id);
+    assert.ok(lesson.translation.length > 20 && lesson.grammar.length > 50, lesson.id);
+    for (const char of writingCharacters(lesson))
+      assert.ok(KANJI.some(k => k.char === char), lesson.id + ': ' + char);
+    for (const word of lesson.words)
+      for (const value of [word.jp, word.kana, word.romaji, word.mn])
+        assert.ok(value.trim().length, word.id);
+  }
+});
+test('existing learners continue into N5 extensions and N4 requires all earlier units', () => {
+  const oldEvidence = LESSONS.slice(0, 50).flatMap(l => complete(l.id));
+  assert.equal(nextLesson(oldEvidence)?.id, 'n5-25');
+  assert.equal(canStudy(oldEvidence, 'n4-01'), false);
+  assert.equal(parseSaved(JSON.stringify({version: 1, events: oldEvidence, preferences: DEFAULT_PREFERENCES})).events.length, oldEvidence.length);
+  const n4Index = LESSONS.findIndex(l => l.id === 'n4-01');
+  const prior = LESSONS.slice(0, n4Index).flatMap(l => complete(l.id));
+  assert.equal(canStudy(prior, 'n4-01'), true);
+  assert.equal(nextLesson(prior)?.id, 'n4-01');
+  assert.equal(canStudy(prior.filter(e => e.kind !== 'task' || e.lessonId !== 'n5-40' || e.task !== 'writing'), 'n4-01'), false);
+  const n4 = complete('n4-01');
+  assert.ok(n4.every(validateEvent));
+  assert.equal(nextLesson([...prior, ...n4])?.id, 'n4-02');
+});
+test('stage evidence separates recognition from handwriting and counts unique introduced words', () => {
+  const placement = event({kind: 'placement', answers: HIRAGANA_PLACEMENT.map(q => q.answer)});
+  const placed = stageProgress([placement]);
+  assert.equal(placed[0].placement, true);
+  assert.equal(placed[0].completed, 0);
+  assert.equal(placed[0].characters, 0);
+  assert.equal(placed[0].words, 0);
+  const l = LESSONS.find(l => l.id === 'n4-01')!;
+  const evidence = complete(l.id);
+  const p = stageProgress([...evidence, ...evidence]).find(p => p.stage === 'n4')!;
+  assert.equal(p.completed, 1);
+  assert.equal(p.total, 32);
+  assert.equal(p.words, 6);
+  assert.equal(p.characters, writingCharacters(l).length);
+  assert.equal(p.listening, 0);
+  const listening = event({kind:'task', lessonId:l.id, task:'listening', answers:wordQuestions(l.words).slice(0,3).map(q=>q.answer)});
+  assert.equal(stageProgress([...evidence,listening]).find(p=>p.stage==='n4')!.listening, 1);
 });

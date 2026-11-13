@@ -10,9 +10,15 @@ or replaced with Japanese-only contracts. Database migration history is preserve
 - `/course`: public, responsive daily course with an explicit sequence, task
   feedback, Japanese audio where the device supports it, writing animation and
   ordered tracing, due reviews and a visible daily completion state.
-- Canonical curriculum under `packages/curriculum`: 26 kana units and 24 original
-  N5 foundation units, 198 vocabulary records, passages, Mongolian explanation,
-  recall/comprehension questions and 102 beginner kanji entries.
+- Canonical curriculum under `packages/curriculum`: 26 kana, 40 original N5 and
+  32 original N4 foundation units, 486 vocabulary records (416 distinct spelling/
+  reading pairs), original passages, Mongolian grammar, comprehension tasks and
+  198 kanji entries. Kanji passages offer optional kana support and Japanese audio.
+- Stage evidence separates completed core lessons, distinct introduced words,
+  traced characters and listening. Placement recognition does not invent writing
+  or vocabulary mastery. Dictionary size never counts as taught content.
+- Daily kanji opens that character directly; writing shows Mongolian meaning,
+  representative readings and a Japanese example beside the stroke tutor.
 - Recognition-based placement of all 46 hiragana, requiring 90%; this skips only
   hiragana in the new course. It does not claim writing/fluency or unlock N4.
 - Optional speaking checks final `ja-JP` transcripts. Interim hypotheses, mic
@@ -24,7 +30,7 @@ or replaced with Japanese-only contracts. Database migration history is preserve
   retryable message. CORS headers support native WebView access after deployment.
 - Supplementary dictionary with 13,108 Japanese characters and all 2,136 jōyō,
   original source metadata/credits, search, pagination and Japanese readings.
-  English meanings supplement the 102 Mongolian descriptions. No WaniKani data
+  English meanings supplement the 198 Mongolian descriptions. No WaniKani data
   or SKIP codes are included.
 - Exposure-driven review queue; successful/failed recalls change future due time.
 - Account-scoped local progress, event union/idempotent D1 writes, prerequisite
@@ -69,17 +75,27 @@ Do not drop learner progress tables during an application rollback.
 
 ## Content boundary and next work
 
-The course teaches the complete modern base kana plus combinations and a coherent
-N5 foundation. It is not the complete N5 vocabulary inventory or a full N4–N1
-curriculum. Those levels are roadmap entries, visibly labeled as unavailable
-course content. Dictionary and stroke coverage do not count as taught/mastered
-vocabulary or exam readiness. A Japanese teacher should review authored content
-before educational claims or broad distribution.
+The course teaches the modern base kana, combinations, N5 foundations and a
+guided N4 foundation path. These are editorial learning stages, not official JLPT
+content inventories or certification. The official JLPT FAQ explains that current
+vocabulary/kanji/grammar lists are not published. The 36-question checkpoint
+remains a foundation practice, not a full-length mock or a level unlock.
 
-Next content work: expand N5 words and graded listening, independently review
-Mongolian explanations, add held-out full-length mock banks, and author N4 then
-N3/N2 units. Acoustic pronunciation assessment needs a separately validated speech
+New units cover plain/て/た forms, dates, particles, shopping and schedules, then
+explanation, experience, intention, potential, conditions, giving/receiving,
+preparation/result states, passive/causative and introductory respectful language.
+There are 6 vocabulary records per new lesson and original comprehension tasks.
+Kana support can be revealed; it does not replace the Japanese reading target.
+Teacher review in Japanese and Mongolian is still needed.
+
+Next content work: broaden N5/N4 words and graded listening, independently review
+Mongolian explanations, add held-out full-length mock banks, and author N3/N2/N1
+units. Acoustic pronunciation assessment needs a separately validated speech
 alignment/scoring service; browser transcription alone cannot supply it.
+
+Sources consulted for scope/basic grammar, without copying curriculum exercises:
+- https://www.jlpt.jp/e/faq/
+- https://www.irodori.jpf.go.jp/assets/data/elementary02/pdf/Z_contents_en.pdf
 
 ## Validation evidence
 
@@ -99,3 +115,15 @@ reference these records. Add units with new IDs; publish revised exercises under
 new versioned IDs rather than changing historical answer keys. Keep earlier units
 available when introducing a new course revision. Dictionary refreshes do not
 change lesson mastery or inflate taught vocabulary counts.
+
+## Continuation wave: N5 expansion and N4 foundations
+
+The original 50 records and answer ordering are preserved. New N5 units append
+after them, followed by N4: returning learners at the old end continue with
+`n5-25`. N4 requires completion of all preceding core units, including the new
+N5 expansion. Existing exports remain version 1 and do not need a reset or a D1
+schema change. Historical task evidence remains interpretable.
+
+Regression coverage includes 50 published-content fingerprints, old-export
+continuation, the N4 prerequisite boundary, distinct word evidence, kana reading
+support, kanji deep links and absence of a kana sound grid for N4 kanji.

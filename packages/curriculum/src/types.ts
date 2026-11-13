@@ -1,4 +1,4 @@
-export type Stage = 'hiragana' | 'katakana' | 'n5';
+export type Stage = 'hiragana' | 'katakana' | 'n5' | 'n4';
 export type Task =
   | 'words'
   | 'reading'
@@ -36,6 +36,8 @@ export type Lesson = {
   words: Vocabulary[];
   grammar: string;
   passage: string;
+  /** Optional kana support; the original Japanese passage remains the reading target. */
+  passageKana?: string;
   translation: string;
   readingQuestion: Question;
   grammarQuestion: Question;
