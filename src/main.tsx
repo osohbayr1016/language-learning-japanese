@@ -1,12 +1,20 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import App from './app/App';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import App from "./app/App";
 
-const el = document.getElementById('root');
-if (!el) throw new Error('#root missing from index.html');
+const el = document.getElementById("root");
+if (!el) throw new Error("#root missing from index.html");
 
 createRoot(el).render(
   <StrictMode>
     <App />
-  </StrictMode>
+  </StrictMode>,
 );
+
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker
+      .register("/course-worker.js")
+      .catch(() => undefined);
+  });
+}

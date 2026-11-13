@@ -1,0 +1,9 @@
+name: Release Japanese API and web
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  release:
+    uses: ./.github/workflows/deploy.yml
+    secrets: inherit

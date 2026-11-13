@@ -7,7 +7,7 @@ import { colors, spacing, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 import { StudyHeader } from '../study/StudyHeader';
 import { StudyEmptyState } from '../study/EmptyState';
-import { HanziWriterView, type HanziWriterEvent, type HanziWriterMode } from '../../components/writing/HanziWriterView';
+import { KanjiWriterView, type KanjiWriterEvent, type KanjiWriterMode } from '../../components/writing/KanjiWriterView';
 import { WriterControls } from './WriterControls';
 import { CharacterPicker } from './CharacterPicker';
 import { AccuracyMeter } from './AccuracyMeter';
@@ -22,7 +22,7 @@ export default function WriterScreen() {
   const canvasSize = Math.min(width - spacing.lg * 2, 320);
 
   const [idx, setIdx] = useState(0);
-  const [mode, setMode] = useState<HanziWriterMode>('animate');
+  const [mode, setMode] = useState<KanjiWriterMode>('animate');
   const [mistakes, setMistakes] = useState(0);
   const [completed, setCompleted] = useState<{ strokes: number } | null>(null);
   const [startedAt, setStartedAt] = useState<number>(Date.now());
@@ -60,7 +60,7 @@ export default function WriterScreen() {
     );
   }
 
-  const handleEvent = (e: HanziWriterEvent) => {
+  const handleEvent = (e: KanjiWriterEvent) => {
     if (e.type === 'mistake') setMistakes((m) => m + 1);
     if (e.type === 'complete') setCompleted({ strokes: e.strokes });
   };
@@ -104,7 +104,7 @@ export default function WriterScreen() {
         <CharacterPicker words={words} current={current!} onPick={(w) => setIdx(words.findIndex((x) => x.id === w.id))} />
       ) : null}
       <View style={styles.canvasWrap}>
-        <HanziWriterView
+        <KanjiWriterView
           key={`${current!.id}-${mode}`}
           char={firstChar}
           mode={mode}

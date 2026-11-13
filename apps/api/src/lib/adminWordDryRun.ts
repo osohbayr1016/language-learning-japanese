@@ -56,4 +56,3 @@ export async function fetchExistingKanjiMnPairs(
 }
 
 // Re-export legacy name for backwards compat within this session
-export { fetchExistingKanjiMnPairs as fetchExistingHanziMnPairs };

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Card } from '../../../primitives';
-import { ToneColoredText, PinyinRow } from '../../../components/hanzi';
+import { JapaneseText, RomajiRow } from '../../../components/japanese';
 import { PronounceButton } from '../../../components/audio/PronounceButton';
 import { colors, spacing, typography } from '../../../theme';
 import type { Word } from '../../../lib/types';
@@ -16,8 +16,8 @@ export function TranslateQuestion({ word, direction }: Props) {
     <Card padding="lg" variant="elevated" style={styles.card}>
       {direction === 'jp-to-mn' ? (
         <View style={styles.center}>
-          <ToneColoredText hanzi={word.kanji} size="lg" />
-          <PinyinRow pinyin={word.romaji ?? ''} size="md" />
+          <JapaneseText text={word.kanji} size="lg" />
+          <RomajiRow romaji={word.romaji ?? ''} size="md" />
           <PronounceButton wordId={word.id} meaningMn={word.meaning_mn} size="md" style={{ marginTop: spacing.sm }} />
         </View>
       ) : (

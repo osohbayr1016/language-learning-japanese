@@ -6,7 +6,7 @@ import { useSrsRating } from '../../../hooks/useSrsRating';
 import { useAdaptiveTimer } from '../../../hooks/useAdaptiveTimer';
 import { useAudio } from '../../../context/AudioContext';
 import { calculateXP } from '@japanese-learning/srs';
-import { stripToneMarks } from '../../../lib/tones';
+import { normalizeRomaji } from '../../../lib/romaji';
 import { colors, spacing } from '../../../theme';
 import { mn } from '../../../i18n/mn';
 import { StudyHeader } from '../StudyHeader';
@@ -21,7 +21,7 @@ function isAnswerCorrect(input: string, word: WordWithProgress): boolean {
   const trimmed = input.trim();
   if (!trimmed) return false;
   if (trimmed === word.kanji) return true;
-  return stripToneMarks(trimmed) === stripToneMarks(word.romaji);
+  return normalizeRomaji(trimmed) === normalizeRomaji(word.romaji);
 }
 
 export default function WriteScreen() {

@@ -1,5 +1,5 @@
 import type React from 'react';
-import { StyleSheet } from 'react-native-web';
+import { StyleSheet as RNStyleSheet } from 'react-native';
 
 /**
  * Collapse a React Native style prop into a plain CSS object.
@@ -15,7 +15,7 @@ import { StyleSheet } from 'react-native-web';
  * react-native-web component has to funnel its style through here first.
  */
 export function toCssStyle(style: unknown): React.CSSProperties {
-  const flat = StyleSheet.flatten(style as never) as Record<string, unknown> | null | undefined;
+  const flat = RNStyleSheet.flatten(style as never) as Record<string, unknown> | null | undefined;
   if (!flat || typeof flat !== 'object') return {};
 
   const css: Record<string, unknown> = {};

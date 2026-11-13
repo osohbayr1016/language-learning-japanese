@@ -1,3 +1,4 @@
+import { getWebKeyboardTarget, type WebKeyboardEvent } from '../../../lib/webKeyboard';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-native';
 import { Button, Screen } from '../../../primitives';
@@ -110,7 +111,7 @@ export function LearnScreen({ source = 'due' }: Props) {
   useEffect(() => {
     if (Platform.OS !== 'web' || loading || done || !current) return;
 
-    const onKey = (event: KeyboardEvent) => {
+    const onKey = (event: WebKeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
 
       if (answer && event.key === 'Enter') {
@@ -128,8 +129,10 @@ export function LearnScreen({ source = 'due' }: Props) {
       }
     };
 
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const keyboard = getWebKeyboardTarget();
+    if (!keyboard) return;
+    keyboard.addEventListener('keydown', onKey);
+    return () => keyboard.removeEventListener('keydown', onKey);
   }, [answer, current, done, handleContinue, handleSelect, loading, options]);
 
   if (loading) {

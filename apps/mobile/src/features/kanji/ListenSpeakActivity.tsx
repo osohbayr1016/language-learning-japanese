@@ -66,9 +66,9 @@ function ListenSpeakSpeakPhase({
   return (
     <>
       <Text style={styles.instruction}>Одоо та дараах байдлаар хэлж үзээрэй:</Text>
-      <View style={styles.pinyinBox}>
-        <Text style={styles.hanziLarge}>{word.kanji}</Text>
-        <Text style={styles.pinyinLarge}>{word.romaji}</Text>
+      <View style={styles.romajiBox}>
+        <Text style={styles.kanjiLarge}>{word.kanji}</Text>
+        <Text style={styles.romajiLarge}>{word.romaji}</Text>
       </View>
       <Text style={styles.meaning}>{word.meaning_mn}</Text>
 
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     textAlign: 'center',
   },
-  pinyinBox: {
+  romajiBox: {
     alignItems: 'center',
     backgroundColor: colors.bg.secondary,
     borderRadius: radius.lg,
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  hanziLarge: { fontSize: 56, fontWeight: '800', color: colors.text.primary },
-  pinyinLarge: { ...typography.heading.lg, color: colors.brand.secondary, marginTop: 4 },
+  kanjiLarge: { fontSize: 56, fontWeight: '800', color: colors.text.primary },
+  romajiLarge: { ...typography.heading.lg, color: colors.brand.secondary, marginTop: 4 },
   meaning: { ...typography.body.md, color: colors.text.muted },
   btn: { width: '100%' },
   back: { padding: spacing.sm },

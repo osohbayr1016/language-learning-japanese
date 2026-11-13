@@ -1,0 +1,17 @@
+{
+  "entries": 13108,
+  "joyo": 2136,
+  "source": "KANJIDIC via davidluzgouveia/kanji-data",
+  "revision": "00fd7079c3890f430759536f91aa5e854ec0ca4f",
+  "license": "CC-BY-SA-4.0",
+  "fields": [
+    "char",
+    "meanings",
+    "readings_on",
+    "readings_kun",
+    "strokes",
+    "grade"
+  ],
+  "sourceUrl": "https://github.com/davidluzgouveia/kanji-data",
+  "licenseUrl": "https://www.edrdg.org/edrdg/licence.html"
+}

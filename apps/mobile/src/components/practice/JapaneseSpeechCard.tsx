@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import type { Word } from '../../lib/types';
 import { getSpeechDisplay, type SpeechPromptScope } from '../../lib/audio/speechCardTargets';
 import { SayFallback } from '../../features/lessons/exercises/SayFallback';
@@ -69,6 +69,7 @@ export function JapaneseSpeechCard({
           onSkip={() => s.markFallbackAnswer(false)}
         />
       )}
+      <Text style={{fontSize:12,color:'#5C6A60',marginTop:12}}>Япон яриа танилтын текстийн тохирол; авиа, pitch accent-ийн үнэлгээ биш. Хөтөч дууг яриа таних үйлчилгээ рүү илгээж болно.</Text>
       <SpeakSuccessCelebration stamp={s.celebrateStamp} />
     </View>
   );

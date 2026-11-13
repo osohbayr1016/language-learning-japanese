@@ -76,7 +76,7 @@ export function AdminCartoonsScreen() {
           <Pressable style={styles.row} onPress={() => setAttachId(item.id)}>
             <Text style={styles.rowTitle}>{item.title_mn}</Text>
             <Text style={styles.meta}>
-              #{item.id} · HSK {item.jlpt_level ?? '—'} · {item.duration_s}s
+              #{item.id} · JLPT {item.jlpt_level ? 'N'+(6-item.jlpt_level) : '—'} · {item.duration_s}s
             </Text>
             <Text style={styles.link}>Үг холбох →</Text>
           </Pressable>

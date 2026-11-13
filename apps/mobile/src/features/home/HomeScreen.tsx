@@ -1,21 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { Screen } from '../../primitives';
-import { useGamification } from '../../context/GamificationContext';
-import { useAuth } from '../../context/AuthContext';
-import { api } from '../../lib/api';
-import { colors, spacing, typography } from '../../theme';
-import { LearnerStatusBar } from './LearnerStatusBar';
-import { DailyQuestCard } from './DailyQuestCard';
-import { LearningPathMap } from './LearningPathMap';
-import { useLessonChapters } from '../lessons/useLessonChapters';
-import { useStudyNextAction } from '../study/useStudyNextAction';
-import { StudyDataStatusCard } from '../study/StudyDataStatusCard';
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Screen } from "../../primitives";
+import { useGamification } from "../../context/GamificationContext";
+import { useAuth } from "../../context/AuthContext";
+import { api } from "../../lib/api";
+import { colors, spacing, typography } from "../../theme";
+import { LearnerStatusBar } from "./LearnerStatusBar";
+import { DailyQuestCard } from "./DailyQuestCard";
+import { LearningPathMap } from "./LearningPathMap";
+import { useLessonChapters } from "../lessons/useLessonChapters";
+import { useStudyNextAction } from "../study/useStudyNextAction";
+import { StudyDataStatusCard } from "../study/StudyDataStatusCard";
 
 export default function HomeScreen() {
   const { streak, todayXp, dailyGoal, refresh } = useGamification();
   const { token } = useAuth();
-  const [name, setName] = useState('Сурагч');
+  const router = useRouter();
+  const [name, setName] = useState("Сурагч");
 
   const {
     chapters,
@@ -36,9 +38,10 @@ export default function HomeScreen() {
     void refresh();
     if (!token) return;
     let alive = true;
-    void api.user.profile(token)
+    void api.user
+      .profile(token)
       .then((p) => {
-        if (alive) setName(p.data.display_name || 'Сурагч');
+        if (alive) setName(p.data.display_name || "Сурагч");
       })
       .catch(() => undefined);
     return () => {
@@ -62,6 +65,30 @@ export default function HomeScreen() {
         goal={dailyGoal}
       />
 
+      {Platform.OS === "web" && (
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Өдрийн япон хэлний хөтөлбөр"
+          onPress={() => router.push("/course" as never)}
+          style={{
+            backgroundColor: "#E7EDDF",
+            padding: 22,
+            borderRadius: 18,
+            marginBottom: 18,
+            borderWidth: 1,
+            borderColor: "#CBD5BE",
+          }}
+        >
+          <Text style={{ fontSize: 23, fontWeight: "700", color: "#233C33" }}>
+            Өдрийн япон хэлний хөтөлбөр →
+          </Text>
+          <Text style={{ fontSize: 15, color: "#415C49", marginTop: 8 }}>
+            Канаас N4 суурь хүртэлх хөтөлбөр · унших, бичих, үг, ханз · 20
+            минутын төлөвлөгөө
+          </Text>
+        </Pressable>
+      )}
+
       <DailyQuestCard
         action={action}
         loading={actionLoading}
@@ -71,11 +98,15 @@ export default function HomeScreen() {
 
       {lessonsError ? (
         <StudyDataStatusCard
-          kind={degraded ? 'warning' : 'error'}
-          title={degraded ? 'Явцын мэдээлэл түр алга' : 'Суралцах замыг ачаалж чадсангүй'}
+          kind={degraded ? "warning" : "error"}
+          title={
+            degraded
+              ? "Явцын мэдээлэл түр алга"
+              : "Суралцах замыг ачаалж чадсангүй"
+          }
           message={
             degraded
-              ? 'Хичээлийн замыг харуулж байна, гэхдээ таны хувийн явц түр баталгаажаагүй.'
+              ? "Хичээлийн замыг харуулж байна, гэхдээ таны хувийн явц түр баталгаажаагүй."
               : lessonsError
           }
           onRetry={retryLessons}
@@ -147,7 +178,7 @@ const styles = StyleSheet.create({
   },
   pathSkeleton: {
     minHeight: 420,
-    alignItems: 'center',
+    alignItems: "center",
     paddingTop: spacing.xl,
   },
   skeletonCircle: {

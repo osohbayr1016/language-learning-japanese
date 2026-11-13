@@ -8,7 +8,7 @@ try {
 export const SPEECH_SUPPORTED = !!mod?.ExpoSpeechRecognitionModule;
 
 export async function nativeEnsurePermission(): Promise<boolean> {
-  if (!SPEECH_SUPPORTED || !mod) return false;
+  if (!mod?.ExpoSpeechRecognitionModule) return false;
   try {
     const current = await mod.ExpoSpeechRecognitionModule.getPermissionsAsync();
     if (current.granted) return true;
@@ -20,7 +20,7 @@ export async function nativeEnsurePermission(): Promise<boolean> {
 }
 
 export function nativeStart(contextual?: string[]): void {
-  if (!SPEECH_SUPPORTED || !mod) return;
+  if (!mod?.ExpoSpeechRecognitionModule) return;
   mod.ExpoSpeechRecognitionModule.start({
     lang: 'ja-JP',
     interimResults: true,
@@ -32,7 +32,7 @@ export function nativeStart(contextual?: string[]): void {
 }
 
 export function nativeStop(): void {
-  if (!SPEECH_SUPPORTED || !mod) return;
+  if (!mod?.ExpoSpeechRecognitionModule) return;
   try {
     mod.ExpoSpeechRecognitionModule.stop();
   } catch {
@@ -41,7 +41,7 @@ export function nativeStop(): void {
 }
 
 export function nativeAbort(): void {
-  if (!SPEECH_SUPPORTED || !mod) return;
+  if (!mod?.ExpoSpeechRecognitionModule) return;
   try {
     mod.ExpoSpeechRecognitionModule.abort();
   } catch {

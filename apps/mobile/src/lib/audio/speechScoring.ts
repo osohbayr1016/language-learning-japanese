@@ -43,7 +43,7 @@ export type UtteranceScore = {
   matchedTranscript: string;
 };
 
-const PASS_RATIO = 0.62;
+const PASS_RATIO = 0.9;
 
 /** Blend of per-character alignment and whole-string edit distance, 0…1. */
 function similarity(spoken: string[], target: string[]): number {
@@ -98,7 +98,7 @@ export function scoreJapaneseUtterance(spokenRaw: string, target: SpeechTarget):
   return {
     ratio,
     points,
-    pass: ratio >= PASS_RATIO,
+    pass: ratio >= (Math.max(targetReading.length, targetChars.length) <= 4 ? 1 : PASS_RATIO),
     surfaceRatio,
     readingRatio,
     charGrades,

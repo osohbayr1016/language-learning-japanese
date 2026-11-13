@@ -10,6 +10,7 @@ export const ADMIN_HUB_SECTIONS: AdminHubSectionDef[] = [
   {
     titleKey: 'hubSectionCourses',
     items: [
+      {title:'JLPT хичээлүүд',icon:'book',color:colors.brand.primary,href:'/admin/jlpt-lessons'},
       {
         title: 'Суралцах зам',
         icon: 'git-branch',
@@ -52,7 +53,7 @@ export const ADMIN_HUB_SECTIONS: AdminHubSectionDef[] = [
         href: '/admin/cartoons',
       },
       {
-        title: 'Шалгалт (PDF)',
+        title: 'Шалгалт (JSON)',
         icon: 'document-text',
         color: colors.brand.secondary,
         href: '/admin/exam-import',

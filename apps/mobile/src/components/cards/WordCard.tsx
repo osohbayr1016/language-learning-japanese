@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Card, Pill } from '../../primitives';
-import { ToneColoredText, PinyinRow } from '../hanzi';
+import { JapaneseText, RomajiRow } from '../japanese';
 import { PronounceButton } from '../audio/PronounceButton';
 import { colors, spacing, typography } from '../../theme';
 import type { Word } from '../../lib/types';
@@ -15,18 +15,18 @@ type Props = {
 };
 
 export function WordCard({ word, onPress, showAudio = true, compact = false }: Props) {
-  const hskColor = colors.jlpt[word.jlpt_level as keyof typeof colors.jlpt] ?? colors.accent.purple;
+  const jlptColor = colors.jlpt[word.jlpt_level as keyof typeof colors.jlpt] ?? colors.accent.purple;
 
   return (
     <Card onPress={onPress} padding={compact ? 'sm' : 'md'} style={styles.card}>
       <View style={styles.row}>
         <View style={styles.left}>
-          <ToneColoredText hanzi={word.kanji} tones={undefined} size={compact ? 'sm' : 'md'} align="left" />
-          <PinyinRow pinyin={word.romaji ?? ''} size={compact ? 'sm' : 'md'} align="left" />
+          <JapaneseText text={word.kanji} size={compact ? 'sm' : 'md'} align="left" />
+          <RomajiRow romaji={word.romaji ?? ''} size={compact ? 'sm' : 'md'} align="left" />
           <Text style={styles.meaning} numberOfLines={2}>{word.meaning_mn}</Text>
         </View>
         <View style={styles.right}>
-          <Pill label={jlptNLabel(word.jlpt_level)} color={hskColor} />
+          <Pill label={jlptNLabel(word.jlpt_level)} color={jlptColor} />
           {showAudio ? (
             <PronounceButton wordId={word.id} meaningMn={word.meaning_mn} size="sm" style={{ marginTop: spacing.sm }} />
           ) : null}

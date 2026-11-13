@@ -1,12 +1,18 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, typography } from '../../theme';
-import { mn } from '../../i18n/mn';
-import type { InsightsSkills, SkillKey } from '../../lib/types';
-import { SectionCard } from './SectionCard';
-import { SkillGauge } from './SkillGauge';
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { colors, typography } from "../../theme";
+import { mn } from "../../i18n/mn";
+import type { InsightsSkills, SkillKey } from "../../lib/types";
+import { SectionCard } from "./SectionCard";
+import { SkillGauge } from "./SkillGauge";
 
-const ORDER: SkillKey[] = ['listening', 'pronunciation', 'pitch', 'recall', 'reading', 'stroke'];
+const ORDER: SkillKey[] = [
+  "listening",
+  "pronunciation",
+  "recall",
+  "reading",
+  "stroke",
+];
 
 type Props = { skills: InsightsSkills | null };
 
@@ -36,6 +42,15 @@ export function GrowthAreaCard({ skills }: Props) {
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
-  empty: { ...typography.body.md, color: colors.text.secondary, textAlign: 'center', paddingVertical: 12 },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  empty: {
+    ...typography.body.md,
+    color: colors.text.secondary,
+    textAlign: "center",
+    paddingVertical: 12,
+  },
 });

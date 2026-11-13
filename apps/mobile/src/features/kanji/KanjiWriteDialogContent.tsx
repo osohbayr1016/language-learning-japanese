@@ -7,8 +7,8 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { HanziWriterView } from "../../components/writing/HanziWriterView";
-import type { HanziWriterHandle } from "../../components/writing/hanziWriterTypes";
+import { KanjiWriterView } from "../../components/writing/KanjiWriterView";
+import type { KanjiWriterHandle } from "../../components/writing/kanjiWriterTypes";
 import { colors, radius, shadows, spacing, typography } from "../../theme";
 import { mn } from "../../i18n/mn";
 
@@ -32,7 +32,7 @@ export function KanjiWriteDialogContent({
 }: Props) {
   const { width } = useWindowDimensions();
   const canvas = Math.min(Math.max(width - spacing.xl * 4, 200), 272);
-  const writerRef = useRef<HanziWriterHandle>(null);
+  const writerRef = useRef<KanjiWriterHandle>(null);
   const glyph = Array.from(kanji.trim())[0] ?? "";
 
   const replay = useCallback(() => writerRef.current?.reset(), []);
@@ -52,7 +52,7 @@ export function KanjiWriteDialogContent({
 
       {glyph ? (
         <View style={s.writerBox}>
-          <HanziWriterView
+          <KanjiWriterView
             ref={writerRef}
             char={glyph}
             mode="animate"

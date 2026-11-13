@@ -44,7 +44,7 @@ export function useSafeAreaInsets(): EdgeInsets {
 export function SafeAreaProvider({ children }: { children?: React.ReactNode }) {
   return <>{children}</>;
 }
-export function SafeAreaView({ children, style }: { children?: React.ReactNode; style?: unknown }) {
+export function SafeAreaView({ children, style }: { children?: React.ReactNode; style?: unknown; edges?:string[] }) {
   return <View style={style as never}>{children}</View>;
 }
 export const initialWindowMetrics = null;

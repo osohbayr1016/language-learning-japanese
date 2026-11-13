@@ -1,3 +1,4 @@
+import { getWebKeyboardTarget, type WebKeyboardEvent } from '../../lib/webKeyboard';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -92,7 +93,7 @@ export default function KanaCheckpointScreen() {
 
   useEffect(() => {
     if (Platform.OS !== 'web' || finished) return;
-    const onKey = (event: KeyboardEvent) => {
+    const onKey = (event: WebKeyboardEvent) => {
       if (event.altKey || event.ctrlKey || event.metaKey) return;
       const optionIndex = Number(event.key) - 1;
       if (Number.isInteger(optionIndex) && optionIndex >= 0 && optionIndex < question.options.length) {
@@ -105,8 +106,10 @@ export default function KanaCheckpointScreen() {
         void advance();
       }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const keyboard = getWebKeyboardTarget();
+    if (!keyboard) return;
+    keyboard.addEventListener('keydown', onKey);
+    return () => keyboard.removeEventListener('keydown', onKey);
   }, [advance, choose, finished, question.options]);
 
   if (finished) {

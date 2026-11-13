@@ -7,7 +7,7 @@ export async function passesJlptN5AdvanceGate(db: D1Database, userId: number): P
       `SELECT 1 AS ok FROM user_exam_sessions s
        JOIN exam_templates t ON t.id = s.template_id
        WHERE s.user_id = ? AND s.status = 'completed' AND s.passed = 1
-         AND t.jlpt_level = 1 AND t.is_published = 1
+         AND t.jlpt_level = 1 AND t.is_published = 1 AND t.max_score=180 AND t.qualifies_for_level_gate=1
        LIMIT 1`
     )
     .bind(userId)

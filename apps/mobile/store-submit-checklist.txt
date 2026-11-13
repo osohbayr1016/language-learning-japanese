@@ -1,14 +1,14 @@
 Pre-submit checklist (manual in Apple App Store Connect + Google Play Console)
 
 Apple (ios.buildNumber bumps each upload)
-- Bundle ID: com.chineselearning.app matches Xcode/EAS credentials.
+- Bundle ID: com.japaneselearning.app matches Xcode/EAS credentials.
 - App Privacy questionnaire aligned with API/profile/auth/microphone/speech data use.
 - Support URL + Privacy Policy URL (public HTTPS).
 - Screenshots per required device sizes; age rating; export compliance (ITSAppUsesNonExemptEncryption false).
 - Device smoke test: login, lessons, speech/microphone.
 
 Google Play (android.versionCode bumps each upload)
-- Package name: com.chineselearning.app matches Play app ID.
+- Package name: com.japaneselearning.app matches Play app ID.
 - Upload AAB from: pnpm eas:build:android (repo root) or apps/mobile eas:build:android.
 - Data safety form; content rating; target audience; privacy policy URL.
 - Internal/open testing before production rollout.

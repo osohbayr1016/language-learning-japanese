@@ -12,6 +12,3 @@ export type SetupAnswers = {
 };
 
 export const TOTAL_STEPS = 5;
-
-/** @deprecated */
-export type ChineseLevel = JlptSelfLevel;

@@ -1,61 +1,67 @@
-/** Section weights aligned with templates using max_score=200 (listening 100 + reading 100). */
-export const SECTION_SCORE_CAPS = {
-  listening: 100,
-  reading: 100,
-} as const;
-
-type MinimalQ = { id: number; section: string };
-
-export function sectionalScores<
-  Q extends MinimalQ & { correct_answer?: string },
->(questions: Q[], correctnessById: Map<number, boolean>): {
-  listening: number;
-  reading: number;
-  total: number;
-  listening_correct: number;
-  listening_total: number;
-  reading_correct: number;
-  reading_total: number;
-} {
-  let lHits = 0;
-  let lTot = 0;
-  let rHits = 0;
-  let rTot = 0;
-  for (const q of questions) {
-    if (q.section === 'listening') {
-      lTot++;
-      if (correctnessById.get(q.id)) lHits++;
-    } else if (q.section === 'reading') {
-      rTot++;
-      if (correctnessById.get(q.id)) rHits++;
-    }
-  }
-  const capL = SECTION_SCORE_CAPS.listening;
-  const capR = SECTION_SCORE_CAPS.reading;
-
-  const listening = lTot > 0 ? Math.round((lHits / lTot) * capL) : 0;
-  const reading = rTot > 0 ? Math.round((rHits / rTot) * capR) : 0;
-  const total = Math.min(capL + capR, listening + reading);
+import { JLPT, jlptName } from '../../../../packages/curriculum/src/jlpt';
+/** Practice proportions in official section ranges, NOT official IRT scaled scores. */
+export function sectionalScores<Q extends { id: number; section: string }>(
+  questions: Q[],
+  correctnessById: Map<number, boolean>,
+  band = 1,
+) {
+  const rule = JLPT[jlptName(band)];
+  const count = (section: string) => {
+    const qs = questions.filter((q) => q.section === section);
+    return {
+      total: qs.length,
+      correct: qs.filter((q) => correctnessById.get(q.id)).length,
+    };
+  };
+  const l = count('listening'),
+    r = count('reading'),
+    k = count('knowledge');
+  const advanced = band >= 3;
+  const listening = l.total ? Math.round((l.correct / l.total) * 60) : 0;
+  const knowledge = advanced
+    ? k.total
+      ? Math.round((k.correct / k.total) * 60)
+      : 0
+    : 0;
+  const readTotal = advanced ? r.total : r.total + k.total,
+    readCorrect = advanced ? r.correct : r.correct + k.correct;
+  const reading = readTotal
+    ? Math.round((readCorrect / readTotal) * (advanced ? 60 : 120))
+    : 0;
+  const total = listening + reading + knowledge;
+  const sectionsPassed =
+    l.total > 0 &&
+    readTotal > 0 &&
+    listening >= 19 &&
+    reading >= (advanced ? 19 : 38) &&
+    (!advanced || (k.total > 0 && knowledge >= 19));
   return {
     listening,
     reading,
+    knowledge,
     total,
-    listening_correct: lHits,
-    listening_total: lTot,
-    reading_correct: rHits,
-    reading_total: rTot,
+    passed: sectionsPassed && total >= rule.pass,
+    listening_correct: l.correct,
+    listening_total: l.total,
+    reading_correct: readCorrect,
+    reading_total: readTotal,
+    knowledge_correct: k.correct,
+    knowledge_total: k.total,
   };
 }
-
-export function examAnswerOk(type: string, userRaw: unknown, correct: string): boolean {
-  const u = String(userRaw ?? '').trim();
-  const c = String(correct ?? '').trim();
-  if (type === 'word_picture') {
-    const ok = ['true', 'false'].includes(u.toLowerCase()) && u.toLowerCase() === c.toLowerCase();
-    return ok;
-  }
-  if (type === 'picture_match')
-    return u.toLowerCase() === c.toLowerCase();
-  if (type === 'paper_mcq') return u.trim() === c.trim();
-  return u === c;
+export function examAnswerOk(
+  type: string,
+  userRaw: unknown,
+  correct: string,
+): boolean {
+  const u = String(userRaw ?? '').trim(),
+    c = String(correct ?? '').trim();
+  if (type === 'word_picture')
+    return (
+      ['true', 'false'].includes(u.toLowerCase()) &&
+      u.toLowerCase() === c.toLowerCase()
+    );
+  return type === 'picture_match'
+    ? u.toLowerCase() === c.toLowerCase()
+    : u === c;
 }

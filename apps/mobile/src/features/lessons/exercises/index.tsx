@@ -10,6 +10,7 @@ import { TrueFalse } from './TrueFalse';
 import { SaySentence } from './SaySentence';
 import { ImportedWorkbookCard } from './ImportedWorkbookCard';
 import { ImportedSectionCard } from '../importedSections/ImportedSectionCard';
+import { InLessonGamesHub } from '../games/InLessonGamesHub';
 import { mn } from '../../../i18n/mn';
 import type { WordWithProgress } from '../../../lib/types';
 
@@ -22,6 +23,7 @@ type Props = {
 
 export function ExerciseRenderer({ exercise, lessonWords, disabled, onAnswer }: Props) {
   switch (exercise.kind) {
+    case 'in-lesson-games-hub': return <InLessonGamesHub onContinue={()=>onAnswer(true)} onDone={()=>onAnswer(true)}/>;
     case 'memorize':
       return <MemorizeCard exercise={exercise} disabled={disabled} onAnswer={onAnswer} />;
     case 'choose-word':
@@ -54,6 +56,7 @@ export function ExerciseRenderer({ exercise, lessonWords, disabled, onAnswer }: 
 
 export function exercisePromptFor(exercise: Exercise): string {
   switch (exercise.kind) {
+    case 'in-lesson-games-hub': return 'Хичээлээ давтах';
     case 'memorize':
       return 'Энэ үгийг сайн цээжил';
     case 'choose-word':
@@ -79,6 +82,7 @@ export function exercisePromptFor(exercise: Exercise): string {
 
 export function exerciseCorrectAnswer(exercise: Exercise): string {
   switch (exercise.kind) {
+    case 'in-lesson-games-hub': return 'Хичээлээ давтах';
     case 'memorize':
       return exercise.word.kanji;
     case 'choose-word':

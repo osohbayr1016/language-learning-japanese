@@ -55,6 +55,9 @@ export const exams = {
       ok: boolean;
       data: {
         session_id: number;
+        knowledge_score?:number;
+        knowledge_correct?:number;
+        knowledge_total?:number;
         listening_score: number;
         reading_score: number;
         total_score: number;

@@ -41,8 +41,8 @@ export function AdminVocabularyScreen() {
   const {
     q,
     setQ,
-    hsk,
-    setHsk,
+    jlpt,
+    setJlpt,
     singleOnly,
     setSingleOnly,
     rows,
@@ -63,9 +63,9 @@ export function AdminVocabularyScreen() {
           contentContainerStyle={styles.chipRowIn}
           keyboardShouldPersistTaps="handled"
         >
-          <Chip active={hsk === undefined} label={a.vocabFilterAll} onPress={() => setHsk(undefined)} />
+          <Chip active={jlpt === undefined} label={a.vocabFilterAll} onPress={() => setJlpt(undefined)} />
           {JLPT_OPTS.map((lvl) => (
-            <Chip key={lvl} active={hsk === lvl} label={jlptNLabel(lvl)} onPress={() => setHsk(lvl)} />
+            <Chip key={lvl} active={jlpt === lvl} label={jlptNLabel(lvl)} onPress={() => setJlpt(lvl)} />
           ))}
         </ScrollView>
         <Pressable

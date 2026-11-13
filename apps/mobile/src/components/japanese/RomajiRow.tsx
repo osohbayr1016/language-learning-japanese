@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TextStyle, View } from 'react-native';
 import { colors, typography } from '../../theme';
 
-type Size = keyof typeof typography.pinyin;
+type Size = keyof typeof typography.romaji;
 
 type Props = {
   romaji: string;
@@ -22,7 +22,7 @@ export function RomajiRow({ romaji, size = 'md', style, align = 'center' }: Prop
         },
       ]}
     >
-      <Text style={[typography.pinyin[size], styles.text, style]}>{romaji}</Text>
+      <Text style={[typography.romaji[size], styles.text, style]}>{romaji}</Text>
     </View>
   );
 }

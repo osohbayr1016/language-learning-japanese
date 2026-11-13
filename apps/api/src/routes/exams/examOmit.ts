@@ -1,6 +1,9 @@
 import type { QRow } from './examTypes';
 
-export function omitExamQuestionAnswer(q: QRow, apiOrigin: string): Record<string, unknown> {
+export function omitExamQuestionAnswer(
+  q: QRow,
+  apiOrigin: string,
+): Record<string, unknown> {
   let opts: unknown[] = [];
   if (typeof q.options === 'string' && q.options) {
     try {
@@ -14,7 +17,9 @@ export function omitExamQuestionAnswer(q: QRow, apiOrigin: string): Record<strin
   const audio_url =
     ak && ak.startsWith('exams/')
       ? `${apiOrigin}/api/exams/file/${encodeURIComponent(ak)}`
-      : undefined;
+      : L && q.audio_text?.trim()
+        ? `${apiOrigin}/api/audio/tts?${new URLSearchParams({ text: q.audio_text, speed: 'normal' })}`
+        : undefined;
   return {
     id: q.id,
     section: q.section,

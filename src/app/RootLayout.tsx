@@ -1,23 +1,35 @@
-import React, { Suspense } from 'react';
-import { Outlet, ScrollRestoration, useLocation, useNavigate } from 'react-router-dom';
+import React, { Suspense } from "react";
+import {
+  Outlet,
+  ScrollRestoration,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 
-import { AuthProvider, useAuth } from '@src/context/AuthContext';
-import { AudioProvider } from '@src/context/AudioContext';
-import { GamificationProvider } from '@src/context/GamificationContext';
-import { DisplayPrefsProvider } from '@src/context/DisplayPrefsContext';
-import { AppShell } from '@src/primitives/AppShell';
+import { AuthProvider, useAuth } from "@src/context/AuthContext";
+import { AudioProvider } from "@src/context/AudioContext";
+import { GamificationProvider } from "@src/context/GamificationContext";
+import { DisplayPrefsProvider } from "@src/context/DisplayPrefsContext";
+import { AppShell } from "@src/primitives/AppShell";
 
-import { RouterBridge } from '../compat/expo-router';
-import { ErrorBoundary } from './ErrorBoundary';
-import { RouteChrome } from './RouteChrome';
-import { TabBar, TAB_BAR_PATHS } from './TabBar';
-import { WebRightRail } from './WebRightRail';
+import { RouterBridge } from "../compat/expo-router";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { RouteChrome } from "./RouteChrome";
+import { TabBar, TAB_BAR_PATHS } from "./TabBar";
+import { WebRightRail } from "./WebRightRail";
 
 /** Routes reachable without an account. */
-const PUBLIC_PATHS = new Set(['/login', '/register', '/onboarding', '/setup']);
+const PUBLIC_PATHS = new Set([
+  "/login",
+  "/register",
+  "/onboarding",
+  "/setup",
+  "/forgot-password",
+  "/reset-password",
+]);
 
 function isAdminPath(pathname: string) {
-  return pathname === '/admin' || pathname.startsWith('/admin/');
+  return pathname === "/admin" || pathname.startsWith("/admin/");
 }
 
 /**
@@ -32,25 +44,36 @@ function useRouteGuard() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || pathname === "/course" || pathname === "/") return;
 
     if (isAdminPath(pathname)) {
-      if (!isAuthenticated) navigate('/login?reason=protected', { replace: true });
-      else if (!isAdmin) navigate('/home', { replace: true });
+      if (!isAuthenticated)
+        navigate("/login?reason=protected", { replace: true });
+      else if (!isAdmin) navigate("/course", { replace: true });
       return;
     }
 
+    if (pathname === "/forgot-password" || pathname === "/reset-password")
+      return;
     if (isAuthenticated) {
-      if (PUBLIC_PATHS.has(pathname)) navigate('/home', { replace: true });
+      if (PUBLIC_PATHS.has(pathname)) navigate("/course", { replace: true });
       return;
     }
 
-    if (!hasSeenOnboarding && pathname !== '/onboarding') {
-      navigate('/onboarding', { replace: true });
+    if (PUBLIC_PATHS.has(pathname)) return;
+    if (!hasSeenOnboarding && pathname !== "/onboarding") {
+      navigate("/onboarding", { replace: true });
     } else if (hasSeenOnboarding && !PUBLIC_PATHS.has(pathname)) {
-      navigate('/login?reason=protected', { replace: true });
+      navigate("/login?reason=protected", { replace: true });
     }
-  }, [isAuthenticated, isLoading, hasSeenOnboarding, isAdmin, pathname, navigate]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    hasSeenOnboarding,
+    isAdmin,
+    pathname,
+    navigate,
+  ]);
 }
 
 /**
@@ -80,7 +103,13 @@ function Shell() {
     <AppShell>
       <ScrollRestoration />
       <RouteChrome />
-      <div className={showTabs ? 'web-shell web-shell--tabs' : 'web-shell web-shell--plain'}>
+      <div
+        className={
+          showTabs
+            ? `web-shell web-shell--tabs${pathname === "/course" ? " web-shell--course" : ""}`
+            : "web-shell web-shell--plain"
+        }
+      >
         {showTabs ? <TabBar /> : null}
 
         <main className="web-shell__main">
@@ -93,7 +122,7 @@ function Shell() {
           </ErrorBoundary>
         </main>
 
-        {showTabs ? <WebRightRail /> : null}
+        {showTabs && pathname !== "/course" ? <WebRightRail /> : null}
       </div>
     </AppShell>
   );
@@ -102,9 +131,9 @@ function Shell() {
 /** Removes the boot shell painted by index.html once React has content up. */
 function useDismissBootSplash() {
   React.useEffect(() => {
-    const node = document.getElementById('web-boot-splash');
+    const node = document.getElementById("web-boot-splash");
     if (!node) return;
-    node.style.opacity = '0';
+    node.style.opacity = "0";
     const t = setTimeout(() => node.remove(), 220);
     return () => clearTimeout(t);
   }, []);

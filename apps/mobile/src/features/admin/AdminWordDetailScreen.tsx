@@ -158,11 +158,11 @@ export function AdminWordDetailScreen({ wordId }: Props) {
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.hanzi}>{draft.kanji}</Text>
+          <Text style={styles.kanji}>{draft.kanji}</Text>
           <View style={styles.headerMeta}>
-            <Text style={styles.pinyin}>{draft.romaji}</Text>
-            <View style={styles.hskBadge}>
-              <Text style={styles.hskText}>{jlptNLabel(draft.jlpt_level ?? 1)}</Text>
+            <Text style={styles.romaji}>{draft.romaji}</Text>
+            <View style={styles.jlptBadge}>
+              <Text style={styles.jlptText}>{jlptNLabel(draft.jlpt_level ?? 1)}</Text>
             </View>
           </View>
           <Text style={styles.meaning}>{draft.meaning_mn}</Text>
@@ -266,7 +266,7 @@ export function AdminWordDetailScreen({ wordId }: Props) {
                     style={[styles.lessonItem, addLessonId === ls.id && styles.lessonItemSelected]}
                     onPress={() => setAddLessonId(ls.id)}
                   >
-                    <Text style={styles.lessonItemHsk}>{jlptNLabel(ls.jlpt)}</Text>
+                    <Text style={styles.lessonItemJlpt}>{jlptNLabel(ls.jlpt)}</Text>
                     <Text style={styles.lessonItemTitle} numberOfLines={1}>
                       {ls.chapterTitle} › {ls.title_mn}
                     </Text>
@@ -316,10 +316,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  hanzi: { fontSize: 48, fontWeight: '700', color: colors.text.primary, marginBottom: spacing.xs },
+  kanji: { fontSize: 48, fontWeight: '700', color: colors.text.primary, marginBottom: spacing.xs },
   headerMeta: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.xs },
-  pinyin: { ...typography.body.md, color: colors.brand.primary },
-  hskBadge: {
+  romaji: { ...typography.body.md, color: colors.brand.primary },
+  jlptBadge: {
     backgroundColor: colors.jlpt[1] + '22',
     paddingHorizontal: 8,
     paddingVertical: 2,
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.jlpt[1] + '55',
   },
-  hskText: { fontSize: 12, fontWeight: '700', color: colors.jlpt[1] },
+  jlptText: { fontSize: 12, fontWeight: '700', color: colors.jlpt[1] },
   meaning: { ...typography.body.md, color: colors.text.secondary },
   
   tabsRow: {
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   lessonItemSelected: { backgroundColor: colors.brand.primary + '22' },
-  lessonItemHsk: { fontSize: 12, fontWeight: '700', color: colors.text.muted },
+  lessonItemJlpt: { fontSize: 12, fontWeight: '700', color: colors.text.muted },
   lessonItemTitle: { flex: 1, ...typography.body.sm, color: colors.text.primary },
   addButton: {
     backgroundColor: colors.success,

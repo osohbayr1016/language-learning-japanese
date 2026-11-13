@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { ToneColoredText } from '../../components/hanzi';
+import { JapaneseText } from '../../components/japanese';
 import { colors, radius, spacing } from '../../theme';
 import type { CartoonWord } from '../../lib/api/cartoons';
 
@@ -24,7 +24,7 @@ export function VocabOverlay({ vocab, currentTime, onPick }: Props) {
     <View style={styles.row} pointerEvents="box-none">
       {active.map((v) => (
         <Pressable key={`${v.id}-${v.start_s}`} onPress={() => onPick(v)} style={styles.chip}>
-          <ToneColoredText hanzi={v.kanji} tones={undefined} size="sm" align="left" />
+          <JapaneseText text={v.kanji} size="sm" align="left" />
         </Pressable>
       ))}
     </View>

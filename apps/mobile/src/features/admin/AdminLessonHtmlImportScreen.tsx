@@ -15,7 +15,7 @@ import { lessonHtmlImportStyles as styles } from './AdminLessonHtmlImportStyles'
 function PreviewCard({ p }: { p: LessonHtmlPreview }) {
   return (
     <View style={styles.card}>
-      <Text style={styles.title}>{p.title_cn || p.title_mn}</Text>
+      <Text style={styles.title}>{p.title_jp || p.title_mn}</Text>
       <Text style={styles.hint}>{p.title_mn}</Text>
       <Text style={styles.stat}>ID: {p.external_lesson_id}</Text>
       <Text style={styles.stat}>Үг: {p.vocab_count} · Диалог: {p.dialogue_count}</Text>
@@ -46,7 +46,7 @@ export function AdminLessonHtmlImportScreen() {
   const [result, setResult] = useState<LessonHtmlImportResult | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const { chapters, chapterId, setChapterId, creatingHsk, loadTree, ensureChapterForHsk } =
+  const { chapters, chapterId, setChapterId, creatingJlpt, loadTree, ensureChapterForJlpt } =
     useLessonHtmlImportChapters(token ?? null);
 
   useEffect(() => {
@@ -121,9 +121,9 @@ export function AdminLessonHtmlImportScreen() {
         token={token ?? null}
         chapters={chapters}
         chapterId={chapterId}
-        creatingHsk={creatingHsk}
+        creatingJlpt={creatingJlpt}
         onSelectChapter={setChapterId}
-        onCreateChapterForHsk={(hsk) => void ensureChapterForHsk(hsk)}
+        onCreateChapterForJlpt={(jlpt) => void ensureChapterForJlpt(jlpt)}
       />
       <TextInput style={styles.textarea} value={html} onChangeText={setHtml} multiline textAlignVertical="top" placeholder="HTML paste..." />
       {preview ? <PreviewCard p={preview} /> : null}

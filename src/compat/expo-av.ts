@@ -12,7 +12,7 @@ class WebSound {
   private ended = false;
 
   constructor(uri: string, shouldPlay: boolean) {
-    this.el = new Audio(uri);
+    this.el = new globalThis.Audio(uri);
     this.el.preload = 'auto';
     this.el.addEventListener('ended', () => {
       this.ended = true;
@@ -30,6 +30,9 @@ class WebSound {
     this.ended = false;
     await this.el.play();
   }
+  async pauseAsync() {this.el.pause();}
+  async setPositionAsync(ms:number) {this.el.currentTime=ms/1000;}
+  async getStatusAsync() {return {isLoaded:this.el.readyState>=2,isPlaying:!this.el.paused,positionMillis:this.el.currentTime*1000};}
   async stopAsync() {
     this.el.pause();
     this.el.currentTime = 0;
@@ -56,7 +59,7 @@ export const Audio = {
     },
   },
   /** Native audio-session config; the browser has no equivalent knob. */
-  setAudioModeAsync: async (): Promise<void> => {},
+  setAudioModeAsync: async (_options?: unknown): Promise<void> => {},
 };
 
 export type Sound = WebSound;
@@ -64,3 +67,5 @@ export const ResizeMode = { CONTAIN: 'contain', COVER: 'cover', STRETCH: 'stretc
 export type AVPlaybackStatus = Status & { positionMillis?: number; durationMillis?: number };
 
 export { Video, type VideoHandle } from './expo-av-video';
+
+export namespace Audio { export type Sound=WebSound; }

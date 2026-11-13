@@ -46,11 +46,6 @@ const SKILL_ROUTES: Record<string, { href: string; title: string; subtitle: stri
     title: 'Аялга, дуудлагаа сайжруулах',
     subtitle: 'Япон хэлний аялга, дуудлага дээр ажиллаарай',
   },
-  tones: {
-    href: '/study/speak',
-    title: 'Аялга, дуудлагаа сайжруулах',
-    subtitle: 'Япон хэлний аялга, дуудлага дээр ажиллаарай',
-  },
   recall: {
     href: '/study/weak',
     title: 'Сул үгсээ сэргээх',

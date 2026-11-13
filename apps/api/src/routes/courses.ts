@@ -7,7 +7,7 @@ const courses = new Hono<{ Bindings: Env; Variables: Variables }>();
 
 // GET /api/courses — public
 courses.get('/', async (c) => {
-  const jlptRaw = c.req.query('jlpt') ?? c.req.query('hsk');
+  const jlptRaw = c.req.query('jlpt');
   const limit = Number(c.req.query('limit') ?? 20);
   const offset = Number(c.req.query('offset') ?? 0);
 

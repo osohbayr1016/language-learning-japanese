@@ -98,7 +98,7 @@ export function BookReader({ book, onFinish }: BookReaderProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
   },
   header: {
     flexDirection: "row",
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 1,

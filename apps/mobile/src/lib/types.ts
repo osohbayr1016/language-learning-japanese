@@ -1,6 +1,5 @@
 export type JlptLevel = 1 | 2 | 3 | 4 | 5;
 
-export type Tone = 0 | 1 | 2 | 3 | 4;
 
 export type Word = {
   id: number;
@@ -134,4 +133,3 @@ export type InsightsSkills = Record<SkillKey, SkillStat>;
 export type DayMinutes = { date: string; minutes: number; sessions?: number };
 
 // Legacy type aliases for smooth migration
-export type HskLevel = JlptLevel;

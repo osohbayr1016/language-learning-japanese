@@ -5,7 +5,7 @@ import type { AdminStats } from '../../lib/api/admin';
 import { useAuth } from '../../context/AuthContext';
 import { mn } from '../../i18n/mn';
 import { colors, spacing, typography } from '../../theme';
-import { AdminDashboardHskBreakdown } from './AdminDashboardHskBreakdown';
+import { AdminDashboardJlptBreakdown } from './AdminDashboardJlptBreakdown';
 
 export function AdminDashboardScreen() {
   const { token } = useAuth();
@@ -48,10 +48,10 @@ export function AdminDashboardScreen() {
     <ScrollView contentContainerStyle={styles.wrap}>
       <Text style={styles.intro}>{a.dashScreenIntro}</Text>
       <Text style={styles.extra}>
-        {a.tileLessonWordLinks}: {s.lesson_word_links} · {a.tileDistinctHanzi}: {s.distinct_kanji} · Дуусгалт:{' '}
+        {a.tileLessonWordLinks}: {s.lesson_word_links} · {a.tileDistinctKanji}: {s.distinct_kanji} · Дуусгалт:{' '}
         {s.lesson_completions} ({s.lesson_completions_last_7_days} / 7 хоног) · Кино: {s.cartoons}
       </Text>
-      <AdminDashboardHskBreakdown stats={s} />
+      <AdminDashboardJlptBreakdown stats={s} />
     </ScrollView>
   );
 }

@@ -7,7 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Screen } from '../../primitives';
 import { colors, radius, spacing, typography, shadows } from '../../theme';
 import type { LearnedWord } from '../../lib/learnedWordsStorage';
-import { HanziWriterView, type HanziWriterMode } from '../../components/writing/HanziWriterView';
+import { KanjiWriterView, type KanjiWriterMode } from '../../components/writing/KanjiWriterView';
 import { PronounceButton } from '../../components/audio/PronounceButton';
 
 export function LearnedWordDetailScreen() {
@@ -16,7 +16,7 @@ export function LearnedWordDetailScreen() {
   const { width } = useWindowDimensions();
   const canvasSize = Math.min(width - spacing.xl * 4, 260);
 
-  const [mode, setMode] = useState<HanziWriterMode>('animate');
+  const [mode, setMode] = useState<KanjiWriterMode>('animate');
 
   let word: LearnedWord | null = null;
   try {
@@ -98,7 +98,7 @@ export function LearnedWordDetailScreen() {
             <View key={`${char}-${i}`} style={styles.charBlock}>
               <Text style={styles.charLabel}>{char}</Text>
               <View style={styles.canvas}>
-                <HanziWriterView
+                <KanjiWriterView
                   key={`${char}-${mode}`}
                   char={char}
                   mode={mode}
@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   charBlock: { alignItems: 'center', gap: spacing.sm },
   charLabel: { fontSize: 20, fontWeight: '700', color: colors.text.secondary },
   canvas: {
-    backgroundColor: colors.bg.default, borderRadius: radius.md,
+    backgroundColor: colors.bg.primary, borderRadius: radius.md,
     padding: spacing.sm, borderWidth: 1, borderColor: colors.border,
   },
 });

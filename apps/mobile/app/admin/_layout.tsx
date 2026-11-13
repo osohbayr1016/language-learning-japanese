@@ -37,7 +37,7 @@ export default function AdminLayout() {
         options={{ title: mn.admin.examPdfImportNavTitle }}
       />
       <Stack.Screen name="lesson-html-import" options={{ title: 'HTML хичээл импорт' }} />
-      <Stack.Screen name="hsk1-lessons" options={{ title: 'HSK 1 хичээлүүд' }} />
+      <Stack.Screen name="jlpt-n5-lessons" options={{ title: 'JLPT N5 хичээлүүд' }} />
       <Stack.Screen name="learning-path" options={{ title: 'Суралцах зам' }} />
       <Stack.Screen name="vocabulary" options={{ title: 'Үгийн сан' }} />
       <Stack.Screen name="cartoons" options={{ title: 'Хүүхэлдэй' }} />

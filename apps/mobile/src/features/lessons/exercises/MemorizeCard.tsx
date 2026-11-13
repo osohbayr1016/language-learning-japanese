@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../../primitives';
-import { ToneColoredText, PinyinRow } from '../../../components/hanzi';
+import { JapaneseText, RomajiRow } from '../../../components/japanese';
 import { PronounceButton } from '../../../components/audio/PronounceButton';
 import { colors, spacing, typography } from '../../../theme';
 import type { Exercise } from '../types';
@@ -17,8 +17,8 @@ export function MemorizeCard({ exercise, disabled, onAnswer }: Props) {
   return (
     <View style={styles.root}>
       <View style={styles.center}>
-        <ToneColoredText hanzi={w.kanji} size="lg" />
-        <PinyinRow pinyin={w.romaji ?? ''} size="lg" />
+        <JapaneseText text={w.kanji} size="lg" />
+        <RomajiRow romaji={w.romaji ?? ''} size="lg" />
         <Text style={styles.meaning}>{w.meaning_mn}</Text>
         <PronounceButton wordId={w.id} meaningMn={w.meaning_mn} size="lg" style={{ marginTop: spacing.lg }} showHints />
       </View>

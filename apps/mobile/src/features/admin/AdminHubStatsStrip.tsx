@@ -33,17 +33,17 @@ export function AdminHubStatsStrip({ stats }: Props) {
         </View>
         <View style={[styles.cell, styles.cellBottom]}>
           <Text style={styles.val}>{stats.words}</Text>
-          <Text style={styles.lbl}>{a.hskColWords}</Text>
+          <Text style={styles.lbl}>{a.jlptColWords}</Text>
         </View>
       </View>
       <View style={styles.row}>
         <View style={[styles.cell, styles.cellRight]}>
           <Text style={styles.val}>{stats.lessons_total}</Text>
-          <Text style={styles.lbl}>{a.hskColLessons}</Text>
+          <Text style={styles.lbl}>{a.jlptColLessons}</Text>
         </View>
         <View style={styles.cell}>
           <Text style={styles.val}>{stats.chapters_total}</Text>
-          <Text style={styles.lbl}>{a.hskColChapters}</Text>
+          <Text style={styles.lbl}>{a.jlptColChapters}</Text>
         </View>
       </View>
     </Pressable>

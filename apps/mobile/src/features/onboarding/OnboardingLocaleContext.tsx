@@ -20,7 +20,6 @@ export function OnboardingLocaleProvider({ children }: { children: React.ReactNo
     void AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
       if (cancelled) return;
       if (raw === 'mn' || raw === 'en' || raw === 'ja') setLocaleState(raw);
-      else if (raw === 'zh') setLocaleState('ja'); // migrated from old Chinese UI locale
     });
     return () => {
       cancelled = true;

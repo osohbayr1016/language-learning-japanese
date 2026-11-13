@@ -12,7 +12,7 @@ export function OnboardingSlide({ slide, strings }: Props) {
   return (
     <View style={styles.slide}>
       <View style={styles.imageWrap}>
-        <Image source={slide.image} style={styles.image} resizeMode="contain" />
+        <Image source={{uri:slide.image}} style={styles.image} resizeMode="contain" />
       </View>
       <View style={styles.text}>
         <View style={styles.headlineRow}>

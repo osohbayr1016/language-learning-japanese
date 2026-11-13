@@ -23,7 +23,7 @@ export function registerExamStartRoutes(app: Hono<{ Bindings: Env; Variables: Va
       await c.env.DB.prepare(
         `SELECT id, title, jlpt_level, total_questions, duration_minutes,
                 passing_score, max_score FROM exam_templates
-         WHERE is_published = 1 ORDER BY jlpt_level ASC, id ASC`
+         WHERE is_published = 1 AND max_score=180 ORDER BY jlpt_level ASC, id ASC`
       ).all()
     ).results;
 
@@ -62,9 +62,10 @@ export function registerExamStartRoutes(app: Hono<{ Bindings: Env; Variables: Va
       passing_score?: number;
     } | null;
 
+    if(tmpl&&tmpl.max_score!==180)return c.json({error:'Хуучин сорилыг шинэчилнэ үү.'},409);
     if (!tmpl?.id) return c.json({ error: 'Шаблон олдсонгүй' }, 404);
 
-    await c.env.DB
+    const inserted = await c.env.DB
       .prepare(
         `INSERT INTO user_exam_sessions (user_id, template_id, status)
          VALUES (?, ?, 'in_progress')`
@@ -72,8 +73,7 @@ export function registerExamStartRoutes(app: Hono<{ Bindings: Env; Variables: Va
       .bind(sub, tid)
       .run();
 
-    const last = await sessionRowLatest(sub, tid, c.env.DB);
-    const sessionIdResolved = Number(last?.id ?? 0);
+    const sessionIdResolved = Number(inserted.meta.last_row_id);
 
     await c.env.DB
       .prepare(
@@ -88,7 +88,7 @@ export function registerExamStartRoutes(app: Hono<{ Bindings: Env; Variables: Va
       (
         await c.env.DB
           .prepare(
-            `SELECT id, template_id, section, part_num, question_num,
+            `SELECT id, template_id, COALESCE(scoring_section,section) AS section, part_num, question_num,
                     question_type, audio_text, question_text,
                     question_romaji, options, order_num, audio_key
              FROM exam_questions WHERE template_id = ? ORDER BY order_num ASC`
@@ -105,8 +105,8 @@ export function registerExamStartRoutes(app: Hono<{ Bindings: Env; Variables: Va
       data: {
         session_id: sessionIdResolved,
         duration_minutes: tmpl.duration_minutes ?? 35,
-        max_score: Math.max(1, Number(tmpl.max_score) || 200),
-        passing_score: Math.max(0, Number(tmpl.passing_score) ?? 120),
+        max_score: Math.max(1, Number(tmpl.max_score) || 180),
+        passing_score: Math.max(0, Number(tmpl.passing_score) || 80),
         questions: qs.map((q) => omitExamQuestionAnswer(q, apiOrigin)),
       },
     });

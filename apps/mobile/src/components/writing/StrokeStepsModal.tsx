@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { HanziWriterView } from './HanziWriterView';
+import { KanjiWriterView } from './KanjiWriterView';
 import { colors, radius, spacing, typography, shadows } from '../../theme';
 
 type Props = {
@@ -33,7 +33,7 @@ export function StrokeStepsModal({ visible, char, mountKey, onClose }: Props) {
             <Text style={styles.charTitle}>{char}</Text>
             {char ? (
               <View style={styles.writerWrap}>
-                <HanziWriterView
+                <KanjiWriterView
                   key={`${char}-${mountKey}`}
                   char={char}
                   mode="animate"

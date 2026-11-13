@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../../../theme';
-import { HanziWriterView, type HanziWriterMode } from '../../../components/writing/HanziWriterView';
-import type { Word } from '@japanese-learning/db';
+import { KanjiWriterView, type KanjiWriterMode } from '../../../components/writing/KanjiWriterView';
+import type { CasualStudyWord } from '../learning-loop/types';
 
 type StrokeOrderPracticeProps = {
-  words: Word[];
+  words: CasualStudyWord[];
   onFinish: () => void;
 };
 
@@ -15,15 +15,20 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
   const canvasSize = Math.min(width - spacing.lg * 2, 320);
 
   const [idx, setIdx] = useState(0);
-  const [mode, setMode] = useState<HanziWriterMode>('quiz');
+  const [mode, setMode] = useState<KanjiWriterMode>('quiz');
+  const [characterIndex,setCharacterIndex]=useState(0);
+  const [completed,setCompleted]=useState<Set<string>>(()=>new Set());
 
   const current = words[idx];
-  // Prefer Kanji if available, else first kana character. 
-  // For a full implementation, we might split string into chars and allow navigating them,
-  // but for simplicity, we pick the first character of the kanji or kana.
-  const firstChar = current ? (current.kanji ? Array.from(current.kanji)[0] : Array.from(current.kana)[0]) : '';
+  const characters=Array.from(current?.kanji||current?.kana||'').filter(c=>/[\u3040-\u30ff\u3400-\u9fff]/u.test(c)&&c!=='ー');
+  const firstChar=characters[characterIndex]??'';
+  const evidenceKey=String(current?.id)+':'+characterIndex;
+  const traced=completed.has(evidenceKey);
 
   const handleNext = () => {
+    if(!traced)return;
+    if(characterIndex+1<characters.length){setCharacterIndex(i=>i+1);setMode('quiz');return;}
+    setCharacterIndex(0);
     if (idx + 1 >= words.length) {
       onFinish();
     } else {
@@ -34,7 +39,7 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
 
   const handlePrev = () => {
     if (idx > 0) {
-      setIdx(idx - 1);
+      setIdx(idx - 1);setCharacterIndex(0);
       setMode('quiz');
     }
   };
@@ -45,7 +50,7 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Бичих дараалал сурах</Text>
-        <Text style={styles.progress}>{idx + 1} / {words.length}</Text>
+        <Text style={styles.progress}>{idx + 1} / {words.length} · үсэг {characterIndex+1}/{characters.length}</Text>
       </View>
 
       <View style={styles.wordInfo}>
@@ -54,14 +59,14 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
       </View>
 
       <View style={styles.canvasWrap}>
-        <HanziWriterView
-          key={`${current.id}-${mode}`}
+        <KanjiWriterView
+          key={`${current.id}-${characterIndex}-${mode}`}
           char={firstChar}
           mode={mode}
           size={canvasSize}
           strokeColor={colors.accent.purple}
           outlineColor={colors.border}
-          onEvent={() => {}}
+          onEvent={event=>{if(event.type==='complete')setCompleted(previous=>new Set([...previous,evidenceKey]));}}
         />
       </View>
 
@@ -91,9 +96,9 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
           <Ionicons name="arrow-back" size={24} color={idx === 0 ? colors.text.muted : colors.text.primary} />
         </Pressable>
 
-        <Pressable style={styles.navBtnPrimary} onPress={handleNext}>
+        <Pressable accessibilityRole="button" accessibilityState={{disabled:!traced}} disabled={!traced} style={[styles.navBtnPrimary,!traced&&styles.navBtnDisabled]} onPress={handleNext}>
           <Text style={styles.navBtnPrimaryText}>
-            {idx + 1 >= words.length ? "Дуусгах" : "Дараах үг"}
+            {!traced ? "Эхлээд зөв дарааллаар бичээрэй" : characterIndex+1<characters.length ? "Дараагийн үсэг" : idx + 1 >= words.length ? "Дуусгах" : "Дараах үг"}
           </Text>
         </Pressable>
       </View>
@@ -104,7 +109,7 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
   },
   header: {
     flexDirection: 'row',
@@ -182,7 +187,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,

@@ -1,3 +1,4 @@
+account_id = "aabe952df5d4e4b780339bf3b4217ed7"
 name = "nihongo-mn-api"
 main = "src/index.ts"
 compatibility_date = "2025-05-01"
@@ -49,5 +50,10 @@ binding = "AI"
 [env.production.vars]
 ENVIRONMENT = "production"
 # After first `wrangler deploy` of nihongo-mn-web, add its https://….workers.dev URL here.
-# Preview subdomains on the same *.workers.dev zone are accepted by src/index.ts CORS logic.
+# Only this project and its versioned preview hosts are accepted by the CORS allowlist.
 CORS_ORIGIN = "https://nihongo-mn-web.osohoo691016.workers.dev"
+
+# Optional production secrets (never commit values):
+# SPEECH_KEY + SPEECH_REGION: regional Japanese Azure TTS and acoustic assessment.
+# AUTH_MAIL_API_KEY + AUTH_MAIL_FROM + APP_ORIGIN: verified password recovery mail.
+# Configure using `wrangler secret put NAME --env production`.

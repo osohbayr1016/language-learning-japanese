@@ -8,7 +8,7 @@ import { firstSelectableChapterId } from './adminLessonHtmlChapterRows';
 export function useLessonHtmlImportChapters(token: string | null) {
   const [chapters, setChapters] = useState<AdminChapter[]>([]);
   const [chapterId, setChapterId] = useState<number | null>(null);
-  const [creatingHsk, setCreatingHsk] = useState<number | null>(null);
+  const [creatingJlpt, setCreatingJlpt] = useState<number | null>(null);
 
   const loadTree = useCallback(
     async (opts?: { selectId?: number }) => {
@@ -26,17 +26,17 @@ export function useLessonHtmlImportChapters(token: string | null) {
     [token]
   );
 
-  const ensureChapterForHsk = useCallback(
-    async (hsk: number) => {
+  const ensureChapterForJlpt = useCallback(
+    async (jlpt: number) => {
       if (!token) return;
-      setCreatingHsk(hsk);
+      setCreatingJlpt(jlpt);
       try {
         const maxOrder = chapters.reduce((m, c) => Math.max(m, c.order_num), 0);
-        const k = Math.min(6, Math.max(1, hsk)) as 1 | 2 | 3 | 4 | 5 | 6;
+        const k = Math.min(5, Math.max(1, jlpt)) as 1 | 2 | 3 | 4 | 5;
         const res = await api.admin.createChapter(token, {
-          title_mn: `HSK ${hsk}`,
+          title_mn: `JLPT N${6-jlpt}`,
           subtitle_mn: 'HTML импорт',
-          hsk_level: hsk,
+          jlpt_level: jlpt,
           color: colors.jlpt[k],
           order_num: maxOrder + 1,
         });
@@ -44,7 +44,7 @@ export function useLessonHtmlImportChapters(token: string | null) {
       } catch (e) {
         adminNotify('Бүлэг үүсгэх', (e as Error).message);
       } finally {
-        setCreatingHsk(null);
+        setCreatingJlpt(null);
       }
     },
     [token, chapters, loadTree]
@@ -54,8 +54,8 @@ export function useLessonHtmlImportChapters(token: string | null) {
     chapters,
     chapterId,
     setChapterId,
-    creatingHsk,
+    creatingJlpt,
     loadTree,
-    ensureChapterForHsk,
+    ensureChapterForJlpt,
   };
 }

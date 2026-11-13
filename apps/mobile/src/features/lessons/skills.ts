@@ -9,14 +9,15 @@ export type SkillKey =
   | 'stroke';
 
 const KIND_TO_SKILLS: Record<Exercise['kind'], SkillKey[]> = {
+  'in-lesson-games-hub': [],
   memorize: ['recall', 'reading'],
   'choose-word': ['recall', 'reading'],
-  'listen-mcq': ['listening', 'pitch'],
+  'listen-mcq': ['listening'],
   'match-pairs': ['recall', 'reading'],
   'arrange-words': ['reading', 'recall'],
   'fill-blank': ['recall', 'reading'],
   'true-false': ['recall'],
-  'say-sentence': ['pronunciation', 'pitch', 'listening'],
+  'say-sentence': [],
   'imported-section': ['reading'],
   'imported-workbook': ['reading', 'recall'],
 };

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import { AdminSingleHanziCreateCard } from '../../../src/features/admin/AdminSingleHanziCreateCard';
+import { AdminSingleKanjiCreateCard } from '../../../src/features/admin/AdminSingleKanjiCreateCard';
 import { colors, spacing } from '../../../src/theme';
 
 export default function AdminNewWordScreen() {
@@ -14,9 +14,9 @@ export default function AdminNewWordScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.pad} keyboardShouldPersistTaps="handled">
-        <AdminSingleHanziCreateCard 
-          jlpt={jlpt} 
-          onJlptChange={setJlpt} 
+        <AdminSingleKanjiCreateCard
+          jlpt={jlpt}
+          onJlptChange={setJlpt}
           onCreated={(id) => {
             router.replace(`/admin/word/${id}`);
           }}

@@ -19,9 +19,9 @@ export type CartoonDetail = Cartoon & {
 };
 
 export const cartoons = {
-  list: (params: { jlpt?: number; hsk?: number } = {}) =>
+  list: (params: { jlpt?: number } = {}) =>
     request<{ data: Cartoon[] }>(
-      `/api/cartoons${buildQuery({ jlpt: params.jlpt ?? params.hsk })}`
+      `/api/cartoons${buildQuery({ jlpt: params.jlpt })}`
     ),
   get: (id: number, token?: string) =>
     request<{ data: CartoonDetail }>(`/api/cartoons/${id}`, { token }),

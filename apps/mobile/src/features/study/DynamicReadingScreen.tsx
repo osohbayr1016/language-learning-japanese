@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   loadingText: { ...typography.heading.sm, color: colors.text.primary, marginTop: spacing.lg, textAlign: 'center' },
   loadingHint: { ...typography.body.md, color: colors.text.muted, marginTop: spacing.sm },
   errorText: { ...typography.heading.sm, color: colors.text.primary, marginTop: spacing.md },
-  errorDetail: { ...typography.body.sm, color: colors.accent.red, marginTop: spacing.sm, textAlign: 'center' },
+  errorDetail: { ...typography.body.sm, color: colors.error, marginTop: spacing.sm, textAlign: 'center' },
   
   header: {
     flexDirection: 'row', alignItems: 'center', padding: spacing.md,
