@@ -1,6 +1,7 @@
 import React from "react";
 import {
   Alert,
+  Linking,
   Platform,
   Pressable,
   StyleSheet,
@@ -17,7 +18,25 @@ export function AuthForgotLink({ strings }: { strings: AuthLocaleStrings }) {
     <View style={styles.forgotRow}>
       <Pressable
         accessibilityRole="button"
-        onPress={() => router.push("/forgot-password" as never)}
+        onPress={() => {
+          if (Platform.OS === "web") {
+            router.push("/forgot-password" as never);
+            return;
+          }
+          // Recovery links target the trusted web origin; native has no matching
+          // Expo file route. Open the same recovery flow in the system browser.
+          const origin =
+            process.env.EXPO_PUBLIC_WEB_BASE_URL ??
+            "https://nihongo-mn-web.osohoo691016.workers.dev";
+          void Linking.openURL(
+            origin.replace(/\/$/, "") + "/forgot-password",
+          ).catch(() =>
+            Alert.alert(
+              strings.forgotPassword,
+              "Сэргээх хуудсыг нээж чадсангүй. Холболтоо шалгаад дахин оролдоно уу.",
+            ),
+          );
+        }}
       >
         <Text style={styles.forgot}>{strings.forgotPassword}</Text>
       </Pressable>
