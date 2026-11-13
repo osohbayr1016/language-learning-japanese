@@ -12,3 +12,6 @@ build
 .dev.vars
 *.db
 *.db-journal
+
+playwright-report/
+test-results/

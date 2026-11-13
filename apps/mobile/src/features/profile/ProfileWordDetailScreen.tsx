@@ -8,9 +8,9 @@ import {
 } from 'react-native';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Screen } from '../../primitives';
-import { ToneColoredText, PinyinRow } from '../../components/hanzi';
+import { JapaneseText, RomajiRow } from '../../components/japanese';
 import { PronounceButton } from '../../components/audio/PronounceButton';
-import { HanziWriterView, type HanziWriterEvent, type HanziWriterMode } from '../../components/writing/HanziWriterView';
+import { KanjiWriterView, type KanjiWriterEvent, type KanjiWriterMode } from '../../components/writing/KanjiWriterView';
 import { WriterControls } from '../writer/WriterControls';
 import { api } from '../../lib/api';
 import type { Word, WordWithProgress } from '../../lib/types';
@@ -30,7 +30,7 @@ export function ProfileWordDetailScreen() {
   const [word, setWord] = useState<Word | null>(null);
   const [entry, setEntry] = useState<WordWithProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<HanziWriterMode>('animate');
+  const [mode, setMode] = useState<KanjiWriterMode>('animate');
 
   useEffect(() => {
     if (!Number.isFinite(wid)) return;
@@ -54,7 +54,7 @@ export function ProfileWordDetailScreen() {
     })();
   }, [wid, token]);
 
-  const handleWriterEvent = (_e: HanziWriterEvent) => {};
+  const handleWriterEvent = (_e: KanjiWriterEvent) => {};
 
   if (!Number.isFinite(wid)) {
     return (
@@ -88,11 +88,11 @@ export function ProfileWordDetailScreen() {
       <Stack.Screen options={{ title: word.kanji }} />
       <Screen scroll padded={false}>
         <View style={styles.wrap}>
-          <ToneColoredText hanzi={word.kanji} tones={undefined} size="xl" />
+          <JapaneseText text={word.kanji} size="xl" />
           <View style={styles.listen}>
             <PronounceButton wordId={word.id} meaningMn={word.meaning_mn} size="lg" />
           </View>
-          <PinyinRow pinyin={word.romaji} size="md" />
+          <RomajiRow romaji={word.romaji} size="md" />
           {word.kana ? <Text style={styles.kana}>{word.kana}</Text> : null}
           <Text style={styles.mean}>{word.meaning_mn}</Text>
           {entry && waiting ? (
@@ -110,7 +110,7 @@ export function ProfileWordDetailScreen() {
             <View style={styles.writer}>
               <Text style={styles.sec}>{mn.writer.title}</Text>
               <WriterControls mode={mode} onChange={setMode} />
-              <HanziWriterView
+              <KanjiWriterView
                 char={firstChar}
                 mode={mode}
                 size={canvasSize}

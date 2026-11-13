@@ -17,8 +17,8 @@ export function registerExamSubmitRoute(app: Hono<{ Bindings: Env; Variables: Va
 
     const sessRaw = (await c.env.DB.prepare(
       `SELECT s.user_id AS uid, s.template_id AS tid, s.status,
-              COALESCE(t.passing_score, 120) AS passing_score,
-              COALESCE(t.max_score, 200) AS max_score
+              COALESCE(t.passing_score, 80) AS passing_score,
+              COALESCE(t.max_score, 180) AS max_score, t.jlpt_level
        FROM user_exam_sessions s JOIN exam_templates t ON t.id = s.template_id
        WHERE s.id = ?`
     )
@@ -29,14 +29,16 @@ export function registerExamSubmitRoute(app: Hono<{ Bindings: Env; Variables: Va
       status?: string;
       passing_score?: number;
       max_score?: number;
+      jlpt_level?:number;
     } | null;
 
     if (!sessRaw || sessRaw.uid !== sub) return c.json({ error: 'Олдсонгүй' }, 404);
     if (sessRaw.status === 'completed') return c.json({ error: 'Илгээгдсэн' }, 409);
 
+    if(sessRaw.max_score!==180)return c.json({error:'Хуучин сорил. Япон JLPT сорилоо дахин сонгоно уу.'},409);
     const tpl = sessRaw.tid;
-    const passLineVal = sessRaw.passing_score ?? 120;
-    const maxScoreVal = Math.max(1, Number(sessRaw.max_score) || 200);
+    const passLineVal = sessRaw.passing_score ?? 80;
+    const maxScoreVal = Math.max(1, Number(sessRaw.max_score) || 180);
 
     const body = await c.req
       .json<{ answers?: { question_id: number; answer: unknown }[]; duration_seconds?: number }>()
@@ -51,7 +53,7 @@ export function registerExamSubmitRoute(app: Hono<{ Bindings: Env; Variables: Va
     const gradeQs = (
       (((await c.env.DB
         .prepare(
-          `SELECT id, section, question_type, correct_answer FROM exam_questions
+          `SELECT id, COALESCE(scoring_section,section) AS section, question_type, correct_answer FROM exam_questions
            WHERE template_id = ? ORDER BY order_num ASC`
         )
         .bind(tpl)
@@ -74,7 +76,8 @@ export function registerExamSubmitRoute(app: Hono<{ Bindings: Env; Variables: Va
 
     const sectional = sectionalScores(
       gradeQs.map((q) => ({ id: q.id, section: q.section })),
-      correctnessFlagById
+      correctnessFlagById,
+      sessRaw.jlpt_level??1
     );
 
     await c.env.DB
@@ -83,6 +86,7 @@ export function registerExamSubmitRoute(app: Hono<{ Bindings: Env; Variables: Va
        status='completed',
        listening_score=?,
        reading_score=?,
+       knowledge_score=?,
        total_score=?,
        passed=?,
        duration_seconds=?,
@@ -92,8 +96,9 @@ export function registerExamSubmitRoute(app: Hono<{ Bindings: Env; Variables: Va
       .bind(
         sectional.listening,
         sectional.reading,
+        sectional.knowledge,
         sectional.total,
-        sectional.total >= passLineVal ? 1 : 0,
+        sectional.passed ? 1 : 0,
         Math.max(0, Math.floor(body.duration_seconds ?? 0)),
         sid,
         sub
@@ -106,10 +111,14 @@ export function registerExamSubmitRoute(app: Hono<{ Bindings: Env; Variables: Va
         session_id: sid,
         listening_score: sectional.listening,
         reading_score: sectional.reading,
+        knowledge_score: sectional.knowledge,
+        knowledge_correct: sectional.knowledge_correct,
+        knowledge_total: sectional.knowledge_total,
+        score_kind: 'practice-proportional',
         total_score: sectional.total,
         passing_score: passLineVal,
         max_score: maxScoreVal,
-        passed: sectional.total >= passLineVal,
+        passed: sectional.passed,
         duration_seconds: Math.max(0, Math.floor(body.duration_seconds ?? 0)),
         listening_correct: sectional.listening_correct,
         listening_total: sectional.listening_total,

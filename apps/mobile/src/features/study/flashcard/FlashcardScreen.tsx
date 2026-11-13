@@ -18,7 +18,7 @@ import { CardBack } from './CardBack';
 import { useFlashcardWebKeys } from '../../../hooks/useFlashcardWebKeys';
 import { RomajiToggleWeb } from '../RomajiToggleWeb';
 
-import type { Word } from '@japanese-learning/db';
+import type { WordWithProgress as Word } from '../../../lib/types';
 
 function confidenceForRating(rating: ReviewRating): 0 | 1 | 2 {
   if (rating <= 1) return 0;

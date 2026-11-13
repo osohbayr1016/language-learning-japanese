@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Button } from '../../../primitives';
-import { ToneColoredText } from '../../../components/hanzi';
+import { JapaneseText } from '../../../components/japanese';
 import { colors, radius, spacing, typography } from '../../../theme';
 import type { Exercise } from '../types';
 
@@ -23,7 +23,7 @@ export function TrueFalse({ exercise, disabled, onAnswer }: Props) {
   return (
     <View style={styles.root}>
       <View style={styles.statement}>
-        <ToneColoredText hanzi={exercise.word.kanji} size="md" />
+        <JapaneseText text={exercise.word.kanji} size="md" />
         <Text style={styles.equals}>=</Text>
         <Text style={styles.meaning}>{exercise.shownMeaning}</Text>
       </View>

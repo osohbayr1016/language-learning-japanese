@@ -3,7 +3,7 @@ import { colors, spacing, typography } from '../../theme';
 
 export const adminVocabularyStyles = StyleSheet.create({
   flex: { flex: 1, backgroundColor: colors.bg.primary },
-  /** Column layout so HSK chips and single-char toggle never overlap (esp. Expo web). */
+  /** Column layout so JLPT chips and single-char toggle never overlap (esp. Expo web). */
   filtersHeader: {
     flexShrink: 0,
     gap: spacing.sm,

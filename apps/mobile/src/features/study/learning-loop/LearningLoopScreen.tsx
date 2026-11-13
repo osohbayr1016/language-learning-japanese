@@ -5,7 +5,7 @@ import { BookReader } from "../book/BookReader";
 import { StrokeOrderPractice } from "../writing/StrokeOrderPractice";
 import { SessionDoneScreen } from "../SessionDoneScreen";
 import { MOCK_BOOKS } from "../book/mockBooks";
-import type { Word } from "@japanese-learning/db";
+import type { Word } from "../../../lib/types";
 import { CATEGORIES } from "../StudyCasualWords";
 import { useRouter } from "expo-router";
 import { addLearnedWords, markBookAsRead, isBookRead } from "../../../lib/learnedWordsStorage";
@@ -40,7 +40,7 @@ export function LearningLoopScreen({ category }: LearningLoopScreenProps) {
     await addLearnedWords(
       words.map((w) => ({
         id: w.id,
-        kana: w.kana,
+        kana: w.kana ?? '',
         kanji: w.kanji ?? undefined,
         romaji: w.romaji ?? undefined,
         meaning_mn: w.meaning_mn ?? undefined,

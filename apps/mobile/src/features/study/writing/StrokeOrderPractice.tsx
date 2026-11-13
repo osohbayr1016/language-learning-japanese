@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { StyleSheet, Text, View, useWindowDimensions, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, typography, radius } from '../../../theme';
-import { HanziWriterView, type HanziWriterMode } from '../../../components/writing/HanziWriterView';
-import type { Word } from '@japanese-learning/db';
+import { KanjiWriterView, type KanjiWriterMode } from '../../../components/writing/KanjiWriterView';
+import type { Word } from '../../../lib/types';
 
 type StrokeOrderPracticeProps = {
   words: Word[];
@@ -15,13 +15,13 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
   const canvasSize = Math.min(width - spacing.lg * 2, 320);
 
   const [idx, setIdx] = useState(0);
-  const [mode, setMode] = useState<HanziWriterMode>('quiz');
+  const [mode, setMode] = useState<KanjiWriterMode>('quiz');
 
   const current = words[idx];
   // Prefer Kanji if available, else first kana character. 
   // For a full implementation, we might split string into chars and allow navigating them,
   // but for simplicity, we pick the first character of the kanji or kana.
-  const firstChar = current ? (current.kanji ? Array.from(current.kanji)[0] : Array.from(current.kana)[0]) : '';
+  const firstChar = current ? (current.kanji ? Array.from(current.kanji ?? '')[0] : Array.from(current.kana ?? '')[0]) : '';
 
   const handleNext = () => {
     if (idx + 1 >= words.length) {
@@ -54,7 +54,7 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
       </View>
 
       <View style={styles.canvasWrap}>
-        <HanziWriterView
+        <KanjiWriterView
           key={`${current.id}-${mode}`}
           char={firstChar}
           mode={mode}
@@ -104,7 +104,7 @@ export function StrokeOrderPractice({ words, onFinish }: StrokeOrderPracticeProp
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
   },
   header: {
     flexDirection: 'row',
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,

@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TextStyle, View } from 'react-native';
 import { colors, typography } from '../../theme';
 
-type Size = keyof typeof typography.hanzi;
+type Size = keyof typeof typography.kanji;
 
 type Props = {
   text: string;
@@ -22,7 +22,7 @@ export function JapaneseText({ text, size = 'md', align = 'center', style }: Pro
         },
       ]}
     >
-      <Text style={[typography.hanzi[size], styles.text, style]}>{text}</Text>
+      <Text style={[typography.kanji[size], styles.text, style]}>{text}</Text>
     </View>
   );
 }

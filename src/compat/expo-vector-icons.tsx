@@ -79,7 +79,7 @@ export function Ionicons({
           userSelect: 'none',
           flexShrink: 0,
         },
-        style,
+        style as never,
       ]}
     >
       {String.fromCodePoint(codepoint)}

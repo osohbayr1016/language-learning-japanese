@@ -1,5 +1,5 @@
 /** expo-speech on the browser SpeechSynthesis API. */
-type Opts = { language?: string; rate?: number; pitch?: number; onDone?: () => void };
+type Opts = { language?: string; rate?: number; pitch?: number; onDone?: () => void; onStopped?:()=>void; onError?:(e:unknown)=>void };
 
 export function speak(text: string, options: Opts = {}): void {
   try {
@@ -8,6 +8,7 @@ export function speak(text: string, options: Opts = {}): void {
     if (options.rate != null) u.rate = options.rate;
     if (options.pitch != null) u.pitch = options.pitch;
     if (options.onDone) u.onend = () => options.onDone?.();
+    u.onerror=e=>options.onError?.(e);
     speechSynthesis.speak(u);
   } catch {
     options.onDone?.();

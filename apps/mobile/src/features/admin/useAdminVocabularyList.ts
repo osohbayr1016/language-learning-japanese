@@ -12,7 +12,7 @@ export function useAdminVocabularyList() {
     return () => clearTimeout(t);
   }, [q]);
 
-  const [hsk, setHsk] = useState<number | undefined>(undefined);
+  const [jlpt, setJlpt] = useState<number | undefined>(undefined);
   const [singleOnly, setSingleOnly] = useState(false);
   const [rows, setRows] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,11 +23,11 @@ export function useAdminVocabularyList() {
   const baseParams = useMemo(
     () => ({
       q: debouncedQ || undefined,
-      jlpt: hsk,
+      jlpt: jlpt,
       single_char: singleOnly ? (1 as const) : undefined,
       limit: PAGE,
     }),
-    [debouncedQ, hsk, singleOnly],
+    [debouncedQ, jlpt, singleOnly],
   );
 
   const loadFresh = useCallback(async () => {
@@ -65,8 +65,8 @@ export function useAdminVocabularyList() {
   return {
     q,
     setQ,
-    hsk,
-    setHsk,
+    jlpt,
+    setJlpt,
     singleOnly,
     setSingleOnly,
     rows,

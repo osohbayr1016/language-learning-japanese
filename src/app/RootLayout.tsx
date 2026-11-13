@@ -32,7 +32,7 @@ function useRouteGuard() {
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || pathname === '/course') return;
 
     if (isAdminPath(pathname)) {
       if (!isAuthenticated) navigate('/login?reason=protected', { replace: true });

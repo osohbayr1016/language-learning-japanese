@@ -2,8 +2,8 @@ import type { ImportedLessonContent } from '../../lib/types';
 
 export type ImportedVocabRow = ImportedLessonContent['vocab'][number];
 
-export function graphemeCount(hanzi: string): number {
-  return [...hanzi.trim()].length;
+export function graphemeCount(kanji: string): number {
+  return [...kanji.trim()].length;
 }
 
 export function kanjiRows(vocab: ImportedVocabRow[]): ImportedVocabRow[] {

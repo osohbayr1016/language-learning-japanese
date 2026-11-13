@@ -54,13 +54,6 @@ export const colors = {
     secondary: '#3B82F6', // Learning blue
   },
 
-  tone: {
-    1: '#C2410C', // High flat
-    2: '#A35A00', // Rising
-    3: '#BE4A79', // Falling-rising
-    4: '#2B7B88', // Falling
-    0: '#6B7280', // Neutral
-  },
 
   jlpt: {
     1: '#2E8B57', // N5
@@ -128,20 +121,7 @@ export const typography = {
     md: { fontSize: 40, fontWeight: '400' as const, ...F },
     sm: { fontSize: 28, fontWeight: '400' as const, ...F },
   },
-  /** @deprecated Use `kanji` — kept for legacy imports */
-  hanzi: {
-    xl: { fontSize: 88, fontWeight: '300' as const, letterSpacing: 4, ...F },
-    lg: { fontSize: 64, fontWeight: '300' as const, letterSpacing: 2, ...F },
-    md: { fontSize: 40, fontWeight: '400' as const, ...F },
-    sm: { fontSize: 28, fontWeight: '400' as const, ...F },
-  },
   romaji: {
-    lg: { fontSize: 22, letterSpacing: 2, ...F },
-    md: { fontSize: 18, letterSpacing: 1, ...F },
-    sm: { fontSize: 14, letterSpacing: 0.5, ...F },
-  },
-  /** @deprecated Use `romaji` */
-  pinyin: {
     lg: { fontSize: 22, letterSpacing: 2, ...F },
     md: { fontSize: 18, letterSpacing: 1, ...F },
     sm: { fontSize: 14, letterSpacing: 0.5, ...F },

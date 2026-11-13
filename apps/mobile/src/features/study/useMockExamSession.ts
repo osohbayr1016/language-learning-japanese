@@ -63,7 +63,7 @@ export function useMockExamSession(
         const sess = s.data.session_id;
         const mx = s.data.max_score;
         const dm = Math.max(1, Number(s.data.duration_minutes) || 55);
-        sessionMetaBySid.current.set(sess, { max: mx > 0 ? mx : 200, durationMin: dm });
+        sessionMetaBySid.current.set(sess, { max: mx > 0 ? mx : 180, durationMin: dm });
         setSid(sess);
         setQs(s.data.questions ?? []);
         setIdx(0);
@@ -126,7 +126,7 @@ export function useMockExamSession(
         ? meta.max
         : r.data.max_score > 0
           ? r.data.max_score
-          : 200;
+          : 180;
     const d = r.data;
     const durationLimitMin = meta?.durationMin ?? 55;
     setResult({
@@ -136,6 +136,9 @@ export function useMockExamSession(
       max: maxScore,
       listeningScore: d.listening_score,
       readingScore: d.reading_score,
+      knowledgeScore: d.knowledge_score??0,
+      knowledgeCorrect:d.knowledge_correct??0,
+      knowledgeTotal:d.knowledge_total??0,
       durationSeconds: typeof d.duration_seconds === 'number' ? d.duration_seconds : body.duration_seconds,
       durationLimitMin,
       listeningCorrect: d.listening_correct ?? 0,

@@ -78,52 +78,44 @@ export function startWebContinuousSession(
   rec.continuous = true;
 
   let finalBuf = '';
-  let lastPreview = '';
-  /** Text committed before the newest final segment, and that segment's hypotheses. */
-  let beforeLastFinal = '';
-  let lastFinalAlts: string[] = [];
-
-  rec.onstart = () => onStart();
-  rec.onerror = (e: { error: string }) => {
-    const code = e.error;
-    if (code === 'no-speech' && (lastPreview || finalBuf).trim()) {
-      try {
-        rec.stop();
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
-    const msg =
-      code === 'not-allowed'
-        ? 'Микрофоны зөвшөөрөл хэрэгтэй'
-        : code === 'no-speech'
-          ? 'Дуу олдсонгүй. Дахин оролдоно уу'
-          : String(code);
-    onError(msg);
+  let aborted=false,failed=false,ended=false;
+  let lastFinalAlts:string[]=[],beforeLastFinal='';
+  let confidence=0;
+  rec.onstart=()=>{if(!aborted)onStart()};
+  rec.onerror=e=>{
+    if(aborted)return;
+    if(e.error==='no-speech'&&finalBuf.trim()){rec.stop();return;}
+    failed=true;
+    const messages:Record<string,string>={
+      'not-allowed':'Микрофоны зөвшөөрөл хэрэгтэй',
+      'service-not-allowed':'Япон яриа таних үйлчилгээ зөвшөөрөгдөөгүй',
+      'no-speech':'Дуу олдсонгүй. Дахин оролдоно уу',
+      'network':'Яриа таних үйлчилгээтэй холбогдож чадсангүй',
+      'language-not-supported':'Энэ төхөөрөмж япон яриа танихыг дэмжихгүй байна',
+      'audio-capture':'Микрофон олдсонгүй',
+    };
+    onError(messages[e.error]??'Яриа таних алдаа: '+e.error);
   };
-  rec.onend = () => {
-    const text = (lastPreview || finalBuf).trim();
-    const alternatives = lastFinalAlts
-      .map((alt) => (beforeLastFinal + alt).trim())
-      .filter((alt) => alt && alt !== text);
-    if (text) onFinal(text, 0, alternatives);
+  rec.onend=()=>{
+    if(aborted||ended)return;ended=true;
+    const text=finalBuf.trim();
+    // Interim guesses and permission/network errors are never learner grades.
+    if(!failed&&text)onFinal(text,confidence,lastFinalAlts.map(a=>(beforeLastFinal+a).trim()).filter(a=>a&&a!==text));
+    else if(!failed)onError('Дууг эцэслэн таньсангүй. Дахин оролдоно уу');
     onSessionEnd();
   };
-  rec.onresult = (ev: WebSpeechResultEvent) => {
-    let interim = '';
-    const n = ev.results.length;
-    for (let i = ev.resultIndex; i < n; i++) {
-      const seg = ev.results[i];
-      const piece = seg[0].transcript;
-      if (seg.isFinal) {
-        beforeLastFinal = finalBuf;
-        lastFinalAlts = Array.from({ length: seg.length }, (_, k) => seg[k].transcript);
-        finalBuf += piece;
-      } else interim += piece;
+  rec.onresult=ev=>{
+    if(aborted||failed)return;
+    // Rebuild from the recognizer's authoritative results; repeated final events
+    // must not duplicate syllables in the transcript.
+    finalBuf='';let interim='';let totalConfidence=0,segments=0;
+    for(let i=0;i<ev.results.length;i++){
+      const seg=ev.results[i],piece=seg[0].transcript;
+      if(seg.isFinal){beforeLastFinal=finalBuf;lastFinalAlts=Array.from({length:seg.length},(_,k)=>seg[k].transcript);finalBuf+=piece;totalConfidence+=seg[0].confidence??0;segments++;}
+      else interim+=piece;
     }
-    lastPreview = (finalBuf + interim).trim();
-    onInterim(lastPreview);
+    confidence=segments?totalConfidence/segments:0;
+    onInterim((finalBuf+interim).trim());
   };
   try {
     rec.start();
@@ -140,6 +132,7 @@ export function startWebContinuousSession(
       }
     },
     abort: () => {
+      aborted=true;
       try {
         rec.abort();
       } catch {

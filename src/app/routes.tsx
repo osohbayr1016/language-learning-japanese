@@ -45,6 +45,7 @@ export const routes: RouteObject[] = [
   { path: 'setup', Component: lazy(() => import('@src/features/setup/SetupScreen')) },
 
   // ── Main sections (the tab bar) ──────────────────────────────────────────
+  { path: 'course', Component: lazy(() => import('../features/course/CourseScreen')) },
   { path: 'home', Component: lazy(() => import('@src/features/home/HomeScreen')) },
   { path: 'study', Component: lazy(() => import('@src/features/study/StudyHubScreen')) },
   { path: 'kanji', Component: lazy(() => import('@src/features/kanji/KanjiScreen')) },
@@ -62,7 +63,7 @@ export const routes: RouteObject[] = [
   { path: 'study/writer', Component: lazy(() => import('@screens/study/writer')) },
   { path: 'study/speak', Component: lazy(() => import('@screens/study/speak')) },
   { path: 'study/mock-exam', Component: lazy(() => import('@screens/study/mock-exam')) },
-  { path: 'study/hanzi', Component: lazy(() => import('@screens/study/hanzi')) },
+  { path: 'study/kanji', Component: lazy(() => import('@screens/study/kanji')) },
   { path: 'study/grammar', Component: lazy(() => import('@screens/study/grammar/index')) },
   { path: 'study/grammar/:id', Component: lazy(() => import('@screens/study/grammar/[id]')) },
   { path: 'study/loop', Component: lazy(() => import('@screens/study/loop')) },
@@ -102,7 +103,7 @@ export const routes: RouteObject[] = [
       { path: 'admin/dashboard', Component: lazy(() => import('@screens/admin/dashboard')) },
       { path: 'admin/cartoons', Component: lazy(() => import('@screens/admin/cartoons')) },
       { path: 'admin/exam-import', Component: lazy(() => import('@screens/admin/exam-import')) },
-      { path: 'admin/hsk1-lessons', Component: lazy(() => import('@screens/admin/hsk1-lessons')) },
+      { path: 'admin/jlpt-n5-lessons', Component: lazy(() => import('@screens/admin/jlpt-n5-lessons')) },
       { path: 'admin/learning-path', Component: lazy(() => import('@screens/admin/learning-path')) },
       { path: 'admin/lesson-html-import', Component: lazy(() => import('@screens/admin/lesson-html-import')) },
       { path: 'admin/lesson/:id', Component: lazy(() => import('@screens/admin/lesson/[id]')) },

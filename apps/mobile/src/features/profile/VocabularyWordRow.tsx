@@ -20,7 +20,7 @@ export function VocabularyWordRow({ item, onOpenDetail, onPromote }: Props) {
   return (
     <View style={styles.row}>
       <Pressable style={styles.rowMain} onPress={() => onOpenDetail(item.id)}>
-        <Text style={styles.hanzi}>{item.kanji}</Text>
+        <Text style={styles.kanji}>{item.kanji}</Text>
         <Text style={styles.meta}>{item.romaji}</Text>
         <Text style={styles.meaning} numberOfLines={2}>
           {item.meaning_mn}
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   rowMain: { flex: 1, minWidth: 0 },
-  hanzi: { ...typography.heading.md, color: colors.text.primary },
+  kanji: { ...typography.heading.md, color: colors.text.primary },
   meta: { ...typography.body.sm, color: colors.text.secondary, marginTop: 2 },
   meaning: { ...typography.body.sm, color: colors.text.primary, marginTop: 4 },
   wait: { ...typography.body.sm, color: colors.accent.amber, marginTop: 4 },

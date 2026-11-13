@@ -22,6 +22,7 @@ const EXACT: Record<string, string> = {
   '/setup': 'Бүртгэл үүсгэх',
 
   '/home': 'Сурах',
+  '/course': 'Өдрийн хөтөлбөр',
   '/study': 'Дадлага',
   '/kanji': mn.tabs.kanji,
   '/kana': mn.tabs.kana,
@@ -37,7 +38,7 @@ const EXACT: Record<string, string> = {
   '/study/speak': study.speak,
   '/study/grammar': study.grammarTitle,
   '/study/mock-exam': study.mockExamTitle,
-  '/study/hanzi': mn.tabs.kanji,
+  '/study/kanji': mn.tabs.kanji,
   '/study/loop': study.learn,
   '/study/ai-reading': 'AI уншлага',
   '/study/category-words': 'Үгийн бүлэг',

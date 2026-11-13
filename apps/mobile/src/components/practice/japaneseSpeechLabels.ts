@@ -2,7 +2,7 @@ import { mn } from '../../i18n/mn';
 
 export function speakFinalLine(finalPercent: number, hideMongolian: boolean): string {
   return hideMongolian
-    ? `Score: ${finalPercent}/100`
+    ? `Transcript match: ${finalPercent}/100`
     : mn.study.speakFinalGrade.replace('{n}', String(finalPercent));
 }
 
@@ -66,14 +66,14 @@ export function speakOutcomeBlock(opts: {
   }
   const lines = hideMongolian
     ? [
-        `Points: ${points}/100`,
+        `Transcript match: ${points}/100`,
         transcript ? `You said: «${transcript}»` : '',
         finalLine ?? '',
         breakdown ?? '',
         passedRound ? 'Result: Pass' : 'Result: Try again',
       ]
     : [
-        `Оноо: ${points}/100`,
+        `Текстийн тохирол: ${points}/100`,
         transcript ? `Таны хэлсэн: «${transcript}»` : '',
         finalLine ?? '',
         breakdown ?? '',

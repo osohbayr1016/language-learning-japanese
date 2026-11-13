@@ -57,21 +57,21 @@ export function LearnedKanjisScreen() {
 }
 
 function KanjiRow({ kanji, onPress }: { kanji: LearnedKanji; onPress: () => void }) {
-  const hskColor = colors.jlpt[kanji.jlpt_level as keyof typeof colors.jlpt] || colors.brand.primary;
+  const jlptColor = colors.jlpt[kanji.jlpt_level as keyof typeof colors.jlpt] || colors.brand.primary;
 
   return (
     <Pressable
       style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}
       onPress={onPress}
     >
-      <View style={[styles.rowLeft, { borderColor: hskColor + '40' }]}>
+      <View style={[styles.rowLeft, { borderColor: jlptColor + '40' }]}>
         <Text style={styles.kanji}>{kanji.kanji}</Text>
       </View>
       <View style={styles.rowRight}>
         <Text style={styles.meaning}>{kanji.meaning_mn}</Text>
         {kanji.romaji ? <Text style={styles.romaji}>{kanji.romaji}</Text> : null}
         <View style={{ marginTop: 4, alignSelf: 'flex-start' }}>
-          <Pill label={jlptNLabel(kanji.jlpt_level)} color={hskColor} size="sm" />
+          <Pill label={jlptNLabel(kanji.jlpt_level)} color={jlptColor} size="sm" />
         </View>
       </View>
       <Ionicons name="chevron-forward" size={18} color={colors.text.muted} />

@@ -79,7 +79,7 @@ export const Video = forwardRef<VideoHandle, Props>(function Video(
       playsInline
       onTimeUpdate={() => report(false)}
       onEnded={() => report(true)}
-      style={{ width: '100%', height: '100%', objectFit: resizeMode, ...toCssStyle(style) }}
+      style={{ width: '100%', height: '100%', objectFit: resizeMode === 'stretch' ? 'fill' : resizeMode, ...toCssStyle(style) }}
     />
   );
 });

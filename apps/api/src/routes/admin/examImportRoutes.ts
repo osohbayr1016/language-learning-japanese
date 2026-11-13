@@ -1,4 +1,6 @@
 import { Hono } from 'hono';
+import {JLPT,jlptName} from '../../../../../packages/curriculum/src/jlpt';
+import {rejectLegacyChineseLessonFields} from '../../lib/lessonContentValidation';
 import { authMiddleware, adminMiddleware } from '../../middleware/auth';
 import type { Env, Variables } from '../../types';
 
@@ -8,7 +10,6 @@ type QIn = {
   question_num: number;
   audio_text?: string;
   question_text?: string;
-  question_pinyin?: string;
   question_romaji?: string;
   options: unknown;
   correct_answer: string;
@@ -19,7 +20,6 @@ type QIn = {
 type ImportBody = {
   title?: string;
   jlpt_level?: number;
-  hsk_level?: number;
   duration_minutes?: number;
   passing_score?: number;
   max_score?: number;
@@ -64,6 +64,9 @@ examImportApp.post('/import', async (c) => {
   const raw = await c.req.json<ImportBody>().catch(() => null);
   if (!raw || typeof raw !== 'object') return c.json({ error: 'Буруу JSON' }, 400);
   const body = raw;
+  try { rejectLegacyChineseLessonFields(raw); } catch(e) {return c.json({error:(e as Error).message},400);}
+  const jlpt=Number(body.jlpt_level);
+  if(!Number.isInteger(jlpt)||jlpt<1||jlpt>5)return c.json({error:'jlpt_level: 1=N5 … 5=N1'},400);
 
   const title = (body.title ?? '').trim();
   if (!title) return c.json({ error: 'Гарчиг хоосон' }, 400);
@@ -78,7 +81,7 @@ examImportApp.post('/import', async (c) => {
     if (!Number.isFinite(pn) || pn < 1 || pn > 4) {
       return c.json({ error: `Буруу part_num: ${i + 1}` }, 400);
     }
-    if (!['listening', 'reading'].includes(q.section)) return c.json({ error: 'Буруу section' }, 400);
+    if (!['knowledge','listening', 'reading'].includes(q.section)) return c.json({ error: 'Буруу section' }, 400);
     const ca = String(q.correct_answer ?? '').trim();
     if (!opts.includes(ca)) return c.json({ error: `Зөв хариу сонголтонд байхгүй: ${i + 1}` }, 400);
     if (q.audio_key != null && q.audio_key !== '') {
@@ -87,23 +90,18 @@ examImportApp.post('/import', async (c) => {
     }
   }
 
-  const jlpt = Math.min(5, Math.max(1, Number(body.jlpt_level ?? body.hsk_level) || 2));
-  const duration = Math.max(1, Number(body.duration_minutes) || 55);
-  const maxScore = Math.max(1, Number(body.max_score) || 200);
-  const passScoreRaw = body.passing_score != null ? Number(body.passing_score) : 120;
-  const passScore = Math.min(maxScore, Math.max(0, Number.isFinite(passScoreRaw) ? passScoreRaw : 120));
+  const sections=new Set(qs.map(q=>q.section));
+  if(!sections.has('listening')||!sections.has('reading')||(jlpt>=3&&!sections.has('knowledge')))return c.json({error:'JLPT-ийн шаардлагатай хэсгүүд дутуу байна.'},400);
+  if(qs.length>300)return c.json({error:'Асуултын хязгаар 300.'},400);
+  const duration = Math.max(1, Math.min(300,Number(body.duration_minutes)||60));
+  const maxScore=180;
+  const passScore=JLPT[jlptName(jlpt)].pass;
   const pub = body.is_published === true ? 1 : 0;
 
-  const insT = await c.env.DB.prepare(
-    `INSERT INTO exam_templates (title, jlpt_level, total_questions, duration_minutes, passing_score, max_score, is_published)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`
-  )
-    .bind(title, jlpt, qs.length, duration, passScore, maxScore, pub)
-    .run();
-
-  const tid = Number(insT.meta?.last_row_id ?? 0);
-  if (!tid) return c.json({ error: 'INSERT алдаа' }, 500);
-
+  const tid=Number.parseInt(crypto.randomUUID().replace(/-/g,'').slice(0,12),16);
+  const writes=[c.env.DB.prepare(
+    `INSERT INTO exam_templates (id,title,jlpt_level,total_questions,duration_minutes,passing_score,max_score,is_published) VALUES(?,?,?,?,?,?,?,?)`
+  ).bind(tid,title,jlpt,qs.length,duration,passScore,maxScore,pub)];
   const BATCH = 20;
   for (let off = 0; off < qs.length; off += BATCH) {
     const chunk = qs.slice(off, off + BATCH);
@@ -112,25 +110,27 @@ examImportApp.post('/import', async (c) => {
         q.audio_key != null && String(q.audio_key).startsWith('exams/') ? String(q.audio_key) : null;
       return c.env.DB
         .prepare(
-          `INSERT INTO exam_questions (template_id, section, part_num, question_num, question_type, audio_text, question_text, question_romaji, options, correct_answer, order_num, audio_key)
-           VALUES (?, ?, ?, ?, 'paper_mcq', ?, ?, ?, ?, ?, ?, ?)`
+          `INSERT INTO exam_questions (template_id, section, part_num, question_num, question_type, audio_text, question_text, question_romaji, options, correct_answer, order_num, audio_key, scoring_section)
+           VALUES (?, ?, ?, ?, 'paper_mcq', ?, ?, ?, ?, ?, ?, ?, ?)`
         )
         .bind(
           tid,
-          q.section,
+          q.section==='knowledge'?'reading':q.section,
           q.part_num,
           q.question_num,
           q.audio_text ?? '',
           q.question_text ?? '',
-          (q.question_romaji ?? q.question_pinyin) ?? '',
+          q.question_romaji ?? '',
           JSON.stringify(normOpts(q.options)),
           String(q.correct_answer).trim(),
           q.order_num,
-          ak
+          ak,
+          q.section
         );
     });
-    await c.env.DB.batch(stmts);
+    writes.push(...stmts);
   }
 
+  await c.env.DB.batch(writes);
   return c.json({ data: { template_id: tid } }, 201);
 });

@@ -31,7 +31,12 @@ function buildMap(): Record<string, string> {
 
 const MAP = buildMap();
 
-export function getKanaRomaji(character: string): string {
-  const ch = Array.from(character.trim())[0];
-  return (ch && MAP[ch]) ?? '';
+const voicedRows = [
+ ['がぎぐげご','ga gi gu ge go'],['ざじずぜぞ','za ji zu ze zo'],['だぢづでど','da ji zu de do'],['ばびぶべぼ','ba bi bu be bo'],['ぱぴぷぺぽ','pa pi pu pe po']
+];
+for(const [glyphs,sounds] of voicedRows) Array.from(glyphs).forEach((c,i)=>{MAP[c]=sounds.split(' ')[i];MAP[String.fromCodePoint(c.codePointAt(0)!+96)]=MAP[c]});
+for(const [base,roma] of [['き','ky'],['し','sh'],['ち','ch'],['に','ny'],['ひ','hy'],['み','my'],['り','ry'],['ぎ','gy'],['じ','j'],['び','by'],['ぴ','py']]) {
+ for(const [suffix,vowel] of [['ゃ','a'],['ゅ','u'],['ょ','o']]){const pair=base+suffix;MAP[pair]=roma+vowel;MAP[Array.from(pair).map(c=>String.fromCodePoint(c.codePointAt(0)!+96)).join('')]=roma+vowel;}
 }
+MAP['っ']='нэг мора завсар';MAP['ッ']=MAP['っ'];MAP['ー']='урт эгшиг';
+export function getKanaRomaji(character: string): string {return MAP[character.trim()] ?? '';}

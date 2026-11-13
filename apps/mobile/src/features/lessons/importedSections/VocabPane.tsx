@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   linkTxt: { ...typography.body.sm, color: colors.brand.primary, fontWeight: '700' },
 });
 
-function HskPill({ level }: { level: number }) {
+function JlptPill({ level }: { level: number }) {
   return (
     <View style={styles.pill}>
       <Text style={styles.pillTxt}>N{6 - level}</Text>
@@ -65,7 +65,7 @@ export function VocabPane({
             <Text style={styles.p}>{row.romaji}</Text>
             <Text style={styles.p}>{row.meaning_mn}</Text>
             <View style={styles.row}>
-              <HskPill level={row.jlpt_level} />
+              <JlptPill level={row.jlpt_level} />
               {w ? (
                 <>
                   <Pressable

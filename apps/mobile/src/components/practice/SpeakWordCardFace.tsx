@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, type ViewStyle } from 'react-native';
-import { ToneColoredText, PinyinRow } from '../hanzi';
+import { JapaneseText, RomajiRow } from '../japanese';
 import { PronounceButton } from '../audio/PronounceButton';
 import type { Word } from '../../lib/types';
 import { colors, radius, spacing, typography } from '../../theme';
@@ -27,8 +27,8 @@ export function SpeakWordCardFace({
 }: Props) {
   return (
     <View style={styles.card}>
-      <ToneColoredText hanzi={japanese} size="md" />
-      <PinyinRow pinyin={reading} size="md" />
+      <JapaneseText text={japanese} size="md" />
+      <RomajiRow romaji={reading} size="md" />
       {exampleAside ? <Text style={styles.exampleHint}>{exampleAside}</Text> : null}
       {showMongolianMeaning ? (
         <Text style={styles.translation}>{word.example_mn ?? word.meaning_mn}</Text>
@@ -36,7 +36,7 @@ export function SpeakWordCardFace({
       <PronounceButton
         wordId={word.id}
         meaningMn={showMongolianMeaning ? word.meaning_mn : undefined}
-        wordHanzi={word.kanji}
+        wordKanji={word.kanji}
         displayText={japanese}
         size="md"
         style={pronounceStyle ?? styles.pronounce}

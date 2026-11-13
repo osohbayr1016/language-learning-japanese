@@ -46,7 +46,7 @@ export function AuthLanguagePicker() {
       <Modal visible={open} transparent animationType="fade" onRequestClose={() => setOpen(false)}>
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
           <View style={styles.sheet} onStartShouldSetResponder={() => true}>
-            <Text style={styles.sheetTitle}>Language / Хэл / 语言</Text>
+            <Text style={styles.sheetTitle}>Language / Хэл / 言語</Text>
             {ORDER.map((code) => {
               const active = locale === code;
               return (

@@ -35,6 +35,7 @@ export function useJapaneseSpeechRound({
   const { state, result, liveTranscript, errorMessage, reset, supported, start, stop } =
     useSpeechSession();
   const activeMic = state === 'listening' || state === 'requesting';
+  const [permissionError,setPermissionError]=useState<string|null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [points, setPoints] = useState<number | null>(null);
   const [passedRound, setPassedRound] = useState<boolean | null>(null);
@@ -91,17 +92,10 @@ export function useJapaneseSpeechRound({
       stop();
       return;
     }
+    setPermissionError(null);
     const granted = await ensureSpeechPermission();
     if (!granted) {
-      const d = speakPermissionDeniedLines(hideMongolian);
-      onEvalRef.current(false);
-      onScoreRef.current?.(0);
-      setSubmitted(true);
-      setPoints(0);
-      setPassedRound(false);
-      setTranscript(null);
-      setBreakdown(d.breakdown);
-      setFinalLine(d.finalLine);
+      setPermissionError(hideMongolian?'Microphone permission denied; no grade recorded.':'Зөвшөөрөл аваагүй. Үнэлгээ бүртгэгдээгүй. Дахин зөвшөөрөөд оролдоно уу.');
       return;
     }
     reset();
@@ -143,7 +137,7 @@ export function useJapaneseSpeechRound({
     points,
     processing: state === 'processing',
     liveTranscript,
-    errorMessage,
+    errorMessage: permissionError ?? errorMessage,
     supported,
     celebrateStamp,
     outcome,

@@ -37,7 +37,7 @@ export type AdminBulkValidateRow =
 
 export type LessonHtmlPreview = {
   external_lesson_id: string;
-  title_cn: string;
+  title_jp: string;
   title_mn: string;
   source: string;
   vocab_count: number;

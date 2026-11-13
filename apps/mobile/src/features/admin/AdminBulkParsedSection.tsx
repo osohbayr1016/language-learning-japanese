@@ -1,8 +1,8 @@
 import React from 'react';
-import { AdminBulkHanziPreview } from './AdminBulkHanziPreview';
-import { AdminHanziExampleFieldsBlock } from './AdminHanziExampleFieldsBlock';
+import { AdminBulkKanjiPreview } from './AdminBulkKanjiPreview';
+import { AdminKanjiExampleFieldsBlock } from './AdminKanjiExampleFieldsBlock';
 import type { AdminBulkValidateRow } from '../../lib/api/admin';
-import type { ParsedImportLine } from './parseHanziImportLines';
+import type { ParsedImportLine } from './parseKanjiImportLines';
 
 type Props = {
   preview: ParsedImportLine[];
@@ -34,14 +34,14 @@ export function AdminBulkParsedSection({
   if (!preview.length) return null;
   return (
     <>
-      <AdminBulkHanziPreview
+      <AdminBulkKanjiPreview
         preview={preview}
         okRows={okRows}
         errRows={errRows}
         serverFails={serverFails}
         sharedExample={{ jp: bulkExJp, ro: bulkExRo, mn: bulkExMn }}
       />
-      <AdminHanziExampleFieldsBlock
+      <AdminKanjiExampleFieldsBlock
         exampleJp={bulkExJp}
         exampleRomaji={bulkExRo}
         exampleMn={bulkExMn}

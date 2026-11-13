@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
@@ -12,14 +16,101 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["vite/client"],
+    "types": [
+      "vite/client",
+      "node"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@src/*": ["apps/mobile/src/*"],
-      "@screens/*": ["apps/mobile/app/*"],
-      "react-native": ["node_modules/react-native-web"],
-      "expo-router": ["src/compat/expo-router.tsx"]
-    }
+      "@src/*": [
+        "apps/mobile/src/*"
+      ],
+      "@screens/*": [
+        "apps/mobile/app/*"
+      ],
+      "react-native": [
+        "node_modules/react-native"
+      ],
+      "expo-router": [
+        "src/compat/expo-router.tsx"
+      ],
+      "@japanese-learning/types": [
+        "packages/types/src/index.ts"
+      ],
+      "@japanese-learning/srs": [
+        "packages/srs/src/index.ts"
+      ],
+      "expo-font": [
+        "src/compat/expo-font.ts"
+      ],
+      "expo-status-bar": [
+        "src/compat/expo-status-bar.tsx"
+      ],
+      "expo-document-picker": [
+        "src/compat/expo-document-picker.ts"
+      ],
+      "expo-router-html": [
+        "src/compat/expo-router-html.tsx"
+      ],
+      "expo-file-system": [
+        "src/compat/expo-file-system.ts"
+      ],
+      "expo-av": [
+        "src/compat/expo-av.ts"
+      ],
+      "expo-haptics": [
+        "src/compat/expo-haptics.ts"
+      ],
+      "expo-linking": [
+        "src/compat/expo-linking.ts"
+      ],
+      "react-native-safe-area-context": [
+        "src/compat/react-native-safe-area-context.tsx"
+      ],
+      "expo-speech-recognition": [
+        "src/compat/expo-speech-recognition.ts"
+      ],
+      "react-native-svg": [
+        "src/compat/react-native-svg.tsx"
+      ],
+      "react-native-reanimated": [
+        "src/compat/react-native-reanimated.ts"
+      ],
+      "expo-constants": [
+        "src/compat/expo-constants.ts"
+      ],
+      "react-native-gesture-handler": [
+        "src/compat/react-native-gesture-handler.tsx"
+      ],
+      "react-native-webview": [
+        "src/compat/react-native-webview.tsx"
+      ],
+      "expo-splash-screen": [
+        "src/compat/expo-splash-screen.ts"
+      ],
+      "react-navigation-native": [
+        "src/compat/react-navigation-native.tsx"
+      ],
+      "expo-speech": [
+        "src/compat/expo-speech.ts"
+      ],
+      "expo-vector-icons": [
+        "src/compat/expo-vector-icons.tsx"
+      ],
+      "expo-secure-store": [
+        "src/compat/expo-secure-store.ts"
+      ],
+      "expo-file-system/*": [
+        "src/compat/expo-file-system.ts"
+      ]
+    },
+    "moduleSuffixes": [
+      ".web",
+      ""
+    ]
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "apps/mobile/src/pressable-web.d.ts"
+  ]
 }

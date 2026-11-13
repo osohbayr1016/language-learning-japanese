@@ -87,7 +87,7 @@ export default function PlayerScreen() {
       </View>
       <View style={styles.hintRow}>
         <Ionicons name="information-circle-outline" size={16} color={colors.text.secondary} />
-        <Text style={styles.hint}>{mn.cartoons.tapWord}</Text>
+        <Text style={styles.hint}>{'Тодруулсан үг дээр дарж утгыг хараарай.'}</Text>
       </View>
       <VocabSheet word={activeWord} onClose={handleClose} />
     </Screen>

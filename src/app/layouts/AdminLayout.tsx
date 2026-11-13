@@ -13,7 +13,7 @@ const TITLES: Record<string, string> = {
   '/admin/dashboard': 'Хянах самбар',
   '/admin/exam-import': mn.admin.examPdfImportNavTitle,
   '/admin/lesson-html-import': 'HTML хичээл импорт',
-  '/admin/hsk1-lessons': 'HSK 1 хичээлүүд',
+  '/admin/jlpt-n5-lessons': 'JLPT N5 хичээлүүд',
   '/admin/learning-path': 'Суралцах зам',
   '/admin/vocabulary': 'Үгийн сан',
   '/admin/cartoons': 'Хүүхэлдэй',

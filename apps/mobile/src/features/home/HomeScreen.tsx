@@ -1,5 +1,6 @@
+import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../../primitives';
 import { useGamification } from '../../context/GamificationContext';
 import { useAuth } from '../../context/AuthContext';
@@ -15,6 +16,7 @@ import { StudyDataStatusCard } from '../study/StudyDataStatusCard';
 export default function HomeScreen() {
   const { streak, todayXp, dailyGoal, refresh } = useGamification();
   const { token } = useAuth();
+  const router = useRouter();
   const [name, setName] = useState('Сурагч');
 
   const {
@@ -61,6 +63,8 @@ export default function HomeScreen() {
         todayXp={todayXp}
         goal={dailyGoal}
       />
+
+      {Platform.OS === 'web' && <Pressable accessibilityRole="link" accessibilityLabel="Өдрийн япон хэлний хөтөлбөр" onPress={() => router.push('/course' as never)} style={{backgroundColor:'#E7EDDF',padding:22,borderRadius:18,marginBottom:18,borderWidth:1,borderColor:'#CBD5BE'}}><Text style={{fontSize:23,fontWeight:'700',color:'#233C33'}}>Өдрийн япон хэлний хөтөлбөр →</Text><Text style={{fontSize:15,color:'#415C49',marginTop:8}}>Канаас эхлэх 50 нэгж · унших, бичих, үг, ханз · 20 минутын төлөвлөгөө</Text></Pressable>}
 
       <DailyQuestCard
         action={action}

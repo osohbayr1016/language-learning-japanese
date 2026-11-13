@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ToneColoredText, PinyinRow } from '../../../components/hanzi';
+import { JapaneseText, RomajiRow } from '../../../components/japanese';
 import { Card } from '../../../primitives';
 import { colors, spacing, typography } from '../../../theme';
 import { mn } from '../../../i18n/mn';
@@ -28,8 +28,8 @@ export function RevealCard({ word, isCorrect }: Props) {
           {isCorrect ? mn.study.correct : mn.study.wrong}
         </Text>
       </View>
-      <ToneColoredText hanzi={word.kanji} tones={undefined} size="md" />
-      <PinyinRow pinyin={word.romaji} size="md" />
+      <JapaneseText text={word.kanji} size="md" />
+      <RomajiRow romaji={word.romaji} size="md" />
       <Text style={styles.meaning}>{word.meaning_mn}</Text>
     </Card>
   );

@@ -25,7 +25,7 @@ import {
   type KanjiActivityKey,
 } from './kanjiActivityStorage';
 import { addLearnedKanji } from '../../lib/learnedKanjisStorage';
-import { HanziWriterView, type HanziWriterMode } from '../../components/writing/HanziWriterView';
+import { KanjiWriterView, type KanjiWriterMode } from '../../components/writing/KanjiWriterView';
 
 // ─── Activity Types ───────────────────────────────────────────────────────────
 
@@ -118,7 +118,7 @@ const sp = StyleSheet.create({
 // ─── Inline Writing sub-component ─────────────────────────────────────────────
 
 function InlineWriteActivity({ kanji, onComplete }: { kanji: string; onComplete: () => void }) {
-  const [mode, setMode] = useState<HanziWriterMode>('animate');
+  const [mode, setMode] = useState<KanjiWriterMode>('animate');
   const [quizSuccess, setQuizSuccess] = useState(false);
   const size = 240;
 
@@ -136,7 +136,7 @@ function InlineWriteActivity({ kanji, onComplete }: { kanji: string; onComplete:
       </View>
 
       <View style={wp.canvasOuter}>
-        <HanziWriterView
+        <KanjiWriterView
           key={mode} // re-mount to clear state
           char={kanji}
           mode={mode}
@@ -144,7 +144,7 @@ function InlineWriteActivity({ kanji, onComplete }: { kanji: string; onComplete:
           strokeColor={colors.brand.primaryDark}
           outlineColor={colors.border}
           onEvent={(e) => {
-            if (e.type === 'quizComplete') {
+            if (e.type === 'complete') {
               setQuizSuccess(true);
             }
           }}
@@ -180,7 +180,7 @@ const wp = StyleSheet.create({
   modeTxt: { ...typography.body.sm, color: colors.text.secondary, fontWeight: '600' },
   modeTxtActive: { color: colors.brand.primary },
   canvasOuter: {
-    backgroundColor: colors.bg.default, borderRadius: radius.md,
+    backgroundColor: colors.bg.primary, borderRadius: radius.md,
     padding: spacing.sm, borderWidth: 1, borderColor: colors.border,
   },
   hint: { ...typography.body.sm, color: colors.text.muted, textAlign: 'center' },
@@ -314,11 +314,11 @@ export function KanjiDetailScreen() {
     );
   }
 
-  const hskColor = colors.jlpt[word.jlpt_level as keyof typeof colors.jlpt] || colors.brand.primary;
+  const jlptColor = colors.jlpt[word.jlpt_level as keyof typeof colors.jlpt] || colors.brand.primary;
 
   return (
     <Screen scroll scrollBottomInset={120}>
-      {/* Back + HSK */}
+      {/* Back + JLPT */}
       <View style={styles.header}>
         <Pressable
           accessibilityRole="button"
@@ -328,13 +328,13 @@ export function KanjiDetailScreen() {
         >
           <Ionicons name="arrow-back" size={26} color={colors.text.primary} />
         </Pressable>
-        <Pill label={jlptNLabel(word.jlpt_level)} color={hskColor} />
+        <Pill label={jlptNLabel(word.jlpt_level)} color={jlptColor} />
       </View>
 
       {/* Hero card */}
       <View style={styles.heroCard}>
-        <Text style={styles.hanziHuge}>{word.kanji}</Text>
-        <Text style={styles.pinyin}>{word.romaji}</Text>
+        <Text style={styles.kanjiHuge}>{word.kanji}</Text>
+        <Text style={styles.romaji}>{word.romaji}</Text>
         <Text style={styles.meaning}>{word.meaning_mn}</Text>
       </View>
 
@@ -503,13 +503,13 @@ const styles = StyleSheet.create({
     marginBottom: spacing.lg,
     ...shadows.md,
   },
-  hanziHuge: {
+  kanjiHuge: {
     fontSize: 96,
     fontWeight: '800',
     color: colors.text.primary,
     lineHeight: 112,
   },
-  pinyin: {
+  romaji: {
     ...typography.heading.lg,
     color: colors.text.secondary,
     marginBottom: spacing.xs,

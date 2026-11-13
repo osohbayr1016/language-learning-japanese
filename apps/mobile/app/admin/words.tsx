@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { AdminBulkHanziPaste } from '../../src/features/admin/AdminBulkHanziPaste';
-import { AdminSingleHanziCreateCard } from '../../src/features/admin/AdminSingleHanziCreateCard';
+import { AdminBulkKanjiPaste } from '../../src/features/admin/AdminBulkKanjiPaste';
+import { AdminSingleKanjiCreateCard } from '../../src/features/admin/AdminSingleKanjiCreateCard';
 import { useAuth } from '../../src/context/AuthContext';
 import { colors, spacing } from '../../src/theme';
 
@@ -15,8 +15,8 @@ export default function AdminWordsScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.pad} keyboardShouldPersistTaps="handled">
-        <AdminSingleHanziCreateCard jlpt={jlpt} onJlptChange={setJlpt} />
-        <AdminBulkHanziPaste token={token} hskLevel={jlpt} />
+        <AdminSingleKanjiCreateCard jlpt={jlpt} onJlptChange={setJlpt} />
+        <AdminBulkKanjiPaste token={token} jlptLevel={jlpt} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

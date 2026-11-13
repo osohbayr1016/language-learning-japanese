@@ -12,7 +12,7 @@ function publicUrl(req: Request, key: string): string {
 
 // GET /api/cartoons — public list
 cartoons.get('/', async (c) => {
-  const jlptRaw = c.req.query('jlpt') ?? c.req.query('hsk');
+  const jlptRaw = c.req.query('jlpt');
   let query = 'SELECT * FROM cartoons WHERE is_published = 1';
   const params: (string | number)[] = [];
   if (jlptRaw) {

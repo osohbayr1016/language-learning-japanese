@@ -191,6 +191,7 @@ export function runOnJS<T extends (...args: never[]) => unknown>(fn: T): T {
 
 export const Easing = {
   linear,
+  exp: (t:number)=>Math.pow(2,10*(t-1)),
   ease: (t: number) => t * t * (3 - 2 * t),
   quad: (t: number) => t * t,
   cubic: (t: number) => t * t * t,

@@ -1,3 +1,5 @@
+> Historical audit. Current implementation and release requirements: [Independent Japanese course](INDEPENDENT-JAPANESE-COURSE.md).
+
 # Japanese Learning Product Audit — 2026-10-04
 
 ## Objective

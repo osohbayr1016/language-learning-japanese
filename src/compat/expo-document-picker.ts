@@ -4,7 +4,7 @@ export type DocumentPickerResult =
   | { canceled: false; assets: { uri: string; name: string; size: number; mimeType: string; file: File }[] };
 
 export async function getDocumentAsync(
-  options: { type?: string | string[]; multiple?: boolean } = {}
+  options: { type?: string | string[]; multiple?: boolean; copyToCacheDirectory?:boolean } = {}
 ): Promise<DocumentPickerResult> {
   return new Promise((resolve) => {
     const input = document.createElement('input');

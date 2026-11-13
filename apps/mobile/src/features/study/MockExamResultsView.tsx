@@ -4,6 +4,9 @@ import { mn } from '../../i18n/mn';
 import { mockExamStyles as styles } from './mockExamStyles';
 
 export type MockExamResultPayload = {
+  knowledgeScore?:number;
+  knowledgeCorrect?:number;
+  knowledgeTotal?:number;
   total: number;
   max: number;
   line: number;
@@ -63,6 +66,7 @@ export function MockExamResultsView({ result, onClose }: Props) {
   return (
     <View style={styles.resultsRoot}>
       <Text style={styles.h1}>{mn.common.done}</Text>
+      <Text style={styles.p}>Дадлагын хувийг хэсгийн оноонд шилжүүлсэн үр дүн. Албан ёсны JLPT scaled score биш. Хэсэг бүрийн босгыг давах шаардлагатай.</Text>
       <Text style={styles.resultsLead}>
         {s.mockExamTotalPct.replace('{p}', String(tp)).replace('{s}', String(result.total)).replace('{max}', String(result.max))}{' '}
         {s.mockExamPassLineInline.replace('{line}', String(result.line))}
@@ -103,6 +107,7 @@ export function MockExamResultsView({ result, onClose }: Props) {
         </Text>
       </View>
 
+      {!!result.knowledgeTotal&&<Text style={styles.p}>Хэлний мэдлэг: {result.knowledgeCorrect}/{result.knowledgeTotal} зөв · {result.knowledgeScore}/60</Text>}
       <View style={styles.insightCard}>
         <Text style={styles.insightTit}>{s.mockExamInsightTitle}</Text>
         <Text style={styles.insightP}>{passInsight(result.total, result.line, result.passed, s)}</Text>

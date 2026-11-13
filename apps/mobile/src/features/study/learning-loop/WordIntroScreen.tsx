@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, radius, spacing, typography, shadows } from '../../../theme';
-import type { Word } from '@japanese-learning/db';
+import type { Word } from '../../../lib/types';
 import { PronounceButton } from '../../../components/audio/PronounceButton';
 import { useAudio } from '../../../context/AudioContext';
-import { HanziWriterView } from '../../../components/writing/HanziWriterView';
+import { KanjiWriterView } from '../../../components/writing/KanjiWriterView';
 
 type WordIntroScreenProps = {
   words: Word[];
@@ -29,7 +29,7 @@ export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
     // The existing code handles it gracefully if the ID doesn't exist.
     const timer = setTimeout(() => {
       // In a real app, ensure word.id is numeric or supported by the audio engine
-      playWord(current.id as any, { speed: 1.0 }).catch(() => {});
+      playWord(current.id as any, { speed: 'normal' }).catch(() => {});
     }, 2000);
 
     return () => clearTimeout(timer);
@@ -45,7 +45,7 @@ export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
     }
   };
 
-  const firstChar = current.kanji ? Array.from(current.kanji)[0] : Array.from(current.kana)[0];
+  const firstChar = current.kanji ? Array.from(current.kanji ?? '')[0] : Array.from(current.kana ?? '')[0];
 
   return (
     <View style={styles.container}>
@@ -74,7 +74,7 @@ export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
         <View style={styles.strokeContainer}>
           <Text style={styles.strokeTitle}>Бичих дараалал</Text>
           <View style={styles.canvasWrap}>
-            <HanziWriterView
+            <KanjiWriterView
               key={`${current.id}-animate`}
               char={firstChar}
               mode="animate"
@@ -102,7 +102,7 @@ export function WordIntroScreen({ words, onFinish }: WordIntroScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
   },
   header: {
     flexDirection: 'row',
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   canvasWrap: {
-    backgroundColor: colors.bg.default,
+    backgroundColor: colors.bg.primary,
     borderRadius: radius.md,
     padding: spacing.sm,
     borderWidth: 1,

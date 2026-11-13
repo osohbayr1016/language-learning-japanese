@@ -3,14 +3,14 @@
 -- Irreversible. R2 objects (cached TTS) are NOT deleted — orphan keys possible.
 --
 -- Local D1:
---   cd apps/api && pnpm exec wrangler d1 execute chinese-learning-db --local --file=./scripts/reset_content_keep_users.sql
+--   cd apps/api && pnpm exec wrangler d1 execute nihongo-mn-db --local --file=./scripts/reset_content_keep_users.sql
 --
 -- Remote / production (only when you intend to wipe live content):
---   cd apps/api && pnpm exec wrangler d1 execute chinese-learning-db --remote --file=./scripts/reset_content_keep_users.sql
+--   cd apps/api && pnpm exec wrangler d1 execute nihongo-mn-db --remote --file=./scripts/reset_content_keep_users.sql
 --   (Add --env production if your wrangler.toml binds the DB under that env.)
 --
 -- Verify:
---   wrangler d1 execute chinese-learning-db --local --command "SELECT (SELECT COUNT(*) FROM users) AS u, (SELECT COUNT(*) FROM words) AS w, (SELECT COUNT(*) FROM chapters) AS c"
+--   wrangler d1 execute nihongo-mn-db --local --command "SELECT (SELECT COUNT(*) FROM users) AS u, (SELECT COUNT(*) FROM words) AS w, (SELECT COUNT(*) FROM chapters) AS c"
 -- =============================================================================
 
 PRAGMA foreign_keys = OFF;

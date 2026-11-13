@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import * as Speech from 'expo-speech';
 import { Ionicons } from '@expo/vector-icons';
-import { HanziWriterView } from '../../components/writing/HanziWriterView';
-import type { HanziWriterHandle } from '../../components/writing/hanziWriterTypes';
+import { KanjiWriterView } from '../../components/writing/KanjiWriterView';
+import type { KanjiWriterHandle } from '../../components/writing/kanjiWriterTypes';
 import { colors, radius, shadows, spacing, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 import { getKanaRomaji } from '../../lib/content/kanaRomaji';
@@ -24,7 +24,7 @@ function speakGlyph(c: string) {
 export function KanaWriteDialogContent({ glyph, onClose }: Props) {
   const { width } = useWindowDimensions();
   const canvas = Math.min(Math.max(width - spacing.xl * 4, 200), 272);
-  const writerRef = useRef<HanziWriterHandle>(null);
+  const writerRef = useRef<KanjiWriterHandle>(null);
   const ch = Array.from(glyph.trim())[0] ?? '';
   const romajiEn = ch ? getKanaRomaji(ch) : '';
 
@@ -49,7 +49,7 @@ export function KanaWriteDialogContent({ glyph, onClose }: Props) {
 
       {ch ? (
         <View style={s.writerBox}>
-          <HanziWriterView
+          <KanjiWriterView
             ref={writerRef}
             char={ch}
             mode="animate"

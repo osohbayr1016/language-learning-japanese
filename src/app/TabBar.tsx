@@ -22,7 +22,7 @@ const TABS: Tab[] = [
     icon: 'home-outline',
     activeIcon: 'home',
     hint: 'Өнөөдрийн хичээл ба JLPT зам',
-    matches: (p) => p === '/home' || p.startsWith('/lessons/'),
+    matches: (p) => p === '/home' || p === '/course' || p.startsWith('/lessons/'),
   },
   {
     path: '/study',
@@ -61,6 +61,7 @@ const TABS: Tab[] = [
 export const TAB_PATHS = new Set(TABS.map((t) => t.path));
 export const TAB_BAR_PATHS = new Set([
   ...TAB_PATHS,
+  '/course',
   '/kana',
   '/kanji',
   '/games',

@@ -1,3 +1,4 @@
+import dailyCourseRoutes from './routes/course';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
@@ -89,6 +90,7 @@ app.get('/health', (c) => c.json({ status: 'ok', version: '1.0.0' }));
 
 // ── Routes ──────────────────────────────────────────────────
 app.route('/api/auth', authRoutes);
+app.route('/api/user/course', dailyCourseRoutes);
 app.route('/api/user', userRoutes);
 app.route('/api/words', wordRoutes);
 app.route('/api/audio', audioRoutes);

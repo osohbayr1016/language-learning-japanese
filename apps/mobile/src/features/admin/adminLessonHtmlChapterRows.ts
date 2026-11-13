@@ -1,19 +1,19 @@
 import type { AdminChapter } from '../../lib/api/admin';
 
-const HSK_LEVELS = [1, 2, 3, 4, 5, 6] as const;
+const JLPT_LEVELS = [1, 2, 3, 4, 5] as const;
 
 export type ChapterPickRow =
   | { type: 'chapter'; chapter: AdminChapter }
-  | { type: 'missing'; hsk: number };
+  | { type: 'missing'; jlpt: number };
 
-/** One row per HSK 1–6: real chapter chips or a placeholder when no chapter exists for that level. */
+/** One row per JLPT 1–5: real chapter chips or a placeholder when no chapter exists for that level. */
 export function buildChapterPickRows(chapters: AdminChapter[]): ChapterPickRow[] {
-  return HSK_LEVELS.flatMap((hsk) => {
+  return JLPT_LEVELS.flatMap<ChapterPickRow>((jlpt) => {
     const list = chapters
-      .filter((c) => c.hsk_level === hsk)
+      .filter((c) => c.jlpt_level === jlpt)
       .slice()
       .sort((a, b) => a.order_num - b.order_num || a.id - b.id);
-    if (!list.length) return [{ type: 'missing' as const, hsk }];
+    if (!list.length) return [{ type: 'missing' as const, jlpt }];
     return list.map((chapter) => ({ type: 'chapter' as const, chapter }));
   });
 }

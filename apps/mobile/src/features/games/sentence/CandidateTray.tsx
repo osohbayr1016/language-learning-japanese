@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { ToneColoredText } from '../../../components/hanzi';
+import { JapaneseText } from '../../../components/japanese';
 import { colors, radius, spacing } from '../../../theme';
 import type { Word } from '../../../lib/types';
 
@@ -31,7 +31,7 @@ export function CandidateTray({ candidates, selectedId, state, onPick }: Props) 
             disabled={state !== 'idle'}
             style={[styles.tile, stateStyle]}
           >
-            <ToneColoredText hanzi={c.kanji} size="sm" />
+            <JapaneseText text={c.kanji} size="sm" />
           </Pressable>
         );
       })}
