@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { api } from '../lib/api';
 import { getItem, removeItem, setItem } from '../lib/storage';
 import { restoreStoredAccessToken } from '../lib/auth/restoreStoredAccessToken';
@@ -53,6 +53,7 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const sessionTicket = useRef(0);
   const [state, setState] = useState<AuthState>({
     token: null,
     isAdmin: false,
@@ -66,8 +67,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const offRef = subscribeAccessTokenRefreshed((newToken) => {
+      const ticket = ++sessionTicket.current;
       void (async () => {
+        // Refresh may finish after logout; never resurrect an abandoned session.
+        if (await getItem(AUTH_ACCESS_TOKEN_KEY) !== newToken) return;
         const isAdmin = await syncAdminFromServer(newToken);
+        if (sessionTicket.current !== ticket ||
+            await getItem(AUTH_ACCESS_TOKEN_KEY) !== newToken) return;
         setState((s) => ({
           ...s,
           token: newToken,
@@ -77,6 +83,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })();
     });
     const offClr = subscribeSessionCleared(() => {
+      ++sessionTicket.current;
       setState((s) => ({ ...s, token: null, isAuthenticated: false, isAdmin: false }));
     });
     return () => {
@@ -86,6 +93,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const ticket = sessionTicket.current;
     void bootstrap();
     async function bootstrap() {
       let token: string | null = null;
@@ -117,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error('Auth bootstrap failed', e);
       }
       const isAdmin = await syncAdminFromServer(token);
+      if (!active || sessionTicket.current !== ticket) return;
       setState({
         token,
         isAdmin,
@@ -128,9 +138,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         reason,
       });
     }
+    return () => { active = false; };
   }, []);
 
   const signIn = async (tokens: { access_token: string; refresh_token: string }) => {
+    const ticket = ++sessionTicket.current;
     await persistSession(tokens.access_token, tokens.refresh_token);
     const isAdmin = await syncAdminFromServer(tokens.access_token);
     let jlptLevel = state.jlptLevel;
@@ -142,6 +154,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       // Keep local preferences if the server preference endpoint is unavailable.
     }
+    if (sessionTicket.current !== ticket) return;
     setState((s) => ({
       ...s,
       token: tokens.access_token,
@@ -154,13 +167,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    ++sessionTicket.current;
+    setState((s) => ({ ...s, token: null, isAuthenticated: false, isAdmin: false }));
     const refresh = await getItem(AUTH_REFRESH_TOKEN_KEY);
+    await removeItem(AUTH_ACCESS_TOKEN_KEY);
+    await removeItem(AUTH_REFRESH_TOKEN_KEY);
     if (refresh) {
       try { await api.auth.logout(refresh); } catch { /* ignore */ }
     }
-    await removeItem(AUTH_ACCESS_TOKEN_KEY);
-    await removeItem(AUTH_REFRESH_TOKEN_KEY);
-    setState((s) => ({ ...s, token: null, isAuthenticated: false, isAdmin: false }));
   };
 
   const completeOnboarding = async () => {

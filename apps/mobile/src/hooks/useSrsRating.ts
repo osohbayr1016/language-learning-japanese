@@ -77,7 +77,7 @@ export function useSrsRating(sessionType: SessionType) {
           await rewardOutbox.remove(owner, 'study', session_id);
           buffer.current = [];
           submissionId.current = null;
-          if (response.data.xp_earned > 0) addLocalXp(response.data.xp_earned);
+          if (response.data.xp_earned > 0) addLocalXp(response.data.xp_earned, owner);
           void refresh();
           return true;
         } catch (e) {
