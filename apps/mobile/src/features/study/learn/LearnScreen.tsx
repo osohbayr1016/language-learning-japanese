@@ -38,6 +38,7 @@ export function LearnScreen({ source = 'due' }: Props) {
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
 
   const current = words[idx];
 
@@ -96,8 +97,12 @@ export function LearnScreen({ source = 'due' }: Props) {
           correct: correctCount,
           total: words.length,
         });
-        await session.flush(finalXp);
-        setDone(true);
+        if (await session.flush(finalXp)) {
+          setSaveError(false);
+          setDone(true);
+        } else {
+          setSaveError(true);
+        }
       } finally {
         setSaving(false);
       }
@@ -212,6 +217,11 @@ export function LearnScreen({ source = 'due' }: Props) {
         </View>
       </View>
 
+      {saveError ? (
+        <Text accessibilityRole="alert" style={{ color: colors.error, marginBottom: spacing.sm }}>
+          Ахиц хадгалагдсангүй. Хариултыг алдалгүйгээр «ДУУСГАХ» дээр дахин дарж болно.
+        </Text>
+      ) : null}
       {answer ? (
         <View
           accessibilityRole="alert"

@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
-import { Screen } from '../../../primitives';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { Button, Screen } from '../../../primitives';
 import { useDueWords } from '../../../hooks/useDueWords';
 import { useSrsRating } from '../../../hooks/useSrsRating';
 import { useAdaptiveTimer } from '../../../hooks/useAdaptiveTimer';
 import { useAudio } from '../../../context/AudioContext';
 import { calculateXP } from '@japanese-learning/srs';
+import { sessionXpIncludingFinal } from '../../../lib/sessionXp';
 import { normalizeRomaji } from '../../../lib/romaji';
 import { colors, spacing } from '../../../theme';
 import { mn } from '../../../i18n/mn';
@@ -34,6 +35,8 @@ export default function WriteScreen() {
   const [reveal, setReveal] = useState<{ correct: boolean } | null>(null);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
+  const [pendingXp, setPendingXp] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const current = words[idx];
 
@@ -55,9 +58,26 @@ export default function WriteScreen() {
     return <StudyEmptyState message={error ? mn.study.wordsLoadError : undefined} />;
   }
   if (done) return <SessionDoneScreen xp={xp} total={words.length} correct={correctCount} />;
+  if (pendingXp !== null) return (
+    <Screen>
+      <StudyHeader title={mn.study.write} index={words.length - 1} total={words.length} />
+      <Text accessibilityRole="alert" style={{ color: colors.error, marginBottom: spacing.md }}>
+        {saving ? 'Ахиц хадгалж байна…' : 'Бичгийн ахиц хадгалагдсангүй. Хариулт хэвээр, дахин илгээх боломжтой.'}
+      </Text>
+      <Button label="ДАХИН ХАДГАЛАХ" loading={saving} disabled={saving}
+        onPress={() => {
+          void (async () => {
+            setSaving(true);
+            try {
+              if (await session.flush(pendingXp)) { setPendingXp(null); setDone(true); }
+            } finally { setSaving(false); }
+          })();
+        }} />
+    </Screen>
+  );
 
   const handleSubmit = async (val: string) => {
-    if (!current) return;
+    if (!current || reveal) return;
     const responseMs = timer.stopAndReset();
     const ok = isAnswerCorrect(val, current);
     setReveal({ correct: ok });
@@ -73,8 +93,15 @@ export default function WriteScreen() {
     setTimeout(async () => {
       setReveal(null);
       if (idx + 1 >= words.length) {
-        await session.flush(xp);
-        setDone(true);
+        const finalXp = sessionXpIncludingFinal('write', correctCount, ok, words.length);
+        setPendingXp(finalXp);
+        setSaving(true);
+        try {
+          if (await session.flush(finalXp)) {
+            setPendingXp(null);
+            setDone(true);
+          }
+        } finally { setSaving(false); }
       } else {
         setIdx((i) => i + 1);
       }

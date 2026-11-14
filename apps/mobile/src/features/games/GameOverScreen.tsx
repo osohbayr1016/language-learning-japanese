@@ -25,7 +25,9 @@ export function GameOverScreen({ score, xp, durationSeconds, onPlayAgain }: Prop
   const level = Math.floor(currentTotalXp / 100) + 1;
   const nextXp = level * 100;
   const progress = (currentTotalXp % 100) / 100;
-  const isLevelUp = (currentTotalXp % 100) - xp < 0; // rough check if we crossed a 100 boundary
+  // Never claim a level-up without synced totals or a genuine level boundary.
+  const isLevelUp = !!stats && xp > 0 &&
+    Math.floor(Math.max(0, currentTotalXp - xp) / 100) < Math.floor(currentTotalXp / 100);
 
   return (
     <Screen>

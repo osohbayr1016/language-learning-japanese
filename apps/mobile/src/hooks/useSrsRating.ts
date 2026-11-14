@@ -49,7 +49,7 @@ export function useSrsRating(sessionType: SessionType) {
       if (!buffer.current.length) return true;
       if (inflight.current) return inflight.current;
       const results = buffer.current.map(({ rating: _r, ...rest }) => rest);
-      const session_id = submissionId.current ?? crypto.randomUUID();
+      const session_id = submissionId.current ?? newSessionId();
       submissionId.current = session_id;
       const saving = (async () => {
         try {
