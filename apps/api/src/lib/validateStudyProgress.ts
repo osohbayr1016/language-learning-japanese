@@ -34,7 +34,7 @@ function validResult(value: unknown): value is ProgressResult {
 export function validStudyProgressBody(value: unknown): value is StudyProgressBody {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;
   const body = value as Record<string, unknown>;
-  if (!Array.isArray(body.results) || body.results.length > 100 ||
+  if (!Array.isArray(body.results) || body.results.length === 0 || body.results.length > 100 ||
       !integerIn(body.xp_earned, 0, 1000) ||
       !["flashcard", "learn", "write", "writer"].includes(String(body.session_type)) ||
       (body.session_id !== undefined && !validSessionId(body.session_id))) return false;
