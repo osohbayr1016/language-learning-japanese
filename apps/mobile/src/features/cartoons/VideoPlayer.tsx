@@ -18,7 +18,7 @@ export const VideoPlayer = forwardRef<PlayerHandle, Props>(function VideoPlayer(
   { uri, onTimeUpdate, onComplete },
   ref
 ) {
-  const videoRef = useRef<Video>(null);
+  const videoRef = useRef<React.ComponentRef<typeof Video>>(null);
 
   useImperativeHandle(ref, () => ({
     pause: async () => { await videoRef.current?.pauseAsync(); },
