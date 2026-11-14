@@ -9,6 +9,7 @@ import { colors, spacing } from '../../../theme';
 import { mn } from '../../../i18n/mn';
 import { GameHud } from '../GameHud';
 import { GameOverScreen } from '../GameOverScreen';
+import { GameSaveRecovery } from '../GameSaveRecovery';
 import { SentencePrompt } from './SentencePrompt';
 import { CandidateTray } from './CandidateTray';
 import { timingScore } from '../translate/scoring';
@@ -25,7 +26,7 @@ type Props = {
 export default function SentenceScreen({ initialWords, onDone }: Props) {
   const { words: randomPool, loading } = useRandomWords(ROUNDS + OPTIONS + 4);
   const pool = initialWords ?? randomPool;
-  const { save } = useGameSession();
+  const { save, retry } = useGameSession();
   const timer = useAdaptiveTimer();
   const { playWord } = useAudio();
 
@@ -41,6 +42,7 @@ export default function SentenceScreen({ initialWords, onDone }: Props) {
   const [correctCount, setCorrectCount] = useState(0);
   const [start, setStart] = useState<number>(Date.now());
   const [done, setDone] = useState(false);
+  const [pendingCompletion, setPendingCompletion] = useState<{score: number; accuracy: number} | null>(null);
 
   const current = queue[idx];
 
@@ -82,11 +84,19 @@ export default function SentenceScreen({ initialWords, onDone }: Props) {
         xp={Math.round(score / 4)}
         durationSeconds={Math.round((Date.now() - start) / 1000)}
         onPlayAgain={() => {
-          setIdx(0); setSelected(null); setScore(0); setCorrectCount(0); setStart(Date.now()); setDone(false);
+          setIdx(0); setSelected(null); setScore(0); setCorrectCount(0); setStart(Date.now()); setDone(false); setPendingCompletion(null);
         }}
       />
     );
   }
+
+  if (pendingCompletion) return <GameSaveRecovery onRetry={async () => {
+    if (await retry()) {
+      setPendingCompletion(null);
+      setDone(true);
+      onDone?.(pendingCompletion.score, pendingCompletion.accuracy);
+    }
+  }} />;
 
   const handlePick = async (w: Word) => {
     if (selected) return;
@@ -101,23 +111,27 @@ export default function SentenceScreen({ initialWords, onDone }: Props) {
     }
 
     setTimeout(async () => {
-      setSelected(null);
       if (idx + 1 >= queue.length) {
         const elapsed = Math.max(1, Math.round((Date.now() - start) / 1000));
-        const finalScore = score + delta;
+        const finalScore = Math.max(0, score + delta);
         const xp = Math.round(finalScore / 4);
         const acc = queue.length > 0 ? (correctCount + (ok ? 1 : 0)) / queue.length : 0;
-        await save({
+        const saved = await save({
           game_type: 'sentence',
-          score: Math.max(0, finalScore),
+          score: finalScore,
           accuracy: acc,
           duration_seconds: elapsed,
           words_practiced: queue.length,
           xp_earned: xp,
         });
+        if (!saved) {
+          setPendingCompletion({ score: finalScore, accuracy: acc });
+          return;
+        }
         setDone(true);
         if (onDone) onDone(finalScore, acc);
       } else {
+        setSelected(null);
         setIdx((i) => i + 1);
       }
     }, 900);

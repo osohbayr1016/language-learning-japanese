@@ -9,6 +9,7 @@ import { colors, spacing } from '../../../theme';
 import { mn } from '../../../i18n/mn';
 import { GameHud } from '../GameHud';
 import { GameOverScreen } from '../GameOverScreen';
+import { GameSaveRecovery } from '../GameSaveRecovery';
 import { buildMatchDeck, type MatchCard } from './cards';
 import { MatchTile } from './MatchTile';
 import { completedMatchStats } from './matchSessionStats';
@@ -24,7 +25,7 @@ type Props = {
 export default function MatchScreen({ initialWords, onDone }: Props) {
   const { words: randomPool, loading } = useRandomWords(PAIRS);
   const words = initialWords ?? randomPool;
-  const { save } = useGameSession();
+  const { save, retry } = useGameSession();
   const { playWord } = useAudio();
 
   const [deck, setDeck] = useState<MatchCard[]>([]);
@@ -35,6 +36,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
   const [wrongAttempts, setWrongAttempts] = useState(0);
   const [start, setStart] = useState<number>(Date.now());
   const [done, setDone] = useState(false);
+  const [pendingCompletion, setPendingCompletion] = useState<{score: number; accuracy: number} | null>(null);
   const [combo, setCombo] = useState(1);
   const [roundIdx, setRoundIdx] = useState(0);
   const comboTimer = useRef<NodeJS.Timeout | null>(null);
@@ -78,6 +80,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
     finishing.current = false;
     if (comboTimer.current) clearTimeout(comboTimer.current);
     setDone(false);
+    setPendingCompletion(null);
     setRoundIdx(0);
     setDeck(buildMatchDeck(chunks[0]));
     setMatchedPairs(0);
@@ -93,7 +96,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
     if (finishing.current) return;
     finishing.current = true;
     const elapsed = Math.max(1, Math.round((Date.now() - start) / 1000));
-    await save({
+    const saved = await save({
       game_type: 'match',
       score: finalScore,
       accuracy,
@@ -101,6 +104,12 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
       words_practiced: total,
       xp_earned: Math.round(finalScore / 5),
     });
+    if (!saved) {
+      setPendingCompletion({ score: finalScore, accuracy });
+      finishing.current = false;
+      return;
+    }
+    setPendingCompletion(null);
     setDone(true);
     onDone?.(finalScore, accuracy);
   };
@@ -155,6 +164,14 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
       />
     );
   }
+
+  if (pendingCompletion) return <GameSaveRecovery onRetry={async () => {
+    if (await retry()) {
+      setPendingCompletion(null);
+      setDone(true);
+      onDone?.(pendingCompletion.score, pendingCompletion.accuracy);
+    }
+  }} />;
 
   const resetComboTimer = () => {
     if (comboTimer.current) clearTimeout(comboTimer.current);
