@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth';
 import type { Env, Variables } from '../types';
+import { boundedInteger, positiveId } from '../lib/queryNumbers';
 
 const vocab = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -13,7 +14,7 @@ const JOIN_WHERE = `FROM user_word_progress uwp
 /** Сайн биш гэж үзэх эвдрэлтэй үгс (SRS метрик эвэргүү). */
 vocab.get('/weak', async (c) => {
   const sub = c.get('user').sub;
-  const limit = Math.min(Math.max(Number(c.req.query('limit') ?? 15), 1), 80);
+  const limit = boundedInteger(c.req.query('limit'), 15, 1, 80);
 
   const rows = await c.env.DB.prepare(
     `SELECT w.*, uwp.ease_factor, uwp.interval, uwp.repetitions, uwp.next_review,
@@ -41,8 +42,8 @@ vocab.get('/weak', async (c) => {
 /** Нэг үгийн хэрэглэгчийн үгийн явц (профайл дэлгэрэнгүй). */
 vocab.get('/word/:wordId', async (c) => {
   const sub = c.get('user').sub;
-  const wordId = Number(c.req.param('wordId'));
-  if (!Number.isFinite(wordId)) return c.json({ error: 'Буруу id' }, 400);
+  const wordId = positiveId(c.req.param('wordId'));
+  if (wordId === null) return c.json({ error: 'Буруу id' }, 400);
 
   const row = await c.env.DB.prepare(
     `SELECT w.*, uwp.ease_factor, uwp.interval, uwp.repetitions, uwp.next_review,
@@ -58,8 +59,8 @@ vocab.get('/word/:wordId', async (c) => {
 
 vocab.get('/', async (c) => {
   const sub = c.get('user').sub;
-  const limit = Math.min(Math.max(Number(c.req.query('limit') ?? 40), 1), 100);
-  const offset = Math.max(Number(c.req.query('offset') ?? 0), 0);
+  const limit = boundedInteger(c.req.query('limit'), 40, 1, 100);
+  const offset = boundedInteger(c.req.query('offset'), 0, 0, 100000);
   const textbookUnit = (c.req.query('textbook_unit') ?? '').trim();
 
   const countParams: (string | number)[] = [sub];
@@ -103,8 +104,8 @@ vocab.get('/', async (c) => {
 /** Allow learner to move word into flashcard queue before delay ends. */
 vocab.patch('/:wordId/eligibility', async (c) => {
   const sub = c.get('user').sub;
-  const wordId = Number(c.req.param('wordId'));
-  if (!Number.isFinite(wordId)) return c.json({ error: 'Буруу id' }, 400);
+  const wordId = positiveId(c.req.param('wordId'));
+  if (wordId === null) return c.json({ error: 'Буруу id' }, 400);
 
   const r = await c.env.DB.prepare(
     `UPDATE user_word_progress SET flashcard_eligible_at = datetime('now')

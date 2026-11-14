@@ -87,7 +87,7 @@ app.use(
     origin: (origin, c) => {
       if (isAllowedOrigin(origin, c.env)) return origin;
     },
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowHeaders: ["Content-Type", "Authorization", "X-Request-ID"],
     exposeHeaders: ["X-Request-ID"],
     credentials: true,

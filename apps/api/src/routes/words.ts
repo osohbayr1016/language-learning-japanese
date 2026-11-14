@@ -4,6 +4,7 @@ import type { Env, Variables } from "../types";
 import { fetchDueWordsQueue } from "../lib/dueWordsQueue";
 import { jsonBodyInvalid, readJsonBody } from "../lib/requestJson";
 import { isSingleKanjiGlyphOnly } from "../lib/hanScript";
+import { boundedInteger } from "../lib/queryNumbers";
 
 const words = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -12,8 +13,8 @@ type WordRow = Record<string, unknown> & { kanji?: string };
 // GET /api/words — public
 words.get("/", async (c) => {
   const jlpt = c.req.query("jlpt");
-  const limit = Math.min(Number(c.req.query("limit") ?? 50), 500);
-  const offset = Number(c.req.query("offset") ?? 0);
+  const limit = boundedInteger(c.req.query("limit"), 50, 1, 500);
+  const offset = boundedInteger(c.req.query("offset"), 0, 0, 100000);
   const search = c.req.query("q");
   const singleCharRaw = c.req.query("single_char");
   const singleChar =
@@ -25,6 +26,7 @@ words.get("/", async (c) => {
   const whereParams: (string | number)[] = [];
 
   if (jlpt) {
+    if (!/^[1-5]$/.test(jlpt)) return c.json({ error: "Буруу JLPT түвшин" }, 400);
     whereParts.push("jlpt_level = ?");
     whereParams.push(Number(jlpt));
   }
@@ -103,7 +105,7 @@ words.get("/", async (c) => {
 // GET /api/words/due — protected SRS + lesson-path vocabulary (optional mode=writer)
 words.get("/due", authMiddleware, async (c) => {
   const { sub } = c.get("user");
-  const limit = Number(c.req.query("limit") ?? 20);
+  const limit = boundedInteger(c.req.query("limit"), 20, 1, 100);
   const writerOnly = (c.req.query("mode") ?? "") === "writer";
 
   const data = await fetchDueWordsQueue(c.env.DB, sub, limit, { writerOnly });

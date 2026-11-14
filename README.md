@@ -96,9 +96,10 @@ sections and old-template quarantine), and `0033` (original foundation checkpoin
 Migration `0034` adds account recovery, rate limits and session revocation.
 It does not automatically deploy or mutate the live database.
 
-Web deployment uses `npm run deploy`. The existing main-branch deploy workflow
-is preserved, with an API-schema readiness check before web rollout. A manual
-release workflow applies migrations and deploys the API before the web. Native
+Web deployment uses `npm run deploy`. Production deployment is **manual only**: merging into main never deploys the
+API, changes D1, or updates the website. GitHub Actions quality checks still run
+on pull requests and main. An explicit manual release workflow checks API schema
+readiness, applies migrations and deploys the API before the web. Native
 Expo builds remain optional and need separate device QA.
 
 ## Data credits
