@@ -47,6 +47,7 @@ on reconnect or with the sync control. Account progress is kept separate.
 - Daily plan (20 minutes by default): new words, reading, writing and a checkpoint;
   listening and transcript-based speaking are optional. A daily lesson stays
   stable across refreshes. New lessons require the four core tasks to pass.
+- Optional 10-question cram practice uses only introduced vocabulary and never alters SRS schedules, XP, or mastery.
 - Spaced repetition after exposure, visible due reviews, configurable study time,
   learning days/week, timezone and JLPT target; versioned progress export/import.
 - 198 beginner kanji with Mongolian meanings and representative on/kun readings.
