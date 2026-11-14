@@ -1,6 +1,8 @@
 import { useCallback, useRef } from 'react';
 import { api } from '../lib/api';
 import { newSessionId } from '../lib/sessionIds';
+import { rewardAccountFromToken } from '../lib/rewardOutbox';
+import { rewardOutbox } from '../lib/rewardOutboxStorage';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { calculateAdaptive, type AdaptiveInputs, type AdaptiveProgressInput } from '../lib/srs/adaptive';
@@ -46,27 +48,30 @@ export function useSrsRating(sessionType: SessionType) {
   const flush = useCallback(
     async (xp: number): Promise<boolean> => {
       if (!token) return false;
+      const owner = rewardAccountFromToken(token);
+      if (!owner) return false;
       if (!buffer.current.length) return true;
       if (inflight.current) return inflight.current;
       const results = buffer.current.map(({ rating: _r, ...rest }) => rest);
       const session_id = submissionId.current ?? newSessionId();
       submissionId.current = session_id;
       const saving = (async () => {
+        const body = { session_id, results, xp_earned: xp, session_type: sessionType };
         try {
-          const response = await api.user.saveProgress(token, {
-            session_id,
-            results,
-            xp_earned: xp,
-            session_type: sessionType,
+          // Commit before uploading. Closing the app after a network failure does
+          // not lose the evidence or generate another award receipt.
+          await rewardOutbox.put(owner, {
+            kind: 'study', session_id, created_at: Date.now(), body,
           });
+          const response = await api.user.saveProgress(token, body);
+          await rewardOutbox.remove(owner, 'study', session_id);
           buffer.current = [];
           submissionId.current = null;
           if (response.data.xp_earned > 0) addLocalXp(response.data.xp_earned);
           void refresh();
           return true;
         } catch (e) {
-          // Keep exact evidence and stable session ID for a safe retry.
-          console.warn('saveProgress failed, pending evidence retained', e);
+          console.warn('saveProgress failed; session remains available for sync', e);
           return false;
         }
       })();

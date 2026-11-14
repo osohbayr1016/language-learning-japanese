@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Screen, Touchable } from '../../primitives';
 import { useGamification } from '../../context/GamificationContext';
+import { PendingRewardsCard } from '../games/PendingRewardsCard';
 import { colors, radius, spacing, tint, typography } from '../../theme';
 
 type PracticeItem = {
@@ -92,6 +93,7 @@ export default function StudyHubScreen() {
 
   return (
     <Screen scroll scrollBottomInset={78}>
+      <PendingRewardsCard />
       <View style={styles.header}>
         <Text style={styles.eyebrow}>ДАДЛАГА</Text>
         <Text style={styles.title}>Сул чадвараа хүчтэй болго</Text>
