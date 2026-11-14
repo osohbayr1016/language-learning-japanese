@@ -10,11 +10,24 @@ import {
   mergeEvents,
   type CourseEvent,
 } from "../../../../packages/curriculum/src";
+/** Event identity includes the payload, independent of JSON object key ordering. */
+function canonicalEvent(value: unknown): string {
+  if (Array.isArray(value)) return "[" + value.map(canonicalEvent).join(",") + "]";
+  if (value && typeof value === "object") {
+    const object = value as Record<string, unknown>;
+    return "{" + Object.keys(object).sort().map(key => JSON.stringify(key) + ":" + canonicalEvent(object[key])).join(",") + "}";
+  }
+  return JSON.stringify(value) ?? "null";
+}
 const course = new Hono<{ Bindings: Env; Variables: Variables }>();
 course.use("*", authMiddleware);
 course.get("/", async (c) => {
   const { sub } = c.get("user");
-  const after = Math.max(0, Number(c.req.query("after")) || 0);
+  const rawAfter = c.req.query("after");
+  if (rawAfter !== undefined &&
+      (!/^[0-9]+$/.test(rawAfter) || !Number.isSafeInteger(Number(rawAfter))))
+    return c.json({ error: "Буруу явцын cursor" }, 400);
+  const after = rawAfter === undefined ? 0 : Number(rawAfter);
   const rows = await c.env.DB.prepare(
     "SELECT rowid AS cursor, payload FROM course_events WHERE user_id=? AND rowid>? ORDER BY rowid LIMIT 500",
   )
@@ -67,12 +80,37 @@ course.post("/events", async (c) => {
     return c.json({ error: "Буруу JSON" }, 400);
   }
   if (
+    !body || typeof body !== "object" ||
     !Array.isArray(body.events) ||
     body.events.length > 100 ||
     !body.events.every(validateEvent)
   )
     return c.json({ error: "Буруу сургалтын үйл явдал" }, 400);
   const incoming = body.events as CourseEvent[];
+  const unique = new Map<string, string>();
+  for (const event of incoming) {
+    const encoded = canonicalEvent(event);
+    const prior = unique.get(event.id);
+    if (prior !== undefined && prior !== encoded)
+      return c.json({ error: "Нэг ID-д зөрүүтэй сургалтын нотолгоо илгээгдсэн" }, 409);
+    unique.set(event.id, encoded);
+  }
+
+  // Check every incoming ID, not only task/placement events. A reconnect must
+  // never silently accept conflicting evidence under an existing event ID.
+  const existingIds = new Set<string>();
+  if (unique.size) {
+    const ids = [...unique.keys()];
+    const stored = await c.env.DB.prepare(
+      `SELECT event_id,payload FROM course_events WHERE user_id=? AND event_id IN (${ids.map(() => '?').join(',')})`,
+    ).bind(sub, ...ids).all<{ event_id: string; payload: string }>();
+    for (const event of stored.results) {
+      existingIds.add(event.event_id);
+      if (canonicalEvent(JSON.parse(event.payload)) !== unique.get(event.event_id))
+        return c.json({ error: "Энэ үйл явдлын ID өөр өгөгдөлтэй байна" }, 409);
+    }
+  }
+
   const rows = await c.env.DB.prepare(
     "SELECT payload FROM course_events WHERE user_id=? AND json_extract(payload, '$.kind') IN ('task','placement') ORDER BY rowid",
   )
@@ -85,7 +123,7 @@ course.post("/events", async (c) => {
     (a, b) => a.at.localeCompare(b.at) || a.id.localeCompare(b.id),
   )) {
     if (
-      !current.some((x) => x.id === e.id) &&
+      !existingIds.has(e.id) &&
       (e.kind === "task" ||
         e.kind === "attempt" ||
         e.kind === "remedy" ||

@@ -82,9 +82,10 @@ test("course requires authentication and isolates both learners", async () => {
 test("retries are idempotent and invalid evidence is atomic", async () => {
   const f = await fixture();
   try {
+    const initial = evidence();
     for (let i = 0; i < 2; i++)
       assert.equal(
-        (await f.call("/events", { events: [evidence()] })).status,
+        (await f.call("/events", { events: [initial] })).status,
         200,
       );
     assert.equal(
@@ -315,4 +316,33 @@ test("daily plan is read-only, account-scoped and shares saved lesson and prefer
   } finally {
     f.sqlite.close();
   }
+});
+
+
+test("course rejects malformed cursors and null JSON bodies with 400, not 500", async () => {
+  const f = await fixture();
+  try {
+    for (const after of ["Infinity", "-1", "1.2", "999999999999999999999999"]) {
+      assert.equal((await f.call("/?after=" + after)).status, 400);
+    }
+    assert.equal((await f.call("/events", null, "POST")).status, 400);
+    assert.equal((await f.call("/events", [], "POST")).status, 400);
+    assert.equal((await f.call("/?after=0")).status, 200);
+  } finally { f.sqlite.close(); }
+});
+
+test("course replay with a conflicting payload fails without mutating evidence", async () => {
+  const f = await fixture();
+  try {
+    const first = evidence();
+    assert.equal((await f.call("/events", { events: [first] })).status, 200);
+    const altered = { ...first, answers: first.answers.map((x, i) => i === 0 ? (x + 1) % 3 : x) };
+    assert.equal((await f.call("/events", { events: [altered] })).status, 409);
+    const same = { task: first.task, lessonId: first.lessonId, kind: first.kind,
+      day: first.day, at: first.at, answers: first.answers, id: first.id };
+    assert.equal((await f.call("/events", { events: [same] })).status, 200);
+    assert.equal((await f.call("/events", { events: [first, altered] })).status, 409);
+    assert.equal(f.sqlite.prepare("SELECT count(*) AS n FROM course_events").get()?.n, 1);
+    assert.deepEqual(JSON.parse(String(f.sqlite.prepare("SELECT payload FROM course_events").get()?.payload)), first);
+  } finally { f.sqlite.close(); }
 });

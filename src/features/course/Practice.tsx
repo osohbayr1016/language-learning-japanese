@@ -2,10 +2,15 @@ import React, { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   courseSummary,
+  COURSE_STAGES,
+  STAGE_LABELS,
+  eligibleCramWords,
+  buildCramQuestions,
   HIRAGANA_PLACEMENT,
   LESSON_BY_ID,
   missedQuestions,
   type Question,
+  type Stage,
 } from "../../../packages/curriculum/src";
 import type { CourseStore } from "./useCourse";
 import { ListeningPractice } from "./ListeningPractice";
@@ -58,6 +63,7 @@ export function Practice({ store }: { store: CourseStore }) {
           </p>
         )}
       </section>
+      <CramPractice store={store} />
       <KanaFluency store={store} />
       <ListeningPractice store={store} />
       <section className="course-card">
@@ -68,6 +74,40 @@ export function Practice({ store }: { store: CourseStore }) {
         </div>
       </section>
     </>
+  );
+}
+function CramPractice({ store }: { store: CourseStore }) {
+  const [stage, setStage] = useState<Stage>("hiragana");
+  const [run, setRun] = useState<{ id: number; questions: Question[] } | null>(null);
+  const [result, setResult] = useState("");
+  const available = useMemo(() => eligibleCramWords(store.events, stage).length, [store.events, stage]);
+  return (
+    <section className="course-card">
+      <h2>Чөлөөт бататгал · Cram</h2>
+      <p>Өмнө сурсан үгсээрээ богино шалгалт хий. Энэ дасгал XP, давталтын хугацаа, хичээлийн ахицад нөлөөлөхгүй.</p>
+      <div className="course-actions">
+        <label className="course-search">
+          Хэсэг сонгох
+          <select value={stage} onChange={(e) => {
+            setStage(e.target.value as Stage); setRun(null); setResult("");
+          }}>
+            {COURSE_STAGES.map(s => <option key={s} value={s}>{STAGE_LABELS[s]}</option>)}
+          </select>
+        </label>
+        <button className="course-primary" disabled={!available} onClick={() => {
+          setResult("");
+          setRun({ id: Date.now(), questions: buildCramQuestions(store.events, stage) });
+        }}>
+          10 асуултаар бататгах
+        </button>
+      </div>
+      <p className="course-subtle">{available ? `${available} сурсан үг сонгох боломжтой` : "Энэ хэсэгт эхлээд үгийн даалгавраа хийж дуусгаарай."}</p>
+      {run && <Quiz key={run.id} questions={run.questions} minAccuracy={0} onPass={answers => {
+        const correct = answers.filter((a, i) => a === run.questions[i].answer).length;
+        setResult(`${correct}/${run.questions.length} зөв · Энэ оноо SRS болон XP-д нэмэгдэхгүй.`);
+      }} />}
+      {result && <p role="status">{result}</p>}
+    </section>
   );
 }
 function makeQuestions(script: "hiragana" | "katakana") {
