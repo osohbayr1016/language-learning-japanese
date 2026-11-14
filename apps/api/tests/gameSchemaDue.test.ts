@@ -43,7 +43,7 @@ test("all five playable game types persist and award XP after fresh migration", 
       const response = await games.request("http://test/session", {
         method:"POST", headers:{Authorization:"Bearer "+token, "Content-Type":"application/json"},
         body:JSON.stringify({session_id:"test_schema_"+type,game_type:type,score,
-          accuracy:0.8,duration_seconds:40,words_practiced:5,
+          accuracy:0.8,duration_seconds:40,words_practiced:type==="writer"?1:5,
           xp_earned:type==="writer"?10:20}),
       },env);
       assert.equal(response.status,200,type+": "+await response.text());
