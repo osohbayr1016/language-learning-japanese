@@ -1,3 +1,5 @@
+import { DEFAULT_STUDY_TIMEZONE, validStudyTimeZone } from './studyDay';
+
 export type JlptSelfLevel = 'none' | 'n5' | 'n4' | 'n3' | 'n2' | 'n1';
 export type LearningReason = 'university' | 'career' | 'travel' | 'culture' | 'fun';
 
@@ -5,6 +7,7 @@ export type LearningPreferences = {
   self_level: JlptSelfLevel | null;
   learning_reason: LearningReason | null;
   daily_xp_goal: number;
+  timezone: string;
   kana_foundation_completed: boolean;
   placement_level: Exclude<JlptSelfLevel, 'none'> | null;
   placement_completed_at: string | null;
@@ -14,6 +17,7 @@ export type LearningPreferencesPatch = Partial<{
   self_level: JlptSelfLevel | null;
   learning_reason: LearningReason | null;
   daily_xp_goal: number;
+  timezone: string;
   kana_foundation_completed: boolean;
   placement_level: Exclude<JlptSelfLevel, 'none'> | null;
 }>;
@@ -48,6 +52,8 @@ export function validateLearningPreferencesPatch(
       return 'Өдрийн XP зорилго 10–200 хооронд бүхэл тоо байна';
     }
   }
+  if ('timezone' in body && !validStudyTimeZone(body.timezone))
+    return 'Цагийн бүс буруу байна';
   if ('kana_foundation_completed' in body && typeof body.kana_foundation_completed !== 'boolean') {
     return 'Кана суурийн төлөв boolean байна';
   }
@@ -61,7 +67,7 @@ export async function getLearningPreferences(
   const row = await db
     .prepare(
       `SELECT self_level, learning_reason, daily_xp_goal,
-              kana_foundation_completed, placement_level, placement_completed_at
+              kana_foundation_completed, placement_level, placement_completed_at, timezone
        FROM user_learning_preferences WHERE user_id = ?`
     )
     .bind(userId)
@@ -72,12 +78,14 @@ export async function getLearningPreferences(
       kana_foundation_completed?: number | null;
       placement_level?: Exclude<JlptSelfLevel, 'none'> | null;
       placement_completed_at?: string | null;
+      timezone?: string | null;
     }>();
 
   return {
     self_level: row?.self_level ?? null,
     learning_reason: row?.learning_reason ?? null,
     daily_xp_goal: Number(row?.daily_xp_goal ?? 30),
+    timezone: validStudyTimeZone(row?.timezone) ? row!.timezone! : DEFAULT_STUDY_TIMEZONE,
     kana_foundation_completed: Number(row?.kana_foundation_completed ?? 0) === 1,
     placement_level: row?.placement_level ?? null,
     placement_completed_at: row?.placement_completed_at ?? null,
@@ -96,6 +104,7 @@ export async function updateLearningPreferences(
       patch.learning_reason !== undefined ? patch.learning_reason : current.learning_reason,
     daily_xp_goal:
       patch.daily_xp_goal !== undefined ? patch.daily_xp_goal : current.daily_xp_goal,
+    timezone: patch.timezone !== undefined ? patch.timezone : current.timezone,
     kana_foundation_completed:
       patch.kana_foundation_completed !== undefined
         ? patch.kana_foundation_completed
@@ -112,8 +121,8 @@ export async function updateLearningPreferences(
     .prepare(
       `INSERT INTO user_learning_preferences (
          user_id, self_level, learning_reason, daily_xp_goal, kana_foundation_completed,
-         placement_level, placement_completed_at, updated_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+         placement_level, placement_completed_at, timezone, updated_at
+       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
        ON CONFLICT(user_id) DO UPDATE SET
          self_level = excluded.self_level,
          learning_reason = excluded.learning_reason,
@@ -121,6 +130,7 @@ export async function updateLearningPreferences(
          kana_foundation_completed = excluded.kana_foundation_completed,
          placement_level = excluded.placement_level,
          placement_completed_at = excluded.placement_completed_at,
+         timezone = excluded.timezone,
          updated_at = CURRENT_TIMESTAMP`
     )
     .bind(
@@ -130,7 +140,8 @@ export async function updateLearningPreferences(
       next.daily_xp_goal,
       next.kana_foundation_completed ? 1 : 0,
       next.placement_level,
-      next.placement_completed_at
+      next.placement_completed_at,
+      next.timezone
     )
     .run();
 
