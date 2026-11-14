@@ -63,9 +63,10 @@ export function Quiz({
     [audioError, setAudioError] = useState("");
   const draftRef = useRef(saveDraft);
   draftRef.current = saveDraft;
-  useEffect(() => {
-    draftRef.current?.({ index, answers, selected, checked, finished });
-  }, [index, answers, selected, checked, finished]);
+  // Save drafts in the same user interaction as the state transition.
+  // A post-render effect can run after navigation/reload, so a "saved" badge
+  // may refer to the previous question while the new one is not durable yet.
+  const saveProgressDraft = (next: Draft) => draftRef.current?.(next);
   const q = questions[index];
   const score = answers.filter((a, i) => a === questions[i].answer).length;
   if (finished)
@@ -88,6 +89,7 @@ export function Quiz({
             setFinished(false);
             setAudioReady(false);
             setAudioError("");
+            saveProgressDraft({ index: 0, answers: [], selected: null, checked: false, finished: false });
           }}
         >
           Дахин хийх
@@ -145,7 +147,10 @@ export function Quiz({
               type="radio"
               name="answer"
               checked={selected === i}
-              onChange={() => setSelected(i)}
+              onChange={() => {
+                setSelected(i);
+                saveProgressDraft({ index, answers, selected: i, checked, finished });
+              }}
             />
             <span>{o}</span>
           </label>
@@ -163,12 +168,14 @@ export function Quiz({
         onClick={() => {
           if (!checked) {
             setChecked(true);
+            saveProgressDraft({ index, answers, selected, checked: true, finished });
             return;
           }
           const next = [...answers, selected!];
           setAnswers(next);
           if (index === questions.length - 1) {
             setFinished(true);
+            saveProgressDraft({ index, answers: next, selected, checked: true, finished: true });
             if (
               next.filter((a, i) => a === questions[i].answer).length /
                 questions.length >=
@@ -182,6 +189,7 @@ export function Quiz({
             setChecked(false);
             setAudioError("");
             setAudioReady(false);
+            saveProgressDraft({ index: index + 1, answers: next, selected: null, checked: false, finished: false });
           }
         }}
       >

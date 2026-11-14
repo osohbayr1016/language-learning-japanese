@@ -140,9 +140,9 @@ user.get('/due-words', async (c) => {
     `SELECT w.*, uwp.ease_factor, uwp.interval, uwp.repetitions, uwp.next_review, uwp.last_reviewed
      FROM user_word_progress uwp
      JOIN words w ON uwp.word_id = w.id
-     WHERE uwp.user_id = ? AND uwp.next_review <= datetime('now')
-       AND (uwp.flashcard_eligible_at IS NULL OR uwp.flashcard_eligible_at <= datetime('now'))
-     ORDER BY uwp.next_review ASC
+     WHERE uwp.user_id = ? AND datetime(uwp.next_review) <= datetime('now')
+       AND (uwp.flashcard_eligible_at IS NULL OR datetime(uwp.flashcard_eligible_at) <= datetime('now'))
+     ORDER BY datetime(uwp.next_review) ASC
      LIMIT ?`
   ).bind(sub, limit).all();
   return c.json({ data: dueWords.results });
