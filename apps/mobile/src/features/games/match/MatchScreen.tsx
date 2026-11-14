@@ -32,6 +32,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
   const [wrong, setWrong] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [matchedPairs, setMatchedPairs] = useState(0);
+  const [wrongAttempts, setWrongAttempts] = useState(0);
   const [start, setStart] = useState<number>(Date.now());
   const [done, setDone] = useState(false);
   const [combo, setCombo] = useState(1);
@@ -80,6 +81,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
     setRoundIdx(0);
     setDeck(buildMatchDeck(chunks[0]));
     setMatchedPairs(0);
+    setWrongAttempts(0);
     setScore(0);
     setCombo(1);
     setSelected(null);
@@ -142,6 +144,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
           setRoundIdx(0);
           setDeck(buildMatchDeck(chunks[0]));
           setMatchedPairs(0);
+          setWrongAttempts(0);
           setScore(0);
           setCombo(1);
           setSelected(null);
@@ -187,7 +190,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
         if (comboTimer.current) clearTimeout(comboTimer.current);
         if (roundIdx + 1 >= chunks.length) {
           const priorMatches = chunks.slice(0, roundIdx).reduce((sum, chunk) => sum + chunk.length, 0);
-          const final = completedMatchStats(score, points, priorMatches, next, total);
+          const final = completedMatchStats(score, points, priorMatches, next, total, wrongAttempts);
           void finish(final.score, final.accuracy);
         } else {
           setTimeout(() => {
@@ -200,6 +203,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
       // Wrong match
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setWrong([selected.id, card.id]);
+      setWrongAttempts((n) => n + 1);
       setSelected(null);
       setCombo(1);
       setScore((s) => Math.max(0, s - 2));

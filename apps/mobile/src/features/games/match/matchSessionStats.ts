@@ -9,9 +9,12 @@ export function completedMatchStats(
   completedBeforeRound: number,
   matchedInFinalRound: number,
   totalPairs: number,
+  wrongAttempts = 0,
 ) {
   const score = Math.max(0, scoreBeforeLast + finalPairPoints);
   const completed = Math.max(0, completedBeforeRound + matchedInFinalRound);
-  const accuracy = totalPairs > 0 ? Math.min(1, completed / totalPairs) : 0;
+  const matched = Math.min(completed, Math.max(0, totalPairs));
+  const attempts = matched + Math.max(0, wrongAttempts);
+  const accuracy = attempts > 0 ? matched / attempts : 0;
   return { score, accuracy };
 }
