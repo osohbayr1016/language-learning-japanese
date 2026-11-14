@@ -8,6 +8,8 @@ import { studyQueueCount } from '../lib/studyQueue';
 import userVocabularyRoutes from './userVocabulary';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
 import { getStudyNextAction } from '../lib/studyRecommendation';
+import { boundedInteger } from '../lib/queryNumbers';
+import { validStudyProgressBody } from '../lib/validateStudyProgress';
 import {
   getLearningPreferences,
   updateLearningPreferences,
@@ -131,7 +133,7 @@ user.get('/next-action', async (c) => {
 
 user.get('/due-words', async (c) => {
   const { sub } = c.get('user');
-  const limit = Number(c.req.query('limit') ?? 20);
+  const limit = boundedInteger(c.req.query('limit'), 20, 1, 100);
   const dueWords = await c.env.DB.prepare(
     `SELECT w.*, uwp.ease_factor, uwp.interval, uwp.repetitions, uwp.next_review, uwp.last_reviewed
      FROM user_word_progress uwp
@@ -152,6 +154,8 @@ user.post('/progress', async (c) => {
     session_type: string;
   }>(c);
   if (!body) return jsonBodyInvalid(c);
+  if (!validStudyProgressBody(body))
+    return c.json({ error: 'Дасгалын явцын өгөгдөл буруу байна' }, 400);
 
   await c.env.DB.batch(buildProgressStatements(c.env.DB, sub, body.results));
   await bumpStats(c.env.DB, sub, body.xp_earned, body.results.length);

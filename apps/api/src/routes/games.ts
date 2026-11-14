@@ -5,6 +5,7 @@ import { bumpDailyActivity, bumpGamePlayed } from '../lib/activity';
 import { updateStreak } from '../lib/streak';
 import { addXpToUserStats } from '../lib/progress';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
+import { boundedInteger } from '../lib/queryNumbers';
 
 const games = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -22,6 +23,19 @@ games.post('/session', async (c) => {
     xp_earned: number;
   }>(c);
   if (!body) return jsonBodyInvalid(c);
+  const finite = (value: unknown, max: number) =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= max;
+  if (
+    typeof body.game_type !== 'string' ||
+    !/^[a-z0-9_-]{1,50}$/.test(body.game_type) ||
+    !finite(body.score, 100000) ||
+    !finite(body.accuracy, 100) ||
+    !finite(body.duration_seconds, 36000) ||
+    !Number.isInteger(body.words_practiced) ||
+    !finite(body.words_practiced, 500) ||
+    !Number.isInteger(body.xp_earned) ||
+    !finite(body.xp_earned, 1000)
+  ) return c.json({ error: 'Тоглоомын үр дүн буруу байна' }, 400);
 
   await c.env.DB.prepare(
     `INSERT INTO game_sessions (user_id, game_type, score, accuracy, duration_seconds, words_practiced, xp_earned)
@@ -43,7 +57,7 @@ games.post('/session', async (c) => {
 // GET /api/games/history
 games.get('/history', async (c) => {
   const { sub } = c.get('user');
-  const limit = Number(c.req.query('limit') ?? 10);
+  const limit = boundedInteger(c.req.query('limit'), 10, 1, 100);
 
   const history = await c.env.DB.prepare(
     'SELECT * FROM game_sessions WHERE user_id = ? ORDER BY created_at DESC LIMIT ?'
