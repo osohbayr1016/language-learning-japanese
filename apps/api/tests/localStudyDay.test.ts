@@ -37,9 +37,9 @@ test("reward receipts atomically credit a local-day streak and are retry safe", 
     await f.db.batch([b]);
     await f.db.batch([b]); // duplicate ID does not award points or streak days twice
     const streak=f.sqlite.prepare("SELECT current_streak,longest_streak,last_activity_date,total_days_studied FROM user_streaks WHERE user_id=1").get();
-    assert.deepEqual(streak,{current_streak:2,longest_streak:2,last_activity_date:dayB,total_days_studied:2});
+    assert.deepEqual({...streak},{current_streak:2,longest_streak:2,last_activity_date:dayB,total_days_studied:2});
     const total=f.sqlite.prepare("SELECT total_xp,total_reviews,games_played FROM user_stats WHERE user_id=1").get();
-    assert.deepEqual(total,{total_xp:25,total_reviews:3,games_played:1});
+    assert.deepEqual({...total},{total_xp:25,total_reviews:3,games_played:1});
     assert.equal(f.sqlite.prepare("SELECT xp_earned FROM user_daily_activity WHERE user_id=1 AND activity_date=?").get(dayB)?.xp_earned,15);
     const next=receiptStatement(f.db as any,1,"game","day_session_C_001","digest-c",5,0,30,"2026-11-16");
     await f.db.batch([next]);
