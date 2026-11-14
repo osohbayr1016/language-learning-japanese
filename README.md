@@ -156,3 +156,9 @@ Asia/Ulaanbaatar). Reward receipts now update XP, local-day activity and streak
 within one D1 transaction, rather than resetting the Mongolian study day at
 08:00. The separate independent web course already has a timezone setting;
 a future unified learner preferences model should bridge these two experiences.
+
+AI reading now validates Japanese-only vocabulary requests, limits streaming input
+and provider-backed generation rate, verifies bounded story JSON, and keeps
+Gemini API keys in request headers instead of URLs. When AI is unavailable the
+app clearly labels its deterministic sample; invalid AI output is a 502 rather
+than being silently misrepresented as a new generated lesson.

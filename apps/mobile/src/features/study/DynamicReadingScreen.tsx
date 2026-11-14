@@ -60,8 +60,8 @@ export function DynamicReadingScreen() {
       <Screen>
         <View style={styles.center}>
           <ActivityIndicator size="large" color={colors.brand.primary} />
-          <Text style={styles.loadingText}>Таны мэдлэгт тааруулан түүх зохиож байна...</Text>
-          <Text style={styles.loadingHint}>Хиймэл оюун ухаан ашиглаж байна</Text>
+          <Text style={styles.loadingText}>Уншлага бэлдэж байна...</Text>
+          <Text style={styles.loadingHint}>Таны сурсан үгсэд тохируулахыг оролдож байна</Text>
         </View>
       </Screen>
     );
@@ -91,11 +91,12 @@ export function DynamicReadingScreen() {
         <Pressable onPress={() => router.back()} style={styles.backBtn}>
           <Ionicons name="close" size={24} color={colors.text.primary} />
         </Pressable>
-        <Text style={styles.headerTitle}>AI Уншлага</Text>
+        <Text style={styles.headerTitle}>{story.sample ? "Жишээ уншлага" : "AI Уншлага"}</Text>
       </View>
 
       <View style={styles.content}>
         <Text style={styles.title}>{story.title}</Text>
+        {story.sample ? <Text style={styles.loadingHint}>AI үйлчилгээ холбогдоогүй тул урьдчилан бэлдсэн жишээ уншлага үзүүлж байна.</Text> : null}
         
         <View style={styles.storyCard}>
           <View style={styles.tokenContainer}>
@@ -181,7 +182,7 @@ export function DynamicReadingScreen() {
       <Dialog
         visible={dialogVisible}
         title="Амжилттай!"
-        message={`Та 2 шинэ үг сурлаа! Таны "Сурсан үгнүүд" жагсаалтад нэмэгдлээ.`}
+        message={`${story.new_words.length} үгийг дасгалын жагсаалтад нэмлээ. Бататгалаар дахин давтаарай.`}
         onClose={() => {
           setDialogVisible(false);
           router.back();
