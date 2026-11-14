@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { api } from '../lib/api';
 import { newSessionId } from '../lib/sessionIds';
 import { rewardAccountFromToken } from '../lib/rewardOutbox';
@@ -18,6 +18,16 @@ export function useSrsRating(sessionType: SessionType) {
   const buffer = useRef<Buffer[]>([]);
   const submissionId = useRef<string | null>(null);
   const inflight = useRef<Promise<boolean> | null>(null);
+  const owner = rewardAccountFromToken(token);
+  const ownerRef = useRef(owner);
+  useEffect(() => {
+    if (ownerRef.current === owner) return;
+    // Account switches must never award the prior learner's in-memory ratings
+    // to the newly signed-in user. Completed prior sessions remain in outbox.
+    ownerRef.current = owner;
+    buffer.current = [];
+    submissionId.current = null;
+  }, [owner]);
 
   const record = useCallback(
     (
