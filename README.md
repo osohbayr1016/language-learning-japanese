@@ -162,3 +162,8 @@ and provider-backed generation rate, verifies bounded story JSON, and keeps
 Gemini API keys in request headers instead of URLs. When AI is unavailable the
 app clearly labels its deterministic sample; invalid AI output is a 502 rather
 than being silently misrepresented as a new generated lesson.
+
+Local reading vocabulary now merges legacy random-ID duplicates using Japanese
+form and Mongolian meaning, gives new reading words stable IDs, and reports
+storage write failures instead of claiming that nothing was lost. The reading
+screen waits for the learned-word cache to load before requesting paid AI.

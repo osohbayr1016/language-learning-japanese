@@ -1,55 +1,45 @@
-/**
- * Local AsyncStorage-based storage for words learned through the Learning Loop.
- * Each learned word is stored with its full data and the date it was learned.
- */
+/** Local, nonsecret reading vocabulary. Writes are serialized across screens. */
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { mergeLearnedWords, genuinelyNewWords, type LearnedWord } from "./learnedWordsMerge";
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+export type { LearnedWord } from "./learnedWordsMerge";
+const LEARNED_WORDS_KEY = "learning_loop_learned_words";
+const READ_BOOKS_KEY = "learning_loop_read_books";
+let mutation: Promise<unknown> = Promise.resolve();
 
-const LEARNED_WORDS_KEY = 'learning_loop_learned_words';
-const READ_BOOKS_KEY = 'learning_loop_read_books';
-
-export type LearnedWord = {
-  id: string | number;
-  kana: string;
-  kanji?: string;
-  romaji?: string;
-  meaning_mn?: string;
-  learnedAt: number; // timestamp
-  categoryId?: string;
-};
-
-// ─── Learned Words ─────────────────────────────────────────────────────────
-
-export async function loadLearnedWords(): Promise<LearnedWord[]> {
-  try {
-    const raw = await AsyncStorage.getItem(LEARNED_WORDS_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as LearnedWord[];
-  } catch {
-    return [];
-  }
+async function readStrict(): Promise<LearnedWord[]> {
+  const raw = await AsyncStorage.getItem(LEARNED_WORDS_KEY);
+  if (!raw) return [];
+  const parsed: unknown = JSON.parse(raw);
+  if (!Array.isArray(parsed)) throw Error("Saved vocabulary is not a list");
+  return mergeLearnedWords(parsed as LearnedWord[], []);
 }
 
-export async function addLearnedWords(words: LearnedWord[]): Promise<void> {
-  try {
-    const existing = await loadLearnedWords();
-    const existingIds = new Set(existing.map((w) => String(w.id)));
-    const newWords = words.filter((w) => !existingIds.has(String(w.id)));
-    if (newWords.length === 0) return;
-    await AsyncStorage.setItem(
-      LEARNED_WORDS_KEY,
-      JSON.stringify([...existing, ...newWords])
-    );
-  } catch {}
+export async function loadLearnedWords(): Promise<LearnedWord[]> {
+  try { return await readStrict(); }
+  catch { return []; }
+}
+
+/** Never claim saving succeeded if storage is unavailable or corrupt. */
+export function addLearnedWords(words: LearnedWord[]): Promise<number> {
+  const write = mutation.catch(() => undefined).then(async () => {
+    const existing = await readStrict();
+    const merged = mergeLearnedWords(existing, words);
+    const count = genuinelyNewWords(existing, words);
+    if (count || merged.length !== existing.length) {
+      await AsyncStorage.setItem(LEARNED_WORDS_KEY, JSON.stringify(merged));
+    }
+    return count;
+  });
+  mutation = write;
+  return write;
 }
 
 export async function clearLearnedWords(): Promise<void> {
-  try {
-    await AsyncStorage.removeItem(LEARNED_WORDS_KEY);
-  } catch {}
+  const clear = mutation.catch(() => undefined).then(() => AsyncStorage.removeItem(LEARNED_WORDS_KEY));
+  mutation = clear;
+  await clear;
 }
-
-// ─── Read Books ─────────────────────────────────────────────────────────────
 
 export async function loadReadBooks(): Promise<string[]> {
   try {
@@ -65,10 +55,7 @@ export async function markBookAsRead(bookId: string): Promise<void> {
   try {
     const existing = await loadReadBooks();
     if (existing.includes(bookId)) return;
-    await AsyncStorage.setItem(
-      READ_BOOKS_KEY,
-      JSON.stringify([...existing, bookId])
-    );
+    await AsyncStorage.setItem(READ_BOOKS_KEY, JSON.stringify([...existing, bookId]));
   } catch {}
 }
 

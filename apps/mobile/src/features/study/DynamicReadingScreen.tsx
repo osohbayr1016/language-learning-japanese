@@ -11,47 +11,58 @@ import { addLearnedWords } from '../../lib/learnedWordsStorage';
 
 export function DynamicReadingScreen() {
   const router = useRouter();
-  const { words: knownWords } = useLearnedWords();
+  const { words: knownWords, loading: knownWordsLoading } = useLearnedWords();
   const [story, setStory] = useState<DynamicStory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showTranslation, setShowTranslation] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
+  const [savingWords, setSavingWords] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const [addedCount, setAddedCount] = useState(0);
   const [selectedToken, setSelectedToken] = useState<{ text: string; romaji: string; meaning_mn: string } | null>(null);
 
   useEffect(() => {
+    if (knownWordsLoading) return;
+    let cancelled = false;
     async function generate() {
+      setLoading(true);
+      setError(null);
       try {
-        const wordList = knownWords.map(w => w.kana);
-        const res = await api.reading.generate(wordList.length > 0 ? wordList : ['こんにちは', 'さようなら', 'はい', 'いいえ']);
-        setStory(res);
+        const validKana = /^[\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Han}ー々〆ヶ・]+$/u;
+        const wordList = knownWords.map(w => w.kana).filter(w => validKana.test(w)).slice(0, 60);
+        const res = await api.reading.generate(wordList.length ? wordList : ['こんにちは', 'さようなら', 'はい', 'いいえ']);
+        if (!cancelled) setStory(res);
       } catch (err) {
-        setError((err as Error).message);
+        if (!cancelled) setError((err as Error).message);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     }
     void generate();
-  }, [knownWords]);
+    return () => { cancelled = true; };
+  }, [knownWords, knownWordsLoading]);
 
   const handleFinish = async () => {
-    if (!story) return;
+    if (!story || savingWords) return;
+    setSavingWords(true);
+    setSaveError("");
     try {
-      // Add new words to local storage
       const wordsToAdd = story.new_words.map(nw => ({
-        id: Date.now() + Math.random(),
+        id: 'reading:' + nw.word + ':' + nw.meaning_mn,
         kana: nw.word,
         kanji: nw.word,
         meaning_mn: nw.meaning_mn,
         romaji: nw.romaji,
-        jlpt_level: 5,
         learnedAt: Date.now(),
       }));
-      await addLearnedWords(wordsToAdd as any);
-      
+      const added = await addLearnedWords(wordsToAdd);
+      setAddedCount(added);
       setDialogVisible(true);
-    } catch (e) {
-      console.error(e);
+    } catch {
+      setSaveError('Үгсийг төхөөрөмжид хадгалж чадсангүй. Сул зайгаа шалгаад дахин оролдоно уу.');
+    } finally {
+      setSavingWords(false);
     }
   };
 
@@ -172,9 +183,12 @@ export function DynamicReadingScreen() {
           </View>
         </View>
 
+        {saveError ? <Text accessibilityRole="alert" style={styles.errorDetail}>{saveError}</Text> : null}
         <Button 
-          label="Уншиж дуусгасан" 
-          onPress={handleFinish} 
+          label={savingWords ? "ХАДГАЛЖ БАЙНА…" : "Уншиж дуусгасан"}
+          loading={savingWords}
+          disabled={savingWords}
+          onPress={() => void handleFinish()}
           style={styles.finishBtn} 
         />
       </View>
@@ -182,7 +196,9 @@ export function DynamicReadingScreen() {
       <Dialog
         visible={dialogVisible}
         title="Амжилттай!"
-        message={`${story.new_words.length} үгийг дасгалын жагсаалтад нэмлээ. Бататгалаар дахин давтаарай.`}
+        message={addedCount
+          ? addedCount + ' шинэ үгийг дасгалын жагсаалтад нэмлээ.'
+          : 'Эдгээр үгс өмнө хадгалагдсан байна. Давхар нэмээгүй.'}
         onClose={() => {
           setDialogVisible(false);
           router.back();
