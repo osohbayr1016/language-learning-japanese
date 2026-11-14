@@ -1,7 +1,6 @@
-import {
-  LESSONS, taskDone, wordQuestions,
-  type Stage, type CourseEvent, type Question, type Vocabulary,
-} from "./index";
+import { LESSONS, wordQuestions } from "./content";
+import { taskDone } from "./engine";
+import type { Stage, CourseEvent, Question, Vocabulary } from "./types";
 
 /** Only vocabulary that has actually passed its introduction task is eligible. */
 export function eligibleCramWords(events: readonly CourseEvent[], stage: Stage): Vocabulary[] {
