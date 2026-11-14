@@ -167,3 +167,9 @@ Local reading vocabulary now merges legacy random-ID duplicates using Japanese
 form and Mongolian meaning, gives new reading words stable IDs, and reports
 storage write failures instead of claiming that nothing was lost. The reading
 screen waits for the learned-word cache to load before requesting paid AI.
+
+Game submissions now enforce score ceilings calculated from the shipped game
+scoring rules (match combo max 50 per pair; timed-answer max 16 per word;
+writer maximum 100 for one character). This prevents impossible inflated scores
+but does not prove an answer was correct; server-signed game challenges remain
+a separate anti-cheat roadmap item.

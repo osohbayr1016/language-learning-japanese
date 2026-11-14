@@ -7,6 +7,7 @@ import { findReceipt, receiptStatement, rewardKey } from '../lib/rewardReceipts'
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
 import { boundedInteger } from '../lib/queryNumbers';
 import { validSessionId } from '../lib/rewardReceipts';
+import { plausibleGameScore, type GameType } from '../lib/gameScoreCeilings';
 
 const games = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -32,6 +33,7 @@ games.post('/session', async (c) => {
     typeof body.game_type !== 'string' ||
     !['match', 'translate', 'sentence', 'stroke', 'writer'].includes(body.game_type) ||
     !Number.isSafeInteger(body.score) || !finite(body.score, 100000) ||
+    !plausibleGameScore(body.game_type as GameType, body.score, body.words_practiced) ||
     !finite(body.accuracy, 1) ||
     !Number.isSafeInteger(body.duration_seconds) || !finite(body.duration_seconds, 36000) ||
     !Number.isSafeInteger(body.words_practiced) || body.words_practiced < 1 ||
