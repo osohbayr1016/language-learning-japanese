@@ -10,7 +10,7 @@ import type { GameSessionBody } from '../lib/api/games';
 export function useGameSession() {
   const { token } = useAuth();
   const { addLocalXp, refresh } = useGamification();
-  const pending = useRef<{ key: string; id: string; body: GameSessionBody } | null>(null);
+  const pending = useRef<{ key: string; owner: string; id: string; body: GameSessionBody } | null>(null);
   const inflight = useRef<Promise<boolean> | null>(null);
 
   const save = useCallback(
@@ -21,8 +21,8 @@ export function useGameSession() {
       if (!owner) return false;
       if (inflight.current) return inflight.current;
       const key = JSON.stringify(body);
-      if (!pending.current || pending.current.key !== key) {
-        pending.current = { key, id: newSessionId(), body };
+      if (!pending.current || pending.current.key !== key || pending.current.owner !== owner) {
+        pending.current = { key, owner, id: newSessionId(), body };
       }
       const session_id = pending.current.id;
       const saving = (async () => {
@@ -50,8 +50,9 @@ export function useGameSession() {
   );
 
   const retry = useCallback(async (): Promise<boolean> => {
-    return pending.current ? save(pending.current.body) : false;
-  }, [save]);
+    const owner = rewardAccountFromToken(token);
+    return pending.current && pending.current.owner === owner ? save(pending.current.body) : false;
+  }, [save, token]);
 
   return { save, retry };
 }
