@@ -150,3 +150,9 @@ Migration 0037 rebuilds the game-session CHECK constraint (without discarding
 existing history) so translate, sentence and kanji writer modes can save results.
 All overdue SRS queries now normalize ISO-8601 and SQLite timestamps before
 comparison, avoiding same-day delays caused by lexical 'T' versus ' ' ordering.
+
+Migration 0038 introduces learner-specific IANA timezones (default
+Asia/Ulaanbaatar). Reward receipts now update XP, local-day activity and streak
+within one D1 transaction, rather than resetting the Mongolian study day at
+08:00. The separate independent web course already has a timezone setting;
+a future unified learner preferences model should bridge these two experiences.

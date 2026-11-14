@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth';
 import type { Env, Variables } from '../types';
-import { updateStreak } from '../lib/streak';
+import { studyLocalDay } from '../lib/studyDay';
+import { getLearningPreferences } from '../lib/learningPreferences';
 import { findReceipt, receiptStatement, rewardKey } from '../lib/rewardReceipts';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
 import { boundedInteger } from '../lib/queryNumbers';
@@ -46,6 +47,8 @@ games.post('/session', async (c) => {
     if (previous.request_hash !== hash) return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
     return c.json({ message: 'Тоглоом өмнө хадгалагдсан', data: { xp_earned: 0, already_saved: true } });
   }
+  const preferences = await getLearningPreferences(c.env.DB, sub);
+  const today = studyLocalDay(preferences.timezone);
   let results: D1Result[];
   try {
     results = await c.env.DB.batch([
@@ -55,7 +58,7 @@ games.post('/session', async (c) => {
        VALUES(?,?,?,?,?,?,?,?) ON CONFLICT DO NOTHING`
     ).bind(sub, body.game_type, body.score, body.accuracy,
       body.duration_seconds, body.words_practiced, body.xp_earned, sessionId),
-    receiptStatement(c.env.DB, sub, 'game', sessionId, hash, body.xp_earned, 0, body.duration_seconds),
+    receiptStatement(c.env.DB, sub, 'game', sessionId, hash, body.xp_earned, 0, body.duration_seconds, today),
     ]);
   } catch (error) {
     if (String(error).includes('reward_receipt_payload_conflict'))
@@ -66,7 +69,6 @@ games.post('/session', async (c) => {
   const recorded = await findReceipt(c.env.DB, sub, 'game', sessionId);
   if (recorded?.request_hash !== hash)
     return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
-  if (inserted) await updateStreak(c.env.DB, sub);
   return c.json({ message: 'Тоглоом хадгалагдлаа', data: { xp_earned: inserted ? body.xp_earned : 0, already_saved: !inserted } });
 });
 
