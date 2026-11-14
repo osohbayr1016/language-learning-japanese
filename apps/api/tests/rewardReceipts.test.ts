@@ -4,6 +4,7 @@ import { database } from "./helpers/database";
 import { issueAccessToken } from "../src/lib/tokens";
 import user from "../src/routes/user";
 import games from "../src/routes/games";
+import { rewardKey, receiptStatement, canonicalRewardJson } from "../src/lib/rewardReceipts";
 
 const secret = "reward-receipts-test-secret";
 async function fixture() {
@@ -122,5 +123,40 @@ test("pre-upgrade clients without session IDs deduplicate an identical same-day 
     const replay = await f.call(games, "/session", oldBody);
     assert.equal(replay.body.data.already_saved, true);
     assert.equal(f.sqlite.prepare("SELECT count(*) AS n FROM reward_receipts").get()?.n, 1);
+  } finally { f.sqlite.close(); }
+});
+
+test("semantic key order does not change the reward fingerprint", async () => {
+  assert.equal(canonicalRewardJson({b: 3, a: { y: 1, x: 2}}),
+    canonicalRewardJson({a: { x: 2, y: 1}, b: 3}));
+  const a = await rewardKey("game", {
+    session_id: "test_session_1001", game_type: "match", score: 100,
+    nested: {a: 1, b: 2},
+  });
+  const b = await rewardKey("game", {
+    nested: {b: 2, a: 1}, score: 100, game_type: "match",
+    session_id: "test_session_1001",
+  });
+  assert.deepEqual(a, b);
+});
+
+test("database guard rolls back simultaneous conflicting study writes", async () => {
+  const f = database();
+  try {
+    const { db, sqlite } = f;
+    await db.batch([
+      receiptStatement(db as any, 1, "study", "same_session_1001", "original", 10, 1),
+    ]);
+    const prior = sqlite.prepare("SELECT total_xp FROM user_stats WHERE user_id=1").get()?.total_xp;
+    await assert.rejects(
+      db.batch([
+        db.prepare("UPDATE user_stats SET words_learned=1000 WHERE user_id=1"),
+        receiptStatement(db as any, 1, "study", "same_session_1001", "different", 30, 4),
+      ]),
+      /reward_receipt_payload_conflict/,
+    );
+    assert.equal(sqlite.prepare("SELECT words_learned FROM user_stats WHERE user_id=1").get()?.words_learned, 0);
+    assert.equal(sqlite.prepare("SELECT total_xp FROM user_stats WHERE user_id=1").get()?.total_xp, prior);
+    assert.equal(sqlite.prepare("SELECT count(*) AS n FROM reward_receipts").get()?.n, 1);
   } finally { f.sqlite.close(); }
 });

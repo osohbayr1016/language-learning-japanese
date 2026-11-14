@@ -140,3 +140,8 @@ also includes a mistake notebook, timed kana recognition, 12 short listening
 conversations, furigana/inline reading support, catch-up recommendations, weekly
 reports and a user-requested offline pack. See
 [implementation waves and release configuration](docs/IMPLEMENTATION-WAVES.md).
+
+Migration 0036 adds a database-level collision guard: concurrent requests that
+reuse one session ID with contradictory evidence roll back all writes in the D1
+transaction. These server guarantees still do not authenticate a person's
+unobserved answers or prevent wholly new fabricated sessions.

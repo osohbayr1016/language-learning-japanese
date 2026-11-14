@@ -183,7 +183,14 @@ user.post('/progress', async (c) => {
     ...buildProgressStatements(c.env.DB, sub, body.results),
     receiptStatement(c.env.DB, sub, 'study', sessionId, hash, body.xp_earned, body.results.length),
   ];
-  const receipts = await c.env.DB.batch(statements);
+  let receipts: D1Result[];
+  try {
+    receipts = await c.env.DB.batch(statements);
+  } catch (error) {
+    if (String(error).includes('reward_receipt_payload_conflict'))
+      return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
+    throw error;
+  }
   const inserted = Number(receipts.at(-1)?.meta?.changes ?? 0) === 1;
   const recorded = await findReceipt(c.env.DB, sub, 'study', sessionId);
   if (recorded?.request_hash !== hash)
