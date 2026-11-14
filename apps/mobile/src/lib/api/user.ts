@@ -69,6 +69,7 @@ export type ProgressResult = {
 };
 
 export type ProgressBody = {
+  session_id?: string;
   results: ProgressResult[];
   xp_earned: number;
   session_type: 'flashcard' | 'learn' | 'write' | 'writer';
@@ -113,7 +114,7 @@ export const user = {
       { token }
     ),
   saveProgress: (token: string, body: ProgressBody) =>
-    request<{ message: string; data: { xp_earned: number } }>('/api/user/progress', {
+    request<{ message: string; data: { xp_earned: number; already_saved: boolean } }>('/api/user/progress', {
       method: 'POST',
       token,
       body: JSON.stringify(body),

@@ -3,6 +3,7 @@ import { request } from './client';
 export type GameType = 'match' | 'translate' | 'sentence' | 'stroke' | 'writer';
 
 export type GameSessionBody = {
+  session_id?: string;
   game_type: GameType;
   score: number;
   accuracy: number;
@@ -21,7 +22,7 @@ export type LeaderboardRow = {
 
 export const games = {
   saveSession: (token: string, body: GameSessionBody) =>
-    request<{ message: string; data: { xp_earned: number } }>('/api/games/session', {
+    request<{ message: string; data: { xp_earned: number; already_saved: boolean } }>('/api/games/session', {
       method: 'POST',
       token,
       body: JSON.stringify(body),

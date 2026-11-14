@@ -90,6 +90,13 @@ npm run api:migrate          # new local D1, all migrations in order
 npm run api:dev
 ```
 
+Study and game submissions now use stable session IDs and an atomic award receipt
+to make retries idempotent. Migration 0035 creates the receipt/XP ledger and a
+unique game-session index; deploy it with the API before enabling the new clients.
+Older clients without session IDs are deduplicated by content within a UTC day.
+This prevents accidental replay rewards, not deliberately forged gameplay:
+server-verified answers are required for cheat-resistant leaderboards.
+
 For production, back up D1 and apply outstanding migrations **before** API and web
 rollout. This change adds `0031` (course events/settings), `0032` (JLPT score
 sections and old-template quarantine), and `0033` (original foundation checkpoint).
