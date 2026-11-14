@@ -1,9 +1,10 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { api } from '../lib/api';
 import { getItem, setItem } from '../lib/storage';
+import { rewardAccountFromToken } from '../lib/rewardOutbox';
+import { dailyGoalCacheKey, isCurrentAccountResult } from '../lib/auth/accountState';
 
-const DAILY_GOAL_KEY = 'daily_xp_goal';
 const DEFAULT_GOAL = 30;
 
 import type { Stats, Streak } from '../lib/api/user';
@@ -16,13 +17,16 @@ type GamCtx = {
   dailyGoal: number;
   setDailyGoal: (v: number) => Promise<void>;
   refresh: () => Promise<void>;
-  addLocalXp: (xp: number) => void;
+  addLocalXp: (xp: number, awardedToAccount?: string) => void;
 };
 
 const Ctx = createContext<GamCtx | undefined>(undefined);
 
 export function GamificationProvider({ children }: { children: React.ReactNode }) {
-  const { token, isAuthenticated } = useAuth();
+  const { token } = useAuth();
+  const tokenRef = useRef(token);
+  const refreshTicket = useRef(0);
+  tokenRef.current = token;
   const [stats, setStats] = useState<Stats>(null);
   const [streak, setStreak] = useState<Streak>(null);
   const [dueToday, setDueToday] = useState(0);
@@ -31,8 +35,10 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
 
   const refresh = useCallback(async () => {
     if (!token) return;
+    const ticket = ++refreshTicket.current;
     try {
       const d = await api.user.dashboard(token);
+      if (!isCurrentAccountResult(token, tokenRef.current, ticket, refreshTicket.current)) return;
       setStats(d.data.stats);
       setStreak(d.data.streak);
       setDueToday(d.data.due_today ?? 0);
@@ -40,7 +46,7 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
       const serverGoal = Number(d.data.daily_xp_goal ?? 0);
       if (serverGoal >= 10 && serverGoal <= 200) {
         setDailyGoalState(serverGoal);
-        await setItem(DAILY_GOAL_KEY, String(serverGoal));
+        await setItem(dailyGoalCacheKey(token), String(serverGoal));
       }
     } catch (e) {
       console.warn('dashboard refresh failed', e);
@@ -48,27 +54,30 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
   }, [token]);
 
   useEffect(() => {
-    void (async () => {
-      const v = await getItem(DAILY_GOAL_KEY);
-      if (v) setDailyGoalState(Number(v) || DEFAULT_GOAL);
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      void refresh();
-      return;
-    }
+    // Reset the previous learner's achievements immediately on an auth switch.
+    ++refreshTicket.current;
     setStats(null);
     setStreak(null);
     setDueToday(0);
     setTodayXp(0);
-  }, [isAuthenticated, refresh]);
+    setDailyGoalState(DEFAULT_GOAL);
+    let active = true;
+    void (async () => {
+      const value = await getItem(dailyGoalCacheKey(token));
+      if (!active || tokenRef.current !== token) return;
+      const parsed = Number(value);
+      if (value !== null && Number.isInteger(parsed) && parsed >= 10 && parsed <= 200)
+        setDailyGoalState(parsed);
+      // Server preferences are authoritative over the local per-user cache.
+      if (token) await refresh();
+    })();
+    return () => { active = false; ++refreshTicket.current; };
+  }, [token, refresh]);
 
   const setDailyGoal = async (v: number) => {
     const safe = Math.max(10, Math.min(200, Math.round(v)));
     setDailyGoalState(safe);
-    await setItem(DAILY_GOAL_KEY, String(safe));
+    await setItem(dailyGoalCacheKey(token), String(safe));
     if (token) {
       try {
         await api.user.updatePreferences(token, { daily_xp_goal: safe });
@@ -78,7 +87,8 @@ export function GamificationProvider({ children }: { children: React.ReactNode }
     }
   };
 
-  const addLocalXp = (xp: number) => {
+  const addLocalXp = (xp: number, awardedToAccount?: string) => {
+    if (awardedToAccount && awardedToAccount !== rewardAccountFromToken(tokenRef.current)) return;
     const safeXp = Math.max(0, Math.floor(xp));
     if (safeXp === 0) return;
     setStats((s) => (s ? { ...s, total_xp: s.total_xp + safeXp } : s));

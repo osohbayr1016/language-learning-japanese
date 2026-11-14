@@ -34,7 +34,7 @@ export function useGameSession() {
           const response = await api.games.saveSession(token, payload);
           await rewardOutbox.remove(owner, 'game', session_id);
           if (pending.current?.id === session_id) pending.current = null;
-          if (response.data.xp_earned > 0) addLocalXp(response.data.xp_earned);
+          if (response.data.xp_earned > 0) addLocalXp(response.data.xp_earned, owner);
           void refresh();
           return true;
         } catch (e) {

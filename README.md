@@ -185,3 +185,9 @@ previous account's pending records. Failed uploads stay on device until a
 successful acknowledgement and removal. For now, answers given before the final
 session flush are not persisted individually; full in-progress-session resume is
 separate work.
+
+Account handling hardening: cached daily XP goals are keyed by learner ID rather
+than one global device key. Dashboard requests started by an earlier account or
+an older refresh cannot overwrite new learner stats, and a background token
+refresh cannot restore a locally logged-out account. Reward XP optimistic UI
+updates also check the current learner ID.
