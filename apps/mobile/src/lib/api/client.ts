@@ -8,6 +8,7 @@ import {
   emitAccessTokenRefreshed,
   emitSessionCleared,
 } from "../auth/authEvents";
+import { canContinueRefresh, tokensBelongToSameLearner } from "../auth/sessionOwnership";
 
 const REQUEST_TIMEOUT_MS = 15_000;
 
@@ -101,14 +102,17 @@ async function parseFailure(res: Response, text: string): Promise<ApiError> {
   return new ApiError(message, { status: res.status, code, requestId });
 }
 
-let refreshInFlight: Promise<string> | null = null;
+// A global single promise can accidentally reuse account A's refresh result
+// for an unrelated account B when two requests get a 401 simultaneously.
+const refreshInFlight = new Map<string, Promise<string>>();
 
 async function fetchAccessTokenWithRefresh(
   refreshToken: string,
 ): Promise<string> {
-  if (refreshInFlight) return refreshInFlight;
+  const existing = refreshInFlight.get(refreshToken);
+  if (existing) return existing;
 
-  refreshInFlight = (async () => {
+  const refreshRequest = (async () => {
     const base = getApiBase();
     const res = await fetchWithTimeout(`${base}/api/auth/refresh`, {
       method: "POST",
@@ -132,15 +136,24 @@ async function fetchAccessTokenWithRefresh(
     }
     return access;
   })();
-
+  refreshInFlight.set(refreshToken, refreshRequest);
   try {
-    return await refreshInFlight;
+    return await refreshRequest;
   } finally {
-    refreshInFlight = null;
+    if (refreshInFlight.get(refreshToken) === refreshRequest)
+      refreshInFlight.delete(refreshToken);
   }
 }
 
-async function clearStoredSession(): Promise<void> {
+function changedSession(): ApiError {
+  return new ApiError("Хэрэглэгчийн нэвтрэлт өөрчлөгдсөн. Дахин оролдоно уу.", {
+    code: "SESSION_CHANGED",
+  });
+}
+
+async function clearStoredSession(expectedRefresh: string | null): Promise<void> {
+  // An expired request from A cannot revoke B after a fast account switch.
+  if (await getItem(AUTH_REFRESH_TOKEN_KEY) !== expectedRefresh) return;
   await removeItem(AUTH_ACCESS_TOKEN_KEY);
   await removeItem(AUTH_REFRESH_TOKEN_KEY);
   emitSessionCleared();
@@ -195,8 +208,11 @@ export async function request<T>(
   if (res.status === 401 && tokenOpt && !isAuthPathWithoutRetry(path)) {
     const refresh = await getItem(AUTH_REFRESH_TOKEN_KEY);
 
+    const storedAccess = await getItem(AUTH_ACCESS_TOKEN_KEY);
+    if (!tokensBelongToSameLearner(tokenOpt, storedAccess)) throw changedSession();
+
     if (!refresh) {
-      await clearStoredSession();
+      await clearStoredSession(null);
       throw new ApiError("Нэвтрэх хугацаа дууссан. Дахин нэвтэрнэ үү.", {
         status: 401,
         code: "SESSION_EXPIRED",
@@ -206,16 +222,24 @@ export async function request<T>(
 
     try {
       const newAccess = await fetchAccessTokenWithRefresh(refresh);
+      if (!canContinueRefresh(tokenOpt, await getItem(AUTH_ACCESS_TOKEN_KEY),
+          refresh, await getItem(AUTH_REFRESH_TOKEN_KEY)))
+        throw changedSession();
+      if (!tokensBelongToSameLearner(tokenOpt, newAccess)) throw changedSession();
       await setItem(AUTH_ACCESS_TOKEN_KEY, newAccess);
+      // Another account may have logged in during the storage write.
+      if (!canContinueRefresh(tokenOpt, await getItem(AUTH_ACCESS_TOKEN_KEY),
+          refresh, await getItem(AUTH_REFRESH_TOKEN_KEY)))
+        throw changedSession();
       emitAccessTokenRefreshed(newAccess);
       token = newAccess;
       ({ res, text } = await doFetch(path, rest, token));
     } catch (error) {
-      await clearStoredSession();
-      if (error instanceof ApiError && error.code === "NETWORK_ERROR")
+      // Offline/timeout and account-switch failures are not logout events.
+      if (error instanceof ApiError &&
+          ["NETWORK_ERROR", "REQUEST_TIMEOUT", "SESSION_CHANGED"].includes(error.code ?? ""))
         throw error;
-      if (error instanceof ApiError && error.code === "REQUEST_TIMEOUT")
-        throw error;
+      await clearStoredSession(refresh);
       throw new ApiError("Нэвтрэх хугацаа дууссан. Дахин нэвтэрнэ үү.", {
         status: 401,
         code: "SESSION_EXPIRED",
@@ -224,7 +248,7 @@ export async function request<T>(
     }
 
     if (res.status === 401) {
-      await clearStoredSession();
+      await clearStoredSession(refresh);
       throw new ApiError("Нэвтрэх хугацаа дууссан. Дахин нэвтэрнэ үү.", {
         status: 401,
         code: "SESSION_EXPIRED",
