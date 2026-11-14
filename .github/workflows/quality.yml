@@ -28,6 +28,24 @@ jobs:
         run: node scripts/check-bundle.mjs
       - name: Audit runtime dependencies
         run: npm audit --omit=dev --audit-level=high
+  native:
+    name: Expo native TypeScript
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.17.1
+          run_install: false
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: pnpm
+      - name: Install locked Expo workspace dependencies
+        run: pnpm --config.package-manager-strict=false --config.manage-package-manager-versions=false install --frozen-lockfile
+      - name: Type-check Expo iOS, Android, and React Native web source
+        run: pnpm --config.package-manager-strict=false --config.manage-package-manager-versions=false --dir apps/mobile run type-check
   e2e:
     name: Chromium learner journeys
     runs-on: ubuntu-24.04
