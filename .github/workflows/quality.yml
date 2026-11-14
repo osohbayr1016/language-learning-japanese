@@ -45,7 +45,7 @@ jobs:
       - name: Install locked Expo workspace dependencies
         run: pnpm --config.package-manager-strict=false --config.manage-package-manager-versions=false install --frozen-lockfile
       - name: Type-check Expo iOS, Android, and React Native web source
-        run: pnpm --dir apps/mobile run type-check
+        run: pnpm --config.package-manager-strict=false --config.manage-package-manager-versions=false --dir apps/mobile run type-check
   e2e:
     name: Chromium learner journeys
     runs-on: ubuntu-24.04
