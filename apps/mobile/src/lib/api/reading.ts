@@ -1,6 +1,7 @@
 import { request } from './client';
 
 export type DynamicStory = {
+  sample?: boolean;
   title: string;
   translation_mn: string;
   new_words: Array<{
