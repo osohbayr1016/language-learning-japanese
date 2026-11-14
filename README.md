@@ -145,3 +145,8 @@ Migration 0036 adds a database-level collision guard: concurrent requests that
 reuse one session ID with contradictory evidence roll back all writes in the D1
 transaction. These server guarantees still do not authenticate a person's
 unobserved answers or prevent wholly new fabricated sessions.
+
+Migration 0037 rebuilds the game-session CHECK constraint (without discarding
+existing history) so translate, sentence and kanji writer modes can save results.
+All overdue SRS queries now normalize ISO-8601 and SQLite timestamps before
+comparison, avoiding same-day delays caused by lexical 'T' versus ' ' ordering.
