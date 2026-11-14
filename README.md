@@ -191,3 +191,8 @@ than one global device key. Dashboard requests started by an earlier account or
 an older refresh cannot overwrite new learner stats, and a background token
 refresh cannot restore a locally logged-out account. Reward XP optimistic UI
 updates also check the current learner ID.
+
+API refresh ownership: concurrent refreshes are deduplicated per refresh token,
+not globally. A failed stale request cannot use another account's refresh
+credential or erase a newer login. Connectivity/timeout errors during refresh
+keep the current session so users can retry when back online.
