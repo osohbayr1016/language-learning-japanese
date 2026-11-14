@@ -7,7 +7,6 @@ import { Screen } from '../../primitives';
 import { api } from '../../lib/api';
 import type { CartoonDetail, CartoonWord } from '../../lib/api/cartoons';
 import { useAuth } from '../../context/AuthContext';
-import { useGamification } from '../../context/GamificationContext';
 import { colors, spacing, typography } from '../../theme';
 import { mn } from '../../i18n/mn';
 import { VideoPlayer, type PlayerHandle } from './VideoPlayer';
@@ -18,7 +17,6 @@ export default function PlayerScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { token } = useAuth();
-  const { addLocalXp } = useGamification();
   const playerRef = useRef<PlayerHandle>(null);
 
   const [data, setData] = useState<CartoonDetail | null>(null);
@@ -51,10 +49,6 @@ export default function PlayerScreen() {
     await playerRef.current?.play();
   };
 
-  const handleComplete = () => {
-    addLocalXp(15);
-  };
-
   if (loading) {
     return <Screen><View style={styles.center}><ActivityIndicator color={colors.accent.purple} /></View></Screen>;
   }
@@ -81,7 +75,6 @@ export default function PlayerScreen() {
           ref={playerRef}
           uri={data.video_url}
           onTimeUpdate={setTime}
-          onComplete={handleComplete}
         />
         <VocabOverlay vocab={data.vocab} currentTime={time} onPick={handlePick} />
       </View>
