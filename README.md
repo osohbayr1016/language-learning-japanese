@@ -173,3 +173,15 @@ scoring rules (match combo max 50 per pair; timed-answer max 16 per word;
 writer maximum 100 for one character). This prevents impossible inflated scores
 but does not prove an answer was correct; server-signed game challenges remain
 a separate anti-cheat roadmap item.
+
+### Resuming offline native practice
+
+Completed native study/game submissions are written to an account-scoped
+AsyncStorage outbox **before** requesting the API. Study and game hubs show a
+recovery card for pending sessions after an app restart. Upload retries keep
+session IDs and server-issued XP receipts idempotent. The outbox stores learning
+results, never access/refresh tokens; logging into another account hides the
+previous account's pending records. Failed uploads stay on device until a
+successful acknowledgement and removal. For now, answers given before the final
+session flush are not persisted individually; full in-progress-session resume is
+separate work.
