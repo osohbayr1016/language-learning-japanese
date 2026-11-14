@@ -5,13 +5,26 @@ export function validSessionId(id: unknown): id is string {
   return typeof id === "string" && /^[A-Za-z0-9_-]{8,100}$/.test(id);
 }
 
+/** Recursively order JSON object keys to ensure semantically identical retries hash equally. */
+export function canonicalRewardJson(value: unknown): string {
+  if (Array.isArray(value)) return "[" + value.map(canonicalRewardJson).join(",") + "]";
+  if (value !== null && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    return "{" + Object.keys(obj).sort()
+      .filter((key) => obj[key] !== undefined)
+      .map((key) => JSON.stringify(key) + ":" + canonicalRewardJson(obj[key]))
+      .join(",") + "}";
+  }
+  return JSON.stringify(value) ?? "null";
+}
+
 /** Hash normalized content rather than trusting a caller-provided fingerprint. */
 export async function rewardKey(
   kind: RewardKind,
   body: Record<string, unknown>,
 ): Promise<{ sessionId: string; hash: string }> {
   const { session_id: _ignored, ...payload } = body;
-  const bytes = new TextEncoder().encode(JSON.stringify({ kind, payload }));
+  const bytes = new TextEncoder().encode(canonicalRewardJson({ kind, payload }));
   const digest = await crypto.subtle.digest("SHA-256", bytes);
   const hash = Array.from(new Uint8Array(digest), (v) => v.toString(16).padStart(2, "0")).join("");
   // Pre-upgrade native clients do not send IDs. Coalesce exact same-day retries

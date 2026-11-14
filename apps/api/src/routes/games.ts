@@ -46,7 +46,9 @@ games.post('/session', async (c) => {
     if (previous.request_hash !== hash) return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
     return c.json({ message: 'Тоглоом өмнө хадгалагдсан', data: { xp_earned: 0, already_saved: true } });
   }
-  const results = await c.env.DB.batch([
+  let results: D1Result[];
+  try {
+    results = await c.env.DB.batch([
     c.env.DB.prepare(
       `INSERT INTO game_sessions
        (user_id,game_type,score,accuracy,duration_seconds,words_practiced,xp_earned,session_id)
@@ -54,7 +56,12 @@ games.post('/session', async (c) => {
     ).bind(sub, body.game_type, body.score, body.accuracy,
       body.duration_seconds, body.words_practiced, body.xp_earned, sessionId),
     receiptStatement(c.env.DB, sub, 'game', sessionId, hash, body.xp_earned, 0, body.duration_seconds),
-  ]);
+    ]);
+  } catch (error) {
+    if (String(error).includes('reward_receipt_payload_conflict'))
+      return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
+    throw error;
+  }
   const inserted = Number(results[1]?.meta?.changes ?? 0) === 1;
   const recorded = await findReceipt(c.env.DB, sub, 'game', sessionId);
   if (recorded?.request_hash !== hash)
