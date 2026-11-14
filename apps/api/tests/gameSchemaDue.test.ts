@@ -39,17 +39,17 @@ test("all five playable game types persist and award XP after fresh migration", 
   const env = {DB:f.db,JWT_SECRET:"game-schema-secret",ENVIRONMENT:"development"} as any;
   try {
     for (const type of ["match", "translate", "sentence", "stroke", "writer"]) {
-      const score = 100;
+      const score = ["translate","sentence","stroke"].includes(type) ? 80 : 100;
       const response = await games.request("http://test/session", {
         method:"POST", headers:{Authorization:"Bearer "+token, "Content-Type":"application/json"},
         body:JSON.stringify({session_id:"test_schema_"+type,game_type:type,score,
           accuracy:0.8,duration_seconds:40,words_practiced:5,
-          xp_earned:type==="writer"?10:type==="match"?20:25}),
+          xp_earned:type==="writer"?10:20}),
       },env);
       assert.equal(response.status,200,type+": "+await response.text());
     }
     assert.equal(f.sqlite.prepare("SELECT COUNT(*) n FROM game_sessions WHERE user_id=1").get()?.n,5);
-    assert.equal(f.sqlite.prepare("SELECT total_xp FROM user_stats WHERE user_id=1").get()?.total_xp,105);
+    assert.equal(f.sqlite.prepare("SELECT total_xp FROM user_stats WHERE user_id=1").get()?.total_xp,90);
   } finally { f.sqlite.close(); }
 });
 
