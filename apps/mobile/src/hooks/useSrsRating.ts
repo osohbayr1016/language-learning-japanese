@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { api } from '../lib/api';
+import { newSessionId } from '../lib/sessionIds';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { calculateAdaptive, type AdaptiveInputs, type AdaptiveProgressInput } from '../lib/srs/adaptive';
@@ -13,6 +14,8 @@ export function useSrsRating(sessionType: SessionType) {
   const { token } = useAuth();
   const { addLocalXp, refresh } = useGamification();
   const buffer = useRef<Buffer[]>([]);
+  const submissionId = useRef<string | null>(null);
+  const inflight = useRef<Promise<boolean> | null>(null);
 
   const record = useCallback(
     (
@@ -31,6 +34,9 @@ export function useSrsRating(sessionType: SessionType) {
         response_ms: r.response_ms,
         confidence: r.confidence,
       };
+      if (!submissionId.current) submissionId.current = newSessionId();
+      // A retried final rating must not send the same word twice in one batch.
+      buffer.current = buffer.current.filter((row) => row.word_id !== wordId);
       buffer.current.push(item);
       return r;
     },
@@ -38,28 +44,39 @@ export function useSrsRating(sessionType: SessionType) {
   );
 
   const flush = useCallback(
-    async (xp: number) => {
-      if (!token) return;
+    async (xp: number): Promise<boolean> => {
+      if (!token) return false;
+      if (!buffer.current.length) return true;
+      if (inflight.current) return inflight.current;
       const results = buffer.current.map(({ rating: _r, ...rest }) => rest);
-      if (results.length === 0) return;
-      try {
-        await api.user.saveProgress(token, {
-          results,
-          xp_earned: xp,
-          session_type: sessionType,
-        });
-        addLocalXp(xp);
-      } catch (e) {
-        console.warn('saveProgress failed', e);
-      } finally {
-        buffer.current = [];
-        void refresh();
-      }
+      const session_id = submissionId.current ?? crypto.randomUUID();
+      submissionId.current = session_id;
+      const saving = (async () => {
+        try {
+          const response = await api.user.saveProgress(token, {
+            session_id,
+            results,
+            xp_earned: xp,
+            session_type: sessionType,
+          });
+          buffer.current = [];
+          submissionId.current = null;
+          if (response.data.xp_earned > 0) addLocalXp(response.data.xp_earned);
+          void refresh();
+          return true;
+        } catch (e) {
+          // Keep exact evidence and stable session ID for a safe retry.
+          console.warn('saveProgress failed, pending evidence retained', e);
+          return false;
+        }
+      })();
+      inflight.current = saving;
+      try { return await saving; } finally { inflight.current = null; }
     },
     [token, sessionType, addLocalXp, refresh]
   );
 
-  const reset = useCallback(() => { buffer.current = []; }, []);
+  const reset = useCallback(() => { buffer.current = []; submissionId.current = null; }, []);
 
   return { record, flush, reset, count: () => buffer.current.length };
 }

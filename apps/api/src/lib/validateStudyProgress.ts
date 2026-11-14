@@ -1,9 +1,11 @@
 import type { ProgressResult } from "./progress";
+import { validSessionId } from "./rewardReceipts";
 
 export type StudyProgressBody = {
   results: ProgressResult[];
   xp_earned: number;
   session_type: "flashcard" | "learn" | "write" | "writer";
+  session_id?: string;
 };
 
 const integerIn = (value: unknown, min: number, max: number): value is number =>
@@ -34,7 +36,8 @@ export function validStudyProgressBody(value: unknown): value is StudyProgressBo
   const body = value as Record<string, unknown>;
   if (!Array.isArray(body.results) || body.results.length > 100 ||
       !integerIn(body.xp_earned, 0, 1000) ||
-      !["flashcard", "learn", "write", "writer"].includes(String(body.session_type))) return false;
+      !["flashcard", "learn", "write", "writer"].includes(String(body.session_type)) ||
+      (body.session_id !== undefined && !validSessionId(body.session_id))) return false;
   if (body.results.length === 0 && body.xp_earned > 0) return false;
   if (!body.results.every(validResult)) return false;
   const ids = body.results.map((row: ProgressResult) => row.word_id);

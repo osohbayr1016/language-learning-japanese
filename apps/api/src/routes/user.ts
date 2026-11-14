@@ -3,7 +3,9 @@ import { authMiddleware } from '../middleware/auth';
 import type { Env, Variables } from '../types';
 import { updateStreak } from '../lib/streak';
 import { syncUserStatsAggregates } from '../lib/userStatsSync';
-import { buildProgressStatements, bumpStats, type ProgressResult } from '../lib/progress';
+import { buildProgressStatements, type ProgressResult } from '../lib/progress';
+import { syncUserStatsAggregates as refreshProgressStats } from '../lib/userStatsSync';
+import { findReceipt, receiptStatement, rewardKey } from '../lib/rewardReceipts';
 import { studyQueueCount } from '../lib/studyQueue';
 import userVocabularyRoutes from './userVocabulary';
 import { jsonBodyInvalid, readJsonBody } from '../lib/requestJson';
@@ -152,16 +154,45 @@ user.post('/progress', async (c) => {
     results: ProgressResult[];
     xp_earned: number;
     session_type: string;
+    session_id?: string;
   }>(c);
   if (!body) return jsonBodyInvalid(c);
   if (!validStudyProgressBody(body))
     return c.json({ error: 'Дасгалын явцын өгөгдөл буруу байна' }, 400);
 
-  await c.env.DB.batch(buildProgressStatements(c.env.DB, sub, body.results));
-  await bumpStats(c.env.DB, sub, body.xp_earned, body.results.length);
-  await updateStreak(c.env.DB, sub);
+  // Avoid granting XP for sessions that claim more correct answers than words practiced.
+  if (body.xp_earned > body.results.length * 15)
+    return c.json({ error: 'Дасгалын XP үр дүнтэй таарахгүй байна' }, 400);
+  const { sessionId, hash } = await rewardKey('study', body as Record<string, unknown>);
+  const previous = await findReceipt(c.env.DB, sub, 'study', sessionId);
+  if (previous) {
+    if (previous.request_hash !== hash) return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
+    return c.json({ message: 'Явц өмнө хадгалагдсан', data: { xp_earned: 0, already_saved: true } });
+  }
 
-  return c.json({ message: 'Явц хадгалагдлаа', data: { xp_earned: body.xp_earned } });
+  const ids = body.results.map((r) => r.word_id);
+  const placeholders = ids.map(() => '?').join(',');
+  const existing = await c.env.DB.prepare(
+    `SELECT count(*) AS count FROM words WHERE id IN (${placeholders})`,
+  ).bind(...ids).first<{ count: number }>();
+  if (Number(existing?.count ?? 0) !== ids.length)
+    return c.json({ error: 'Танигдахгүй үг байна' }, 400);
+
+  // D1 batch is atomic: an invalid word/constraint rolls back the XP receipt.
+  const statements = [
+    ...buildProgressStatements(c.env.DB, sub, body.results),
+    receiptStatement(c.env.DB, sub, 'study', sessionId, hash, body.xp_earned, body.results.length),
+  ];
+  const receipts = await c.env.DB.batch(statements);
+  const inserted = Number(receipts.at(-1)?.meta?.changes ?? 0) === 1;
+  const recorded = await findReceipt(c.env.DB, sub, 'study', sessionId);
+  if (recorded?.request_hash !== hash)
+    return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
+  if (inserted) {
+    await refreshProgressStats(c.env.DB, sub);
+    await updateStreak(c.env.DB, sub);
+  }
+  return c.json({ message: 'Явц хадгалагдлаа', data: { xp_earned: inserted ? body.xp_earned : 0, already_saved: !inserted } });
 });
 
 export default user;
