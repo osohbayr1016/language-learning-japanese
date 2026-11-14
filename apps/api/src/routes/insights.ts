@@ -3,6 +3,8 @@ import { authMiddleware } from "../middleware/auth";
 import type { Env, Variables } from "../types";
 import type { SkillKey } from "../lib/activity";
 import { syncUserStatsAggregates } from "../lib/userStatsSync";
+import { getLearningPreferences } from "../lib/learningPreferences";
+import { studyLocalDay, visibleCurrentStreak } from "../lib/studyDay";
 
 const insights = new Hono<{ Bindings: Env; Variables: Variables }>();
 
@@ -28,6 +30,8 @@ async function safe<T>(p: Promise<T>, fallback: T): Promise<T> {
 insights.get("/summary", async (c) => {
   const { sub } = c.get("user");
   await syncUserStatsAggregates(c.env.DB, sub);
+  const preferences = await getLearningPreferences(c.env.DB, sub);
+  const today = studyLocalDay(preferences.timezone);
 
   const [stats, streak] = await Promise.all([
     safe(
@@ -49,7 +53,7 @@ insights.get("/summary", async (c) => {
     ),
     safe(
       c.env.DB.prepare(
-        `SELECT current_streak, longest_streak, total_days_studied
+        `SELECT current_streak, longest_streak, total_days_studied, last_activity_date
          FROM user_streaks WHERE user_id = ?`,
       )
         .bind(sub)
@@ -57,6 +61,7 @@ insights.get("/summary", async (c) => {
           current_streak: number;
           longest_streak: number;
           total_days_studied: number;
+          last_activity_date: string | null;
         }>(),
       null,
     ),
@@ -65,7 +70,8 @@ insights.get("/summary", async (c) => {
   return c.json({
     data: {
       longest_streak: streak?.longest_streak ?? 0,
-      current_streak: streak?.current_streak ?? 0,
+      current_streak: visibleCurrentStreak(streak?.current_streak ?? 0,
+        streak?.last_activity_date ?? null, today),
       total_days_studied: streak?.total_days_studied ?? 0,
       lessons_completed: stats?.lessons_completed ?? 0,
       perfect_lessons: stats?.perfect_lessons ?? 0,

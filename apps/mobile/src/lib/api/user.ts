@@ -37,6 +37,7 @@ export type LearningPreferences = {
   self_level: 'none' | 'n5' | 'n4' | 'n3' | 'n2' | 'n1' | null;
   learning_reason: 'university' | 'career' | 'travel' | 'culture' | 'fun' | null;
   daily_xp_goal: number;
+  timezone: string;
   kana_foundation_completed: boolean;
   placement_level: 'n5' | 'n4' | 'n3' | 'n2' | 'n1' | null;
   placement_completed_at: string | null;
@@ -44,7 +45,7 @@ export type LearningPreferences = {
 
 export type LearningPreferencesPatch = Partial<Pick<
   LearningPreferences,
-  'self_level' | 'learning_reason' | 'daily_xp_goal' | 'kana_foundation_completed' | 'placement_level'
+  'self_level' | 'learning_reason' | 'daily_xp_goal' | 'timezone' | 'kana_foundation_completed' | 'placement_level'
 >>;
 
 export type StudyNextAction = {
