@@ -11,6 +11,7 @@ import { GameHud } from '../GameHud';
 import { GameOverScreen } from '../GameOverScreen';
 import { buildMatchDeck, type MatchCard } from './cards';
 import { MatchTile } from './MatchTile';
+import { completedMatchStats } from './matchSessionStats';
 import type { Word } from '../../../lib/types';
 
 const PAIRS = 6;
@@ -36,6 +37,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
   const [combo, setCombo] = useState(1);
   const [roundIdx, setRoundIdx] = useState(0);
   const comboTimer = useRef<NodeJS.Timeout | null>(null);
+  const finishing = useRef(false);
   const [, bumpTick] = useState(0);
 
   const chunks = useMemo(() => {
@@ -72,6 +74,9 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
 
   const restartMidRound = () => {
     if (words.length === 0) return;
+    finishing.current = false;
+    if (comboTimer.current) clearTimeout(comboTimer.current);
+    setDone(false);
     setRoundIdx(0);
     setDeck(buildMatchDeck(chunks[0]));
     setMatchedPairs(0);
@@ -82,20 +87,20 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
     setStart(Date.now());
   };
 
-  const finish = async () => {
+  const finish = async (finalScore: number, accuracy: number) => {
+    if (finishing.current) return;
+    finishing.current = true;
     const elapsed = Math.max(1, Math.round((Date.now() - start) / 1000));
-    const xp = Math.round(score / 5);
-    const acc = total > 0 ? matchedPairs / total : 0;
     await save({
       game_type: 'match',
-      score,
-      accuracy: acc,
+      score: finalScore,
+      accuracy,
       duration_seconds: elapsed,
       words_practiced: total,
-      xp_earned: xp,
+      xp_earned: Math.round(finalScore / 5),
     });
     setDone(true);
-    if (onDone) onDone(score, acc);
+    onDone?.(finalScore, accuracy);
   };
 
   useEffect(() => {
@@ -132,6 +137,8 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
         xp={Math.round(score / 5)}
         durationSeconds={Math.round((Date.now() - start) / 1000)}
         onPlayAgain={() => {
+          finishing.current = false;
+          if (comboTimer.current) clearTimeout(comboTimer.current);
           setRoundIdx(0);
           setDeck(buildMatchDeck(chunks[0]));
           setMatchedPairs(0);
@@ -154,7 +161,7 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
   };
 
   const handleTap = (card: MatchCard) => {
-    if (selected?.id === card.id) return;
+    if (done || finishing.current || card.matched || selected?.matched || selected?.id === card.id) return;
     if (!selected) {
       setSelected(card);
       void Haptics.selectionAsync();
@@ -179,7 +186,9 @@ export default function MatchScreen({ initialWords, onDone }: Props) {
       if (next >= currentChunk.length) {
         if (comboTimer.current) clearTimeout(comboTimer.current);
         if (roundIdx + 1 >= chunks.length) {
-          void finish();
+          const priorMatches = chunks.slice(0, roundIdx).reduce((sum, chunk) => sum + chunk.length, 0);
+          const final = completedMatchStats(score, points, priorMatches, next, total);
+          void finish(final.score, final.accuracy);
         } else {
           setTimeout(() => {
             setRoundIdx(r => r + 1);

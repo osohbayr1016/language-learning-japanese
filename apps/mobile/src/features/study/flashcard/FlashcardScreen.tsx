@@ -44,6 +44,7 @@ export default function FlashcardScreen({
   const [done, setDone] = useState(false);
 
   const handleRateRef = useRef<(rating: ReviewRating) => Promise<void>>(async () => {});
+  const completionReported = useRef(false);
   const current = words[idx];
 
   useEffect(() => {
@@ -59,6 +60,12 @@ export default function FlashcardScreen({
       }),
     [correctCount, words.length],
   );
+
+  useEffect(() => {
+    if (!done || !onSessionDone || completionReported.current) return;
+    completionReported.current = true;
+    onSessionDone(xp, correctCount, words.length, words);
+  }, [done, onSessionDone, xp, correctCount, words]);
 
   handleRateRef.current = async (rating: ReviewRating) => {
     if (!current) return;
@@ -117,10 +124,7 @@ export default function FlashcardScreen({
   }
 
   if (done) {
-    if (onSessionDone) {
-      setTimeout(() => onSessionDone(xp, correctCount, words.length, words), 0);
-      return null;
-    }
+    if (onSessionDone) return null;
     return <SessionDoneScreen xp={xp} total={words.length} correct={correctCount} />;
   }
 
