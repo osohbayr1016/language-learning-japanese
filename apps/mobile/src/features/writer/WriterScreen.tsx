@@ -17,7 +17,7 @@ import { addKanjiActivity } from '../kanji/kanjiActivityStorage';
 export default function WriterScreen() {
   const router = useRouter();
   const { words, loading, error, kanjiForced, forcedWordId } = useWriterScreenWords();
-  const { save } = useGameSession();
+  const { save, retry } = useGameSession();
   const { width } = useWindowDimensions();
   const canvasSize = Math.min(width - spacing.lg * 2, 320);
 
@@ -27,6 +27,7 @@ export default function WriterScreen() {
   const [completed, setCompleted] = useState<{ strokes: number } | null>(null);
   const [startedAt, setStartedAt] = useState<number>(Date.now());
   const [advanceBusy, setAdvanceBusy] = useState(false);
+  const [saveError, setSaveError] = useState(false);
   const advanceLockRef = useRef(false);
 
   const current = words[idx];
@@ -36,6 +37,7 @@ export default function WriterScreen() {
     setMistakes(0);
     setCompleted(null);
     setMode('animate');
+    setSaveError(false);
     setStartedAt(Date.now());
   }, [idx]);
 
@@ -73,14 +75,16 @@ export default function WriterScreen() {
       const strokes = completed?.strokes ?? current!.stroke_count ?? 1;
       const score = Math.max(0, Math.round(100 - (mistakes / Math.max(1, strokes)) * 30));
       const xp = Math.round(score / 10);
-      await save({
+      const saved = saveError ? await retry() : await save({
         game_type: 'writer',
         score,
         accuracy: score / 100,
-        duration_seconds: Math.round((Date.now() - startedAt) / 1000),
+        duration_seconds: Math.max(1, Math.round((Date.now() - startedAt) / 1000)),
         words_practiced: 1,
         xp_earned: xp,
       });
+      if (!saved) { setSaveError(true); return; }
+      setSaveError(false);
       if (kanjiForced && forcedWordId != null && current!.id === forcedWordId) {
         await addKanjiActivity(forcedWordId, 'write');
         router.back();
@@ -118,9 +122,14 @@ export default function WriterScreen() {
       <WriterControls mode={mode} onChange={setMode} />
       {mode === 'quiz' && completed ? (
         <>
+          {saveError ? (
+            <Text accessibilityRole="alert" style={{ color: colors.error }}>
+              Оноог хадгалж чадсангүй. Зурлагаа дахин хийхгүйгээр «Дахин хадгалах» дарна уу.
+            </Text>
+          ) : null}
           <AccuracyMeter mistakes={mistakes} strokes={completed.strokes} />
           <Button
-            label={mn.common.next}
+            label={saveError ? 'ДАХИН ХАДГАЛАХ' : mn.common.next}
             onPress={() => void finishCharacter()}
             loading={advanceBusy}
             disabled={advanceBusy}

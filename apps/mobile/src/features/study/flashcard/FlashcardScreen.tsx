@@ -6,6 +6,7 @@ import { useDueWords } from '../../../hooks/useDueWords';
 import { useSrsRating } from '../../../hooks/useSrsRating';
 import { useAdaptiveTimer } from '../../../hooks/useAdaptiveTimer';
 import { calculateXP } from '@japanese-learning/srs';
+import { sessionXpIncludingFinal } from '../../../lib/sessionXp';
 import { colors, spacing, typography } from '../../../theme';
 import { StudyHeader } from '../StudyHeader';
 import { StudyEmptyState } from '../EmptyState';
@@ -42,6 +43,9 @@ export default function FlashcardScreen({
   const [flipped, setFlipped] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
   const [done, setDone] = useState(false);
+  const [pendingXp, setPendingXp] = useState<number | null>(null);
+  const [saving, setSaving] = useState(false);
+  const finishLock = useRef(false);
 
   const handleRateRef = useRef<(rating: ReviewRating) => Promise<void>>(async () => {});
   const completionReported = useRef(false);
@@ -67,8 +71,22 @@ export default function FlashcardScreen({
     onSessionDone(xp, correctCount, words.length, words);
   }, [done, onSessionDone, xp, correctCount, words]);
 
+  const finishSave = async (points: number) => {
+    if (finishLock.current) return;
+    finishLock.current = true;
+    setSaving(true);
+    try {
+      const saved = await session.flush(points);
+      if (saved) { setPendingXp(null); setDone(true); }
+      else setPendingXp(points);
+    } finally {
+      finishLock.current = false;
+      setSaving(false);
+    }
+  };
+
   handleRateRef.current = async (rating: ReviewRating) => {
-    if (!current) return;
+    if (!current || done || saving || finishLock.current || pendingXp !== null) return;
     const responseMs = timer.stopAndReset();
 
     session.record(
@@ -89,8 +107,7 @@ export default function FlashcardScreen({
     setFlipped(false);
 
     if (idx + 1 >= words.length) {
-      await session.flush(xp + (rating >= 3 ? 5 : 0));
-      setDone(true);
+      await finishSave(sessionXpIncludingFinal('flashcard', correctCount, rating >= 3, words.length));
     } else {
       setIdx((i) => i + 1);
     }
@@ -100,7 +117,7 @@ export default function FlashcardScreen({
     setFlipped((value) => !value);
   }, []);
 
-  const keysDisabled = loading || words.length === 0 || done || !current;
+  const keysDisabled = loading || words.length === 0 || done || saving || pendingXp !== null || !current;
 
   useFlashcardWebKeys({
     flipped,
@@ -127,6 +144,15 @@ export default function FlashcardScreen({
     if (onSessionDone) return null;
     return <SessionDoneScreen xp={xp} total={words.length} correct={correctCount} />;
   }
+  if (pendingXp !== null) return (
+    <Screen>
+      <StudyHeader title="Давталт" index={words.length - 1} total={words.length} />
+      <Text accessibilityRole="alert" style={styles.prompt}>
+        {saving ? 'Ахиц хадгалж байна…' : 'Ахиц серверт хадгалагдсангүй. Хариултыг хадгалсан тул давтах шаардлагагүй.'}
+      </Text>
+      <Button label="ДАХИН ХАДГАЛАХ" loading={saving} disabled={saving} onPress={() => void finishSave(pendingXp)} />
+    </Screen>
+  );
 
   return (
     <Screen scroll={false}>

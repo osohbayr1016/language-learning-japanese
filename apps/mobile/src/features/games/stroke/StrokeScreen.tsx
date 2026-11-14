@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Screen } from '../../../primitives';
 import { useGameSession } from '../../../hooks/useGameSession';
@@ -6,13 +6,14 @@ import { useAdaptiveTimer } from '../../../hooks/useAdaptiveTimer';
 import { mn } from '../../../i18n/mn';
 import { GameHud } from '../GameHud';
 import { GameOverScreen } from '../GameOverScreen';
+import { GameSaveRecovery } from '../GameSaveRecovery';
 import { STROKE_PUZZLES, shufflePuzzles, type StrokePuzzle } from './puzzles';
 import { PuzzleDisplay } from './PuzzleDisplay';
 import { OptionTray } from './OptionTray';
 import { timingScore } from '../translate/scoring';
 
 export default function StrokeScreen() {
-  const { save } = useGameSession();
+  const { save, retry } = useGameSession();
   const timer = useAdaptiveTimer();
 
   const [queue, setQueue] = useState<StrokePuzzle[]>(() => shufflePuzzles(STROKE_PUZZLES));
@@ -20,12 +21,13 @@ export default function StrokeScreen() {
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
-  const [start] = useState<number>(Date.now());
+  const [start, setStart] = useState<number>(Date.now());
   const [done, setDone] = useState(false);
+  const [pendingCompletion, setPendingCompletion] = useState(false);
 
   const current = queue[idx];
 
-  useMemo(() => { if (current) timer.start(); }, [current, timer]);
+  useEffect(() => { if (current && !picked && !pendingCompletion && !done) timer.start(); }, [current, picked, pendingCompletion, done, timer]);
 
   if (done) {
     return (
@@ -35,11 +37,15 @@ export default function StrokeScreen() {
         durationSeconds={Math.round((Date.now() - start) / 1000)}
         onPlayAgain={() => {
           setQueue(shufflePuzzles(STROKE_PUZZLES));
-          setIdx(0); setPicked(null); setScore(0); setCorrectCount(0); setDone(false);
+          setIdx(0); setPicked(null); setScore(0); setCorrectCount(0); setDone(false); setStart(Date.now()); setPendingCompletion(false);
         }}
       />
     );
   }
+
+  if (pendingCompletion) return <GameSaveRecovery onRetry={async () => {
+    if (await retry()) { setPendingCompletion(false); setDone(true); }
+  }} />;
 
   const state: 'idle' | 'correct' | 'wrong' = picked
     ? picked === current.missingPart ? 'correct' : 'wrong'
@@ -55,21 +61,22 @@ export default function StrokeScreen() {
     if (ok) setCorrectCount((c) => c + 1);
 
     setTimeout(async () => {
-      setPicked(null);
       if (idx + 1 >= queue.length) {
         const elapsed = Math.max(1, Math.round((Date.now() - start) / 1000));
-        const finalScore = score + delta;
+        const finalScore = Math.max(0, score + delta);
         const xp = Math.round(finalScore / 4);
-        await save({
+        const saved = await save({
           game_type: 'stroke',
-          score: Math.max(0, finalScore),
+          score: finalScore,
           accuracy: queue.length > 0 ? (correctCount + (ok ? 1 : 0)) / queue.length : 0,
           duration_seconds: elapsed,
           words_practiced: queue.length,
           xp_earned: xp,
         });
+        if (!saved) { setPendingCompletion(true); return; }
         setDone(true);
       } else {
+        setPicked(null);
         setIdx((i) => i + 1);
       }
     }, 900);
