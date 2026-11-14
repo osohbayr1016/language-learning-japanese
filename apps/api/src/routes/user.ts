@@ -1,10 +1,9 @@
 import { Hono } from 'hono';
 import { authMiddleware } from '../middleware/auth';
 import type { Env, Variables } from '../types';
-import { updateStreak } from '../lib/streak';
+import { studyLocalDay, visibleCurrentStreak } from '../lib/studyDay';
 import { syncUserStatsAggregates } from '../lib/userStatsSync';
 import { buildProgressStatements, type ProgressResult } from '../lib/progress';
-import { syncUserStatsAggregates as refreshProgressStats } from '../lib/userStatsSync';
 import { findReceipt, receiptStatement, rewardKey } from '../lib/rewardReceipts';
 import { studyQueueCount } from '../lib/studyQueue';
 import userVocabularyRoutes from './userVocabulary';
@@ -63,9 +62,16 @@ user.put('/profile', async (c) => {
 
 user.get('/streak', async (c) => {
   const { sub } = c.get('user');
-  const streak = await c.env.DB.prepare('SELECT * FROM user_streaks WHERE user_id = ?')
-    .bind(sub).first();
-  return c.json({ data: streak });
+  const [streak, preferences] = await Promise.all([
+    c.env.DB.prepare('SELECT * FROM user_streaks WHERE user_id = ?').bind(sub).first<Record<string, unknown>>(),
+    getLearningPreferences(c.env.DB, sub),
+  ]);
+  const today = studyLocalDay(preferences.timezone);
+  return c.json({ data: streak ? {
+    ...streak,
+    current_streak: visibleCurrentStreak(Number(streak.current_streak ?? 0),
+      typeof streak.last_activity_date === 'string' ? streak.last_activity_date : null, today),
+  } : null });
 });
 
 user.get('/stats', async (c) => {
@@ -78,7 +84,9 @@ user.get('/stats', async (c) => {
 user.get('/dashboard', async (c) => {
   const { sub } = c.get('user');
   await syncUserStatsAggregates(c.env.DB, sub);
-  const [profile, streakRaw, statsRaw, dueToday, todayActivity, preferences] = await Promise.all([
+  const preferences = await getLearningPreferences(c.env.DB, sub);
+  const today = studyLocalDay(preferences.timezone);
+  const [profile, streakRaw, statsRaw, dueToday, todayActivity] = await Promise.all([
     c.env.DB.prepare(
       'SELECT id, email, display_name, avatar_url FROM users WHERE id = ?'
     ).bind(sub).first(),
@@ -86,15 +94,15 @@ user.get('/dashboard', async (c) => {
     c.env.DB.prepare('SELECT * FROM user_stats WHERE user_id = ?').bind(sub).first(),
     studyQueueCount(c.env.DB, sub),
     c.env.DB
-      .prepare(`SELECT xp_earned FROM user_daily_activity WHERE user_id = ? AND activity_date = date('now')`)
-      .bind(sub)
+      .prepare(`SELECT xp_earned FROM user_daily_activity WHERE user_id = ? AND activity_date = ?`)
+      .bind(sub, today)
       .first<{ xp_earned?: number }>(),
-    getLearningPreferences(c.env.DB, sub),
   ]);
 
   const streak = streakRaw
     ? {
-        current_streak: Number(streakRaw.current_streak ?? 0),
+        current_streak: visibleCurrentStreak(Number(streakRaw.current_streak ?? 0),
+          typeof streakRaw.last_activity_date === 'string' ? streakRaw.last_activity_date : null, today),
         longest_streak: Number(streakRaw.longest_streak ?? 0),
         last_activity_date: streakRaw.last_activity_date ?? null,
         total_days_studied: Number(streakRaw.total_days_studied ?? 0),
@@ -179,9 +187,11 @@ user.post('/progress', async (c) => {
     return c.json({ error: 'Танигдахгүй үг байна' }, 400);
 
   // D1 batch is atomic: an invalid word/constraint rolls back the XP receipt.
+  const preferences = await getLearningPreferences(c.env.DB, sub);
+  const today = studyLocalDay(preferences.timezone);
   const statements = [
     ...buildProgressStatements(c.env.DB, sub, body.results),
-    receiptStatement(c.env.DB, sub, 'study', sessionId, hash, body.xp_earned, body.results.length),
+    receiptStatement(c.env.DB, sub, 'study', sessionId, hash, body.xp_earned, body.results.length, 0, today),
   ];
   let receipts: D1Result[];
   try {
@@ -196,8 +206,7 @@ user.post('/progress', async (c) => {
   if (recorded?.request_hash !== hash)
     return c.json({ error: 'Энэ session ID өөр өгөгдөлд ашиглагдсан байна' }, 409);
   if (inserted) {
-    await refreshProgressStats(c.env.DB, sub);
-    await updateStreak(c.env.DB, sub);
+    await syncUserStatsAggregates(c.env.DB, sub);
   }
   return c.json({ message: 'Явц хадгалагдлаа', data: { xp_earned: inserted ? body.xp_earned : 0, already_saved: !inserted } });
 });
