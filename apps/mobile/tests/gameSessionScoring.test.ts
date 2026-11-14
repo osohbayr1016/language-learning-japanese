@@ -9,7 +9,7 @@ test('match session persists the last match points instead of stale React state'
 });
 
 test('multi-round accuracy includes all completed earlier chunks', () => {
-  assert.deepEqual(completedMatchStats(10, 10, 10, 2, 15), {
+  assert.deepEqual(completedMatchStats(10, 10, 10, 2, 15, 3), {
     score: 20, accuracy: 12 / 15,
   });
 });
