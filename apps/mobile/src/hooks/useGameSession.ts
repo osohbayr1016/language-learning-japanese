@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { api } from '../lib/api';
+import { newSessionId } from '../lib/sessionIds';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import type { GameSessionBody } from '../lib/api/games';
@@ -16,7 +17,7 @@ export function useGameSession() {
       if (inflight.current) return inflight.current;
       const key = JSON.stringify(body);
       if (!pending.current || pending.current.key !== key) {
-        pending.current = { key, id: crypto.randomUUID() };
+        pending.current = { key, id: newSessionId() };
       }
       const session_id = pending.current.id;
       const saving = (async () => {

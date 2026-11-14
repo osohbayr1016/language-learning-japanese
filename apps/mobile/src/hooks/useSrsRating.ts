@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { api } from '../lib/api';
+import { newSessionId } from '../lib/sessionIds';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../context/GamificationContext';
 import { calculateAdaptive, type AdaptiveInputs, type AdaptiveProgressInput } from '../lib/srs/adaptive';
@@ -33,7 +34,9 @@ export function useSrsRating(sessionType: SessionType) {
         response_ms: r.response_ms,
         confidence: r.confidence,
       };
-      if (!submissionId.current) submissionId.current = crypto.randomUUID();
+      if (!submissionId.current) submissionId.current = newSessionId();
+      // A retried final rating must not send the same word twice in one batch.
+      buffer.current = buffer.current.filter((row) => row.word_id !== wordId);
       buffer.current.push(item);
       return r;
     },
