@@ -56,10 +56,11 @@ export function receiptStatement(
   xp: number,
   reviewCount = 0,
   gameSeconds = 0,
+  activityDay: string | null = null,
 ): D1PreparedStatement {
   return db.prepare(
     `INSERT INTO reward_receipts
-      (user_id,kind,session_id,request_hash,xp_earned,review_count,game_seconds)
-     VALUES(?,?,?,?,?,?,?) ON CONFLICT(user_id,kind,session_id) DO NOTHING`,
-  ).bind(userId, kind, sessionId, hash, xp, reviewCount, gameSeconds);
+      (user_id,kind,session_id,request_hash,xp_earned,review_count,game_seconds,activity_day)
+     VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(user_id,kind,session_id) DO NOTHING`,
+  ).bind(userId, kind, sessionId, hash, xp, reviewCount, gameSeconds, activityDay);
 }
